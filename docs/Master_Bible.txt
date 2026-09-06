@@ -1,0 +1,365 @@
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  1
+IDLE 1
+MASTER BIBLE v1.1 - FROZEN FOR BUILD
+Idle auto-battler + visible kingdom growth + hero gear + enormous army + async Alliance 
+conquest
+Canonical fingerprint
+a5ba20db1ccc157207f7e4e90197a5a82b1b8fda10dce01ffffb2b3ee8cf5995
+VERSION 1.1
+STATUS FROZEN_FOR_BUILD
+North star - Start with one warrior. End with a royal Lord in legendary gear leading an enormous army of 
+soldiers, cavalry, siege engines, beasts, elephants and mythic units against monster hordes and giant bosses.
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  2
+1. Product promise
+IDLE 1 is a portrait-first mobile idle strategy RPG designed to be materially faster to build than Empire Lords 
+Dragon while still feeling like a complete commercial game. The player alternates between watching automatic 
+combat, improving the Lord, growing the Kingdom, expanding a personal Domain and participating in 
+asynchronous social competition.
+ continuous auto combat with visible kill rewards
+ hero gear loot forge and visual equipment progression
+ army growth from lone Lord to enormous mixed army
+ visible kingdom growth
+ personal domain expansion
+ research and unit unlocks
+ always-on idle events and dungeons
+ 30-member alliances with chat
+ 10v10 asynchronous alliance territory wars
+Do not dilute - This is not a six-icon idle menu. Progress must be visible on the Lord, the army, the Kingdom 
+and the Domain map.
+2. Core loop
+Loop What the player sees What progresses
+Battle Lord and army automatically fight 
+monsters
+XP, Gold, soft resources, gear, stage 
+progress
+Gear New weapons/armor drop and visibly 
+change the Lord rarity, item level, affixes, Forge slots
+Kingdom Camp grows into Imperial Capital resource production, queues, 
+building/research gates
+Army New troop categories join the battlefield 13 units, command capacity, formation 
+power
+Domain Heraldic territory expands every 2 stages 100 tiles and production bonus
+Idle/Social Offline chest, events, dungeons, Alliance 
+wars retention, materials, War Coins, territory
+3. Campaign and monster world
+The campaign contains 200 stages grouped into 10 visually distinct regions. Each stage has ten waves. Every 
+fifth stage is Elite; every tenth is a Boss. The difficulty is server-authored by the canonical enemy-power curve, 
+while the client turns the result into a cinematic auto-battle.
+Region Stages Enemy examples Boss
+Green Marches 1-20 Goblin Raider, Road Bandit Ogre Warlord
+Blackwood 21-40 Dark Wolf, Forest Troll Ancient Treant
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  3
+Iron Hills 41-60 Orc Reaver, Armored Ogre Mountain Tyrant
+Ashen Plains 61-80 Ash Raider, Undead Legionary Bone Colossus
+Frost Crown 81-100 Frost Wolf, Ice Troll Ice Giant King
+Sunscar Desert 101-120 Giant Scorpion, Desert 
+Marauder Sand Wyrm
+Drowned Coast 121-140 Drowned Soldier, Sea Troll Leviathan
+Dragonspine 141-160 Drake, Wyvern Elder Dragon
+Celestial Rift 161-180 Fallen Knight, Winged Horror Fallen Seraph
+End of Realms 181-200 Demon Legionary, Ancient 
+Titan World Devourer
+Reward rule: 75% of XP, Gold and soft-resource reward is attributed across monster kills and 25% to stage clear. 
+This makes every kill feel rewarding without requiring one server transaction per monster.
+4. Hero XP, skills and talents
+Hero levels are earned with XP only. There is no second Gold charge for leveling. XP to next level is `round(80 * 
+level^1.55 + 40 * level)`. Clearing all 200 campaign stages once supplies about 66.73% of the XP required for level 
+100, placing the player around level 85 before repeat/offline/event XP.
+Unlock Skill Function
+5 power_strike single-target burst
+15 war_cry temporary hero+army attack buff
+30 shield_wall temporary defense and damage 
+reduction
+45 rain_of_steel area damage to monster wave
+65 royal_strike high boss damage
+85 dragon_banner brief army haste and mythic power buff
+Three auto-skill slots unlock at Hero 10, 30 and 60. Talent points arrive every 5 levels. The player chooses among 
+Warrior, Guardian, Commander and Fortune branches; respec costs 50 Rubies.
+5. Gear, loot and visible equipment
+Gear is mandatory in v1.1. The Lord has nine equipment slots: Weapon, Offhand, Helmet, Chest, Gloves, Boots, 
+Cloak, Ring and Amulet. Weapon, Helmet, Chest, Boots and Cloak visibly change the battle character. Rarity 
+progresses from Common to Ancient as the campaign advances.
+Rarity Unlock stage Stat multiplier Affixes
+common 1 1.0 0
+uncommon 10 1.18 1
+rare 25 1.42 1
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  4
+epic 50 1.75 2
+legendary 90 2.2 3
+mythic 140 2.8 4
+ancient 180 3.6 4
+Normal clear has a 12% gear roll, Elite 30%, Boss one guaranteed item plus a 25% extra roll. Milestone bosses 
+50/100/150/200 guarantee at least Epic/Legendary/Mythic/Ancient. Repeat farming halves normal gear drop 
+probability to avoid inventory flooding.
+6. Forge, salvage and reforge
+Forge progression belongs to the equipment slot, not the item. If the player upgrades Weapon Forge to +12 and 
+later finds a Legendary sword, the new sword immediately benefits from Weapon Forge +12. This makes 
+upgrading feel safe and removes the common idle frustration of wasting materials on replaced gear.
+Item level Gold +0->+20 Forge Dust +0->+20
+10 120,982 678
+50 489,690 1,438
+100 950,574 2,390
+Forge never fails. Unwanted items are salvaged into Forge Dust; high rarities may yield Reforge Stones/Mythic 
+Essence. Reforge changes one selected secondary affix and cannot reduce rarity or primary stats. Auto Equip is 
+free. Auto Salvage unlocks at stage 20.
+7. Army progression: from one man to an imperial host
+The army is both gameplay and spectacle. The Lord fights alone before stage 10. As research, Castle and 
+Campaign gates open, recruited units enter the formation and visibly join the battlefield. Real counts are stored 
+on the server; rendering uses representative cohorts so late game can look enormous without destroying mobile 
+performance.
+Tier Trigger Foreground cap Visual read
+0 stage < 10 1 Lord fights alone
+1 stage >= 10 and army 
+deployed 10 small infantry escort
+2 stage >= 20 20 infantry and archers with 
+banners
+3 stage >= 40 32 cavalry joins; visible 
+formation depth
+4 stage >= 60 48 siege engines and dense troop 
+lines
+5 stage >= 90 68 beasts appear among regular 
+troops
+6 stage >= 120 90 war elephants, multiple 
+banners, wide army frontage
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  5
+7 stage >= 140 110 mythic units join and the 
+army fills the battlefield
+8 stage >= 180 120
+imperial host: thousands 
+perceived through LOD 
+cohorts, banners, siege, beasts 
+and multiple mythic 
+silhouettes
+Late-game requirement - At stage 180+ the player must see a wide imperial host with regular infantry, 
+archers, cavalry, siege, beasts, elephants, multiple banners and mythic silhouettes attacking monster hordes 
+or a giant boss. It must feel like thousands of troops even though the renderer uses at most 120 foreground 
+proxies on high-end devices.
+8. Unit unlocks and formation
+All 13 Empire-universe unit families are retained, but IDLE 1 uses simpler recruitment/formation rules. A unit is 
+recruitable only when its Castle, Research and Campaign-stage gates all pass. Command capacity is `50 + 
+hero_level*10 + castle_level^2*20`.
+Unit Stage Castle Command Role
+Fanteria 10 1 1 frontline
+Arciere 20 3 1 ranged
+Cavalleria 40 5 3 mobile
+Catapulta 60 7 8 siege
+Carro di Conquista 80 9 12 domain
+Orso 100 10 4 frontline
+Lupo 90 10 2 mobile
+Leone 110 11 4 assault
+Falco 105 11 2 scout
+Elefante da Guerra 120 12 10 heavy
+Drago 140 14 25 legendary
+Angelo 160 16 25 legendary
+Demone 180 18 25 legendary
+9. Kingdom growth
+The Kingdom remains a major emotional reward. Castle levels 1-20 map into seven distinct visual tiers from 
+Accampamento del Lord to Capitale Imperiale. New walls, streets, buildings, banners, population and 
+landmarks must appear; the city cannot merely scale the same model.
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  6
+Tier Castle levels Name Visual
+1 1-3 Accampamento del Lord tende, falo, capanna centrale, 
+palizzata minima, 1 bandiera
+2 4-6 Villaggio Fortificato
+case in legno, palizzata 
+completa, fattorie, torre di 
+guardia, strade sterrate
+3 7-9 Borgo di Frontiera
+primi edifici in pietra, mura 
+basse, caserma, mercato, torri 
+angolari
+4 10-12 Citta Murata
+mura in pietra, mastio, 
+quartieri, scuderia, officina, 
+maggiore popolazione
+5 13-15 Grande Fortezza
+doppie mura, torri alte, ponte, 
+bestiario, tempio, stendardi 
+nobiliari
+6 16-19 Citta Reale
+castello monumentale, piazze, 
+quartieri ricchi, cupole/torri, 
+traffico e dettagli ambientali
+7 20 Capitale Imperiale
+cittadella enorme, mura 
+multilivello, monumenti, 
+santuario mitico, drappi, 
+effetti magici discreti
+10. Buildings, research and resources
+The v1.0 foundation is retained: 16 buildings, five core soft resources and 48 research nodes with five levels 
+each. Battle rewards now supplement - not replace - economic buildings. Personal Domain ownership adds +5% 
+production per 10 owned tiles up to +50%.
+Exact per-level building and research costs/times remain in CANONICAL_SPEC. The builder must never 
+summarize these into guessed curves at runtime.
+11. Personal Domain
+The personal 10x10 map starts with one owned tile. Every two cleared campaign stages claims one canonical 
+adjacent tile until all 100 are owned at stage 200. Roads, farms, towers, villages, forts and city silhouettes 
+accumulate so the map becomes visibly denser and more imperial.
+12. Offline progression
+The server calculates elapsed time using server timestamps. The offline chest holds up to 12 hours. It includes 
+production, repeat-stage XP/Gold/soft resources, limited gear rolls and completed 
+construction/research/recruitment timers. The device clock is never trusted and each claim is idempotent.
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  7
+13. Dungeons, events and retention
+Four 10-minute idle dungeons unlock progressively with 10 tiers. Each gives two free entries per day; up to 
+three extra entries per dungeon cost 25 Rubies each. Weekly events remain always active through a rotating 
+event archetype and offer Energy refills, instant finish and Event Pass purchases.
+Dungeon Primary reward
+Royal Treasury Gold plus soft resources
+Forge Depths Forge Dust + Reforge Stones
+Ancient Ruins Gear roll + Mythic Essence at high tier
+Monster Hunt Hero XP + Event Tokens
+Daily tasks provide 10 Rubies total, weekly tasks 50 Rubies, and the 7-day login cycle 35 Rubies plus a boosted 
+gear roll. Forty achievements and a Codex add long-term one-time goals.
+14. Alliance, chat and Alliance Boss
+Alliances unlock at Castle 8, cost 5,000 Gold to create and hold up to 30 members. Chat channels: Global, 
+Alliance, War and System Feed. Direct messages remain out of scope. Report, block, mute and moderation are 
+mandatory.
+Titan Hunt is a 48-hour asynchronous Alliance Boss. Each member receives three free attacks per day; up to 
+three extra attacks cost 50 Rubies each. It rewards War Coins, Forge materials and cosmetic progression but 
+does not directly change territory.
+15. Asynchronous 10v10 territory war
+Alliance War remains a 10v10 asynchronous system on a 19x19 competitive map. One adjacent territory is 
+attacked, eight hours of preparation run, and ten deterministic lanes resolve. The complete 
+Hero/Gear/Forge/Talent/Army/Research snapshot freezes 30 minutes before resolution.
+Competitive integrity - Anything purchased or upgraded after roster lock does not change that war. This 
+keeps monetization active without allowing a last-second payment to rewrite an already locked battle.
+16. Economy and balance controls
+Metric v1.1 audited value
+Hero XP 1->100 4,097,345
+Campaign first-clear XP 2,734,254 (66.73%)
+Approx level after 200 first clears 85
+Campaign first-clear Gold 1,046,199
+Campaign first-clear soft bundle 574,560
+Late offline farm at stage 200 ~33,537 XP/h, 29,103 Gold/h
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  8
+Target F2P pacing: Castle 5 first day; Castle 10 days 2-5; Castle 14 week 1-2; Castle 17 week 2-3; Castle 20 week 4-
+6. Campaign 200 roughly weeks 3-6. These targets are for telemetry comparison; hidden dynamic difficulty is 
+forbidden.
+17. Monetization
+Monetization is pay-to-accelerate and cosmetic, not paid random gear. Products: Ruby packs, Starter Bundle, 
+weekly Event Pass, 28-day Season Pass, resource crates, dungeon entries, event Energy refills, Alliance Boss 
+extra attacks and cosmetics. Production UI must display store-localized prices returned by Apple/Google.
+No paid loot boxes/gacha. No item can be bought from a random gear chest. Persistent acceleration can improve 
+a future roster, but a locked Alliance War snapshot cannot be modified.
+18. Account, privacy and payments
+iOS and Android use the same account and backend state. Required: email/password, Google, Sign in with Apple, 
+verification, recovery, logout-all, export request, in-app account deletion, Privacy/Terms, consent configuration, 
+secure token storage, StoreKit/Play Billing verification, restore purchases and refund/revocation reconciliation.
+19. Premium medieval-fantasy art direction
+The game must look like a premium medieval-fantasy product, not a SaaS interface. Use parchment, stone, 
+wood, forged iron, bronze, antique gold, leather, velvet and heraldry. The hero gear, army size, Kingdom and 
+Domain must all communicate progression at a glance.
+Forbidden - Cyberpunk, sci-fi, neon technology, generic admin-dashboard cards, chibi style, slot-machine 
+loot presentation and placeholders presented as final art.
+20. Architecture and security
+React + TypeScript + Capacitor client; Python/FastAPI/Pydantic backend; MongoDB production persistence. 
+Server authority covers combat outcomes, rewards, loot rolls, timers, offline claims, territory, purchases and 
+war snapshots. Critical mutations use transactions or crash-safe state machines and idempotency is reserved 
+before side effects.
+21. Implementation plan I01-I16
+Block Name Completion gate
+I01 Account, privacy, secure auth, cloud 
+profile
+Create/login/recover/delete/export works; 
+secure storage and policy screens 
+complete
+I02 Canonical runtime loader and Mongo 
+domain foundation
+All runtime numbers load from v1.1 
+spec/config; world/player persistence and 
+idempotency foundation pass tests
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  9
+I03 Campaign auto-combat and monster 
+regions
+200 stages, 10 regions, 
+waves/elites/bosses, kill rewards and 
+deterministic server outcomes work E2E
+I04 Hero XP, skills and talents Level 1-100 curve, 3 skill slots, talent 
+points/respec and combat stats work E2E
+I05 Gear, inventory, drops, salvage, forge, 
+reforge
+9 slots, rarity tables, drop rolls, auto-
+salvage/equip and slot forge +0..20 work 
+E2E
+I06 Kingdom, buildings, production and 
+timers
+20 Castle levels, 7 visual tiers, 
+buildings/resources/queues and offline 
+timers work E2E
+I07 Research and army recruitment
+48x5 research, 13 units, unlock gates, 
+command capacity and formation work 
+E2E
+I08 Army spectacle renderer
+Visual tiers 0-8 scale from Lord alone to 
+huge army within mobile performance 
+budgets
+I09 Personal Domain
+10x10 domain, one tile every 2 stages, 
+visual growth and production bonuses 
+work E2E
+I10 Offline progression
+12h server-timestamp 
+loot/resources/gear/timers; double-claim 
+and clock abuse tests pass
+I11 Events, dungeons, quests, achievements 
+and codex
+Always-on event loop, spend hooks, four 
+idle dungeons and retention systems 
+work E2E
+I12 Alliances, chat and moderation
+30-member alliances, roles, 
+Global/Alliance/War/System chat, 
+report/block/mute work E2E
+I13 Async 10v10 territory war and Alliance 
+Boss
+19x19 season map, roster snapshot, 10 
+lanes, territory capture, Titan Hunt and 
+rewards work E2E
+I14 Store, Apple/Google payments and 
+restore/refunds
+Localized store products, receipt 
+verification, idempotent crediting, 
+restore and refund reconciliation pass 
+sandbox tests
+I15 Mobile shells, push, performance and 
+visual polish
+iOS/Android same account/state; 
+push/deep-links; target FPS and 
+I16 Final security, economy regression and 
+release audit
+Zero P0/P1; economy invariants, 
+concurrency/idempotency, E2E and 
+release checklist pass
+22. Release and QA gates
+ Unit, schema, contract, integration, Mongo, concurrency, idempotency, frontend and mobile E2E tests.
+ Clock-abuse and double offline-claim regression tests.
+ Gear drop-table statistical test, salvage/forge/reforge cost invariants and inventory race tests.
+in-game visual QA pass
+IDLE 1 - MASTER BIBLE v1.1 FROZEN
+Build canon - 2026-09-06  |  10
+ Apple/Google purchase sandbox, duplicate receipt, restore and refund/revocation tests.
+ War snapshot immutability and atomic territory capture tests.
+ Visual regression at Battle Tier 0, 4 and 8; Kingdom Tier 1 and 7; early/late Domain.
+ Performance test at 120 high-end / 60 low-end battle proxies with background cohorts.
+ Zero open P0/P1 before production-candidate claim.
+23. Frozen scope and canonical fingerprint
+v1.1 is deliberately complete but smaller than Empire Lords Dragon. Do not add manual combat, live 
+synchronous world movement, direct messages, gacha, player gear trading or a free-camera 3D city builder 
+without a new canonical version.
+Canonical fingerprint - SPEC_HASH = 
+a5ba20db1ccc157207f7e4e90197a5a82b1b8fda10dce01ffffb2b3ee8cf5995
+VERSION = 1.1
+STATUS = FROZEN_FOR_BUILD
+CANONICAL_SPEC v1.1 contains every exact runtime table/formula. If Emergent cannot parse JSON reliably, 
+upload the READABLE file or all four FLAT parts as transport representations. They do not change authority.

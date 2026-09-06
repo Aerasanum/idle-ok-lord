@@ -1,0 +1,195 @@
+{
+  "app_name": "IDLE 1 v1.1",
+  "personality": "6 Glass / Luxe structure with 8 Hand-Drawn / Journal textures (Custom: Premium Medieval Fantasy)",
+  "personality_one_liner": "A regal, premium medieval-fantasy experience where players visibly evolve from a lone warrior to a royal commander against a backdrop of aged parchment, dark wood, and forged iron.",
+  "color": {
+    "surface": "#11151C",
+    "onSurface": "#E6D8B8",
+    "surfaceSecondary": "#2A2A35",
+    "onSurfaceSecondary": "#E6D8B8",
+    "surfaceTertiary": "#3D3A30",
+    "onSurfaceTertiary": "#F4EBD8",
+    "surfaceInverse": "#F4EBD8",
+    "onSurfaceInverse": "#11151C",
+    "brand": "#800020",
+    "onBrand": "#F4EBD8",
+    "brandPrimary": "#800020",
+    "onBrandPrimary": "#F4EBD8",
+    "brandSecondary": "#B89947",
+    "onBrandSecondary": "#11151C",
+    "brandTertiary": "#2E472D",
+    "onBrandTertiary": "#F4EBD8",
+    "success": "#436F4D",
+    "onSuccess": "#FFFFFF",
+    "warning": "#C79338",
+    "onWarning": "#11151C",
+    "error": "#8B2635",
+    "onError": "#FFFFFF",
+    "info": "#4A6B8C",
+    "onInfo": "#FFFFFF",
+    "border": "#4A3B2C",
+    "borderStrong": "#B89947",
+    "divider": "#3D3A30",
+    "muted": "#8C929C",
+    "game_rarities": {
+      "common": "#8C929C",
+      "uncommon": "#548259",
+      "rare": "#4169E1",
+      "epic": "#7851A9",
+      "legendary": "#DAA520",
+      "mythic": "#DC143C",
+      "ancient": "#E5E4E2"
+    },
+    "game_resources": {
+      "grain": "#E3C16F",
+      "wood": "#6B4423",
+      "clay": "#A36A4F",
+      "iron": "#7D848C",
+      "gold": "#FFD700",
+      "rubies": "#E0115F",
+      "forge_dust": "#B0C4DE",
+      "reforge_stone": "#708090",
+      "mythic_essence": "#9370DB",
+      "war_coins": "#B87333",
+      "event_tokens": "#00FA9A"
+    }
+  },
+  "typography": {
+    "displayFontFamily": "Cormorant Garamond",
+    "textFontFamily": "Satoshi",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous spacing for readability, but tighter in game HUDs. UI panels use thick embossed margins to mimic carved frames.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 2,
+    "md": 6,
+    "lg": 12,
+    "pill": 999
+  },
+  "shadow_tier": "2",
+  "navigation": "bottom_tabs",
+  "icon_set": "MaterialCommunityIcons",
+  "glassmorphism": {
+    "enabled": "true",
+    "do's": [
+      "Use heavy tinted glass (≥80% opacity iron gray or deep navy) over battlefield/map views for HUD overlays.",
+      "Use subtle glass over parchment textures for premium modal popups."
+    ],
+    "dont's": [
+      "Do not use hyper-modern frosted clear glass. Keep blurs dark and tinted with game palette (smoke/iron)."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Battle (Main Auto-Battler)",
+      "purpose": "Primary idle loop where the commander fights and earns rewards.",
+      "states": {
+        "loading": "Centered forged iron spinner with parchment background.",
+        "empty": "N/A - Battle is always active.",
+        "error": "Parchment modal with red heraldic seal and retry button."
+      },
+      "layout": "Top 15%: HUD with premium currency, health, stage progress, kill rewards. Middle 60%: 2.5D animated battlefield (scales from 1 warrior to armies based on progression). Bottom 25%: Action bar for manual skill triggers and quick upgrades. Embossed frames surround the HUD elements."
+    },
+    {
+      "name": "Kingdom",
+      "purpose": "City-building base for resource generation and research.",
+      "states": {
+        "loading": "Stone-textured skeleton loaders for buildings.",
+        "empty": "View of the base camp (Tier 1) before buildings are constructed.",
+        "error": "Cannot load kingdom data, retry overlay."
+      },
+      "layout": "Full-screen isometric view of 16 buildings. Buildings have floating timer bars (wood/iron texture) for construction queues. Tapping a building opens an ornate parchment-styled Bottom Sheet with upgrade/production options."
+    },
+    {
+      "name": "Domain",
+      "purpose": "Strategic 10x10 painted map for territorial expansion.",
+      "states": {
+        "loading": "Map unrolling animation or centered spinner.",
+        "empty": "No tiles claimed - shows starting stronghold.",
+        "error": "Map sync failed error modal."
+      },
+      "layout": "Pan-and-zoom painted map view. Top HUD shows Domain-specific resources. Ownership colors clearly mark territory. Tapping a hex opens a side/bottom panel with tile details (fort, village) and attack/claim actions."
+    },
+    {
+      "name": "Army & Gear (Inventory/Forge)",
+      "purpose": "Manage the Lord's 9 gear slots, rarities, and 13 unit formations.",
+      "states": {
+        "loading": "Equipment grid skeleton.",
+        "empty": "No gear equipped silhouette of the Lord.",
+        "error": "Failed to load inventory."
+      },
+      "layout": "Split layout or sub-tabs. Top half: 2.5D render of the Lord. Surrounding: 9 gear slots with thick rarity-colored frames (Common -> Ancient). Bottom half: Scrollable inventory grid with Auto-Equip, Salvage, and Forge action buttons styled as heavy iron/stone presses."
+    },
+    {
+      "name": "Social (Alliance & Events)",
+      "purpose": "Multiplayer interactions, chat, 19x19 Alliance war map, and boss hunts.",
+      "states": {
+        "loading": "Loading alliance banners.",
+        "empty": "'Join an Alliance' call to action with a grand illustration of a banner.",
+        "error": "Chat server disconnected."
+      },
+      "layout": "Vertical list of Alliance members/events using heavy parchment cards with dark wood dividers. Chat is a persistent overlay or full-screen view with readable Satoshi text. War map follows the Domain layout but scaled for 19x19."
+    },
+    {
+      "name": "Shop & Profile",
+      "purpose": "Monetization, Passes, Settings, and Account details.",
+      "states": {
+        "loading": "Shop items loading.",
+        "empty": "No active passes.",
+        "error": "Store connection error."
+      },
+      "layout": "Store uses rich visual cards: velvet backdrops for premium packs, antique gold borders for high-value items. Profile/Settings use a standard vertical list but with stone/wood UI toggles instead of native iOS switches."
+    }
+  ],
+  "images": {
+    "parchment_background": {
+      "url": "https://images.unsplash.com/photo-1719563015025-83946fb49e49?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwxfHxhZ2VkJTIwcGFyY2htZW50JTIwdGV4dHVyZSUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzg4NzI0Nzk3fDA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1576092762791-dd9e2220abd1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxkYXJrJTIwd29vZCUyMGlyb24lMjB0ZXh0dXJlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3ODg3MjQ4MDV8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Aged parchment and dark wood textures for UI backgrounds"
+    },
+    "kingdom_isometric_base": {
+      "url": "https://images.unsplash.com/photo-1633520409170-2cf3f0b15c9d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxtZWRpZXZhbCUyMGNhc3RsZSUyMGlzb21ldHJpYyUyMGFydHxlbnwwfHx8fDE3ODg3MjQ4MDJ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Isometric medieval castle art"
+    },
+    "battlefield_landscape": {
+      "url": "https://images.unsplash.com/photo-1615021115776-b446ea7b90b7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwxfHxmYW50YXN5JTIwYmF0dGxlZmllbGQlMjBsYW5kc2NhcGUlMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc4ODcyNDgxMHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Fantasy battlefield landscape background"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Build a premium, medieval-fantasy UI. DO NOT use standard SaaS minimalist cards. Every panel should feel like parchment, wood, stone, or iron.",
+    "Implement the custom 'game_rarities' and 'game_resources' hex colors into the theme.ts file so they are universally available for gear borders and resource icons.",
+    "The core Battle screen must utilize a mobile-optimized Idle RPG layout: Top HUD for status, Center for the 2.5D visual action, and Bottom for high-frequency actions (skills, upgrades).",
+    "Use 'Cormorant Garamond' (serif) for all headings, titles, and numbers to give a regal/historic feel, while using 'Satoshi' (sans-serif) for body text and chat for strict readability.",
+    "Borders are thicker than usual mobile apps (e.g., 2pt-4pt for gear frames) to simulate forged iron or embossed gold.",
+    "Ensure the bottom navigation includes the exact 5 tabs required: Battle, Kingdom, Domain, Army, Social. Use heraldic-style iconography or heavy filled icons.",
+    "Strict adherence to user constraints: No cyberpunk/sci-fi elements, no generic placeholders, no 'slot-machine' aesthetics. Respect the requested Deep Navy/Burgundy/Gold color scheme."
+  ]
+}

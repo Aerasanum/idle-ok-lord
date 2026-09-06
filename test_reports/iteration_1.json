@@ -1,0 +1,44 @@
+{
+  "summary": "Ran the requested backend + frontend E2E for IDLE 1 v1.1 against the live preview URL. Backend: 31/31 pytest tests pass (auth flows incl. refresh rotation reuse->401, /auth/me, profile initial values 100/300/100, battle attempt stage 1 with required_power 75, 425->200 idempotent battle claim after time-shift 200s, kingdom farm next.cost exactly {clay:100,gold:10,grain:120,iron:20,wood:180} + duplicate upgrade -> 409, offline preview + first claim 200 / second claim 400, all 16 read-only endpoints 200 including store/catalog with 8 products and paid_random_gear_or_gacha=false and wars/map with 361 nodes, quests/login/claim day 1 rubies 3 + repeat 409, purchases/verify -> 503 without RC key, purchases/revenuecat/webhook wrong bearer -> 401). Frontend (390x844 web preview): login with QA account lands on battle-screen; stage panel + auto-battle toggle work; all 9 quick links present; kingdom/army/domain/social tabs render; kingdom castle upgrade queued with toast 'Costruzione avviata' and speedup button visible; open-gear-button opens gear-screen with equipped slots; open-talents-button opens talents-screen; alliance creation with QA account succeeds (5000 gold spent, my-alliance-card + open-alliance-button appear); alliance hub shows hub-chat/hub-war/hub-boss/hub-events; shop 'buy-crate-small' consumes 150 rubies and shows 'Cassa aperta: 252 grain, 210 wood, 189 clay, 0 iron, 0 gold' toast; quests login-claim-button fires; signup + verify (via /api/_test/last-code) lands on battle-screen; logout button returns to login-screen. Talents screen displays 'totale attuale NaN%' for all four branches because the frontend does parseFloat on the whole 'army_power_pct +1.5' string instead of the numeric suffix — user-visible display bug, main agent to fix.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "hero/talents.tsx (talent branches list)",
+        "issue": "Each talent panel shows 'totale attuale NaN%'. The label renders {br.effect_per_rank} raw (e.g. 'army_power_pct +1.5') and then multiplies rank * parseFloat(br.effect_per_rank), which is NaN because parseFloat on 'army_power_pct +1.5' returns NaN. Extract the numeric part (e.g. parseFloat(br.effect_per_rank.split(' ').pop())) or return just the number in the API payload. Reference: /app/frontend/app/hero/talents.tsx:43",
+        "testID": "talent-commander / talent-fortune / talent-guardian / talent-warrior",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_live_e2e.py",
+    "/app/test_reports/pytest/live_e2e.xml"
+  ],
+  "action_items": [
+    "Fix NaN% display on Talenti screen: in /app/frontend/app/hero/talents.tsx:43 the code calls parseFloat(br.effect_per_rank) where effect_per_rank is a formatted string like 'army_power_pct +1.5'. Either parse the numeric tail (e.g. parseFloat(br.effect_per_rank.replace(/^[^+\\-\\d.]+/, ''))) or split on space, or expose a numeric field alongside the label on the /api/hero payload."
+  ],
+  "critical_code_review_comments": [
+    "hero/talents.tsx line 43: assumes br.effect_per_rank is a plain number but backend returns 'stat_key +N'; guards against NaN missing.",
+    "Alliance hub sub-tabs (hub-chat/hub-war/hub-boss/hub-events) share the alliance hub screen so pressing header-back-button exits the whole hub instead of the sub-tab — that is intended per current spec (not a bug).",
+    "The QA account starts without an alliance despite castle 8 pre-requisites; creation flow works and costs 5000 gold as expected."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_live_e2e.py (new file: 31 pytest tests against live URL)"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "~97% (talents NaN% is the only user-visible defect)"
+  },
+  "seed_data_creation": "Created one alliance '[QAT] QATestf96c' under the QA account during flow testing (5000 gold spent). Registered several throwaway t_*@example.com accounts for register/verify/refresh tests — verified via /api/_test/last-code.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend live-URL suite lives at /app/backend/tests/test_live_e2e.py (JUnit output at /app/test_reports/pytest/live_e2e.xml). ReadOnly + LiveOps classes use the QA account (qa.lord@example.com / QaLordPass!2026) to avoid the /auth/register 10/min rate limit — keep this pattern. Do NOT hit /auth/register more than ~8 times per minute or the whole suite errors with 429 followed by connect-timeouts. On the frontend, all interactive elements expose testID (see grep results in the report). The talents NaN% bug is easy to verify at /hero/talents after login as QA.",
+  "rca_of_issue": "Talenti NaN%: the /api/hero payload returns talents.branches[<key>].effect_per_rank as a human-readable string ('army_power_pct +1.5'). The Talenti screen (hero/talents.tsx:43) prints this string then does `rank * parseFloat(br.effect_per_rank)` — parseFloat on a string starting with a letter is NaN, so the derived percentage renders as 'NaN%'. Reproduce: login as QA -> Battaglia -> Talenti. Fix: parse the numeric suffix, e.g. `parseFloat(br.effect_per_rank.match(/[-+]?\\d*\\.?\\d+/)?.[0] ?? '0')` OR add a numeric `value_per_rank` field to the backend response and use it."
+}
