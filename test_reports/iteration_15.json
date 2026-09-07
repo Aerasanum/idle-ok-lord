@@ -1,0 +1,21 @@
+{
+  "summary": "Iteration 15 (war RESERVES + Battle-tab WarCallBanner). Backend 8/8 pytest green against preview URL on war_0b2db37c91bb4cd8b4ca6e933ca8509d (QAT→ORS node 22, prep, do NOT locked/resolved): (1) qa.bot9 re-enlist → 409 already_reserve; (2) orsi.bot1 defense enlist → 200 enlisted:true reserve:false; (3) lord.tester withdraw (from slot 10) → 200 promoted==qa.bot9.player_id, attack_roster stays at 10 (bot9 in, lord.tester out), attack_reserve []; (4) lord.tester enlist again → reserve:true reserve_position:1; (5) lord.tester withdraw from reserve → 200 attack_reserve [], roster unchanged, no spurious promotion; (6) GET /wars/{id} roster_players carries display_name + hero_level for every roster/reserve pid on both sides. Final state left as required: attack_roster == qa.lord + qa.bot1..9, lord.tester OUT, war remains 'prep'. Frontend (390x844, mobile) tested three personas end-to-end: as lord.tester (outside roster, roster full) the Battle-tab shows war-call-banner with war-call-title 'Guerra dichiarata: prenotati!' and war-call-status 'Nodo 22 · Roster completo · riserve 0 · blocco tra 7h 25m'; tap → Territorio, opened war-row-war_0b2db37c91bb4cd8b4ca6e933ca8509d → war-enlist rendered with 10 filled slots (1..10 named QA Lord + Cavaliere QA 1..9), war-enlist-button text 'Roster completo: prenotati come riserva (1ª)'; tapping it flipped to war-withdraw-button 'Esci dalla riserva (sei n.1)' and war-reserve-list showed war-reserve-1 '1. LordTester (tu)'; the second tap withdrew from reserve and the button flipped back — reserve emptied. As qa.lord (roster slot 1): war-call-status contains 'Sei schierato ✓'. As orsi.bot1 (defender, enlisted from step 3): war-call-title is 'Siamo sotto attacco: difendi!' and status 'Sei schierato ✓'. Battle tab still renders battle-screen, hero-card, and chat-dock with the banner present; no red screens.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": [], "react_native_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_war_reserves_it15.py",
+    "/app/test_reports/pytest/war_reserves_it15.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "WarEnlist.tsx uses w[side.replace('roster','reserve')] — clean, but note reserve list ordering strictly follows backend $addToSet order; if a same-alliance officer ever runs set_roster mid-prep this could reset attack_roster without touching attack_reserve. Consider clearing reserves on set_roster or promoting on save. Not a blocker for this iteration.",
+    "domain/wars.py withdraw() alliance_alert copy hardcodes '↩️ … si è ritirato' + optional promotion line — solid, but no push notification is fired to the promoted player. Consider a personal push 'Sei entrato in campo dalla riserva!' for the promoted pid on future work."
+  ],
+  "updated_files": ["/app/backend/tests/test_war_reserves_it15.py (new)"],
+  "success_rate": {"backend": "100% (8/8)", "frontend": "100% (banner + reserve UI + all 3 personas verified)"},
+  "seed_data_creation": "None — used existing seeded accounts and the review-supplied war war_0b2db37c91bb4cd8b4ca6e933ca8509d. Final state: attack_roster = [qa.lord, qa.bot1..9] (10), attack_reserve = [], defense_roster contains orsi.bot1 (added during test_03). War is still 'prep' and NOT locked/resolved/cancelled as instructed.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "war_0b2db37c91bb4cd8b4ca6e933ca8509d is still 'prep' with roster full (qa.lord + qa.bot1..9). If you need to test lock/resolve, run POST /api/_test/war-shift {seconds:28800} + POST /api/_test/tick as any logged-in user (see /app/memory/test_credentials.md). orsi.bot1 is enlisted on the defense side of this war. lord.tester is a QAT member but currently NOT in this war's roster/reserve.",
+  "rca_of_issue": "N/A — no bugs. Feature (RESERVES + auto-promotion + war-call banner) works as specified."
+}

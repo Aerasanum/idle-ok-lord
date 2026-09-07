@@ -13,13 +13,15 @@ export function WarEnlist({ detail, myAllianceId }: { detail: any; myAllianceId?
   const { user } = useAuth();
   const w = detail.war;
   const side: "attack_roster" | "defense_roster" | null = w.attacker_id === myAllianceId ? "attack_roster" : w.defender_id === myAllianceId ? "defense_roster" : null;
-  const enlist = useAction("post", `/wars/${w.id}/enlist`, [QK.wars, QK.warMap], { success: () => "Prenotato! Le tue truppe scenderanno in campo" });
-  const withdraw = useAction("post", `/wars/${w.id}/withdraw`, [QK.wars, QK.warMap], { success: () => "Ti sei ritirato dal roster" });
+  const enlist = useAction("post", `/wars/${w.id}/enlist`, [QK.wars, QK.warMap], { success: (d) => (d.reserve ? `Sei in riserva n.${d.reserve_position}: entri se qualcuno si ritira` : "Prenotato! Le tue truppe scenderanno in campo") });
+  const withdraw = useAction("post", `/wars/${w.id}/withdraw`, [QK.wars, QK.warMap], { success: (d) => (d.promoted ? "Ritirato: una riserva ha preso il tuo posto" : "Ti sei ritirato") });
   const lockLeft = useCountdown(w.lock_at);
   if (!side) return null;
   const roster: string[] = w[side];
+  const reserve: string[] = w[side.replace("roster", "reserve")] ?? [];
   const me = user?.player_id;
   const enlisted = !!me && roster.includes(me);
+  const inReserve = !!me && reserve.includes(me);
   const full = roster.length >= 10;
   const other: string[] = side === "attack_roster" ? w.defense_roster : w.attack_roster;
   return (
@@ -43,10 +45,16 @@ export function WarEnlist({ detail, myAllianceId }: { detail: any; myAllianceId?
           );
         })}
       </View>
-      {enlisted ? (
-        <Btn title="Ritirati dal roster" small variant="secondary" icon="undo" loading={withdraw.isPending} onPress={() => withdraw.mutate({})} testID="war-withdraw-button" />
+      {reserve.length > 0 ? (
+        <View style={{ gap: 3 }} testID="war-reserve-list">
+          <Txt v="caption" color={colors.onSurfaceInverse} style={{ fontFamily: fonts.bodyBold }}>⏳ Riserve ({reserve.length}) — entrano in automatico se qualcuno si ritira</Txt>
+          {reserve.map((pid, i) => <Txt key={pid} v="small" color={pid === me ? colors.brandPrimary : colors.onSurfaceInverse} testID={`war-reserve-${i + 1}`}>{i + 1}. {detail.roster_players?.[pid]?.display_name ?? "…"}{pid === me ? " (tu)" : ""}</Txt>)}
+        </View>
+      ) : null}
+      {enlisted || inReserve ? (
+        <Btn title={inReserve ? `Esci dalla riserva (sei n.${reserve.indexOf(me!) + 1})` : "Ritirati dal roster"} small variant="secondary" icon="undo" loading={withdraw.isPending} onPress={() => withdraw.mutate({})} testID="war-withdraw-button" />
       ) : (
-        <Btn title={full ? "Roster completo" : "Prenotati: schiera le tue truppe"} small variant="gold" icon="sword-cross" disabled={full} loading={enlist.isPending} onPress={() => enlist.mutate({})} testID="war-enlist-button" />
+        <Btn title={full ? `Roster completo: prenotati come riserva (${reserve.length + 1}ª)` : "Prenotati: schiera le tue truppe"} small variant="gold" icon={full ? "timer-sand" : "sword-cross"} loading={enlist.isPending} onPress={() => enlist.mutate({})} testID="war-enlist-button" />
       )}
       <Txt v="caption" color={colors.onSurfaceInverse}>Avversari schierati: {other.length}/10{side === "attack_roster" && w.defender_id ? "" : side === "attack_roster" ? " (guarnigione NPC)" : ""}</Txt>
     </View>

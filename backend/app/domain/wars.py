@@ -160,7 +160,7 @@ async def declare(p: dict, node_id: int) -> dict:
     resolves = now() + timedelta(hours=aw["prep_hours"])
     war = {"_id": new_id("war_"), "shard_id": a["shard_id"], "node_id": node_id, "node_type": node["type"], "attacker_id": a["_id"], "defender_id": defender_id, "declared_by": p["_id"],
            "declared_at": now(), "resolves_at": resolves, "lock_at": resolves - timedelta(minutes=aw["roster_lock_minutes_before_resolution"]), "status": "prep",
-           "attack_roster": [p["_id"]], "defense_roster": [], "result": None, "archived_at": None}  # the declarer books the first slot
+           "attack_roster": [p["_id"]], "defense_roster": [], "attack_reserve": [], "defense_reserve": [], "result": None, "archived_at": None}  # the declarer books the first slot
     await db.alliance_wars.insert_one(war)
     label = NODE_LABEL_IT.get(node["type"], node["type"])
     await alliance_alert(a["_id"], f"⚔️ {p['display_name']} ha dichiarato guerra al nodo {node_id} ({label}). Prenotatevi: i primi 10 schierano le truppe (1/10 già prenotato).")
@@ -191,27 +191,54 @@ async def _war_side(p: dict, war_id: str) -> tuple[dict, dict, str, int]:
 
 
 async def enlist(p: dict, war_id: str) -> dict:
-    """First come, first served: a member books one of the 10 slots of their alliance's side. Atomic (size check + $addToSet)."""
+    """First come, first served: a member books one of the 10 slots of their alliance's side (atomic size check + $addToSet).
+    When the roster is full the member joins the RESERVE queue and is promoted automatically if someone withdraws."""
     me, w, side, size = await _war_side(p, war_id)
+    reserve = side.replace("roster", "reserve")
     if p["_id"] in w[side]:
         raise fail(409, "already_enlisted", "Sei già schierato")
+    if p["_id"] in w.get(reserve, []):
+        raise fail(409, "already_reserve", "Sei già in riserva")
     res = await db.alliance_wars.update_one({"_id": war_id, "status": "prep", side: {"$ne": p["_id"]}, "$expr": {"$lt": [{"$size": f"${side}"}, size]}}, {"$addToSet": {side: p["_id"]}})
     if res.matched_count == 0:
-        raise fail(409, "roster_full", f"Tutti i {size} posti sono già prenotati")
+        await db.alliance_wars.update_one({"_id": war_id, "status": "prep"}, {"$addToSet": {reserve: p["_id"]}})
+        w = await db.alliance_wars.find_one({"_id": war_id})
+        pos = w[reserve].index(p["_id"]) + 1
+        await alliance_alert(me["alliance_id"], f"⏳ {p['display_name']} è in riserva n.{pos} per il nodo {w['node_id']}: entra in campo se qualcuno si ritira.")
+        return {"war_id": war_id, side: w[side], reserve: w[reserve], "enlisted": False, "reserve": True, "reserve_position": pos}
     w = await db.alliance_wars.find_one({"_id": war_id})
     n = len(w[side])
     await alliance_alert(me["alliance_id"], f"{'⚔️' if side == 'attack_roster' else '🛡️'} {p['display_name']} si è prenotato per il nodo {w['node_id']} ({n}/{size}){' · roster completo!' if n >= size else ''}")
-    return {"war_id": war_id, side: w[side], "enlisted": True}
+    return {"war_id": war_id, side: w[side], reserve: w.get(reserve, []), "enlisted": True, "reserve": False}
 
 
 async def withdraw(p: dict, war_id: str) -> dict:
+    """Leave the roster (the first reserve is promoted automatically) or leave the reserve queue."""
     me, w, side, size = await _war_side(p, war_id)
+    reserve = side.replace("roster", "reserve")
+    if p["_id"] in w.get(reserve, []):
+        await db.alliance_wars.update_one({"_id": war_id}, {"$pull": {reserve: p["_id"]}})
+        w = await db.alliance_wars.find_one({"_id": war_id})
+        return {"war_id": war_id, side: w[side], reserve: w.get(reserve, []), "enlisted": False, "reserve": False}
     if p["_id"] not in w[side]:
         raise fail(409, "not_enlisted")
     await db.alliance_wars.update_one({"_id": war_id, "status": "prep"}, {"$pull": {side: p["_id"]}})
+    promoted = None
+    for cand in w.get(reserve, []):
+        # promote the first reserve still available; atomic guard keeps the roster within `size`
+        r = await db.alliance_wars.update_one({"_id": war_id, "status": "prep", side: {"$ne": cand}, "$expr": {"$lt": [{"$size": f"${side}"}, size]}}, {"$addToSet": {side: cand}, "$pull": {reserve: cand}})
+        if r.matched_count:
+            promoted = cand
+            break
     w = await db.alliance_wars.find_one({"_id": war_id})
-    await alliance_alert(me["alliance_id"], f"↩️ {p['display_name']} si è ritirato dal roster del nodo {w['node_id']} ({len(w[side])}/{size}). Posto libero!")
-    return {"war_id": war_id, side: w[side], "enlisted": False}
+    msg = f"↩️ {p['display_name']} si è ritirato dal roster del nodo {w['node_id']} ({len(w[side])}/{size})."
+    if promoted:
+        pl = await db.players.find_one({"_id": promoted}, {"display_name": 1})
+        msg += f" ⬆️ {pl['display_name'] if pl else 'Una riserva'} entra in campo dalla riserva!"
+    else:
+        msg += " Posto libero!"
+    await alliance_alert(me["alliance_id"], msg)
+    return {"war_id": war_id, side: w[side], reserve: w.get(reserve, []), "enlisted": False, "reserve": False, "promoted": promoted}
 
 
 async def set_roster(p: dict, war_id: str, player_ids: list[str]) -> dict:
@@ -413,7 +440,7 @@ async def war_detail(p: dict, war_id: str) -> dict:
         a = await db.alliances.find_one({"_id": aid}, {"name": 1, "tag": 1})
         names[aid] = {"name": a["name"], "tag": a["tag"]} if a else None
     roster_players = {}
-    for pid in w["attack_roster"] + w["defense_roster"]:
+    for pid in w["attack_roster"] + w["defense_roster"] + w.get("attack_reserve", []) + w.get("defense_reserve", []):
         pl = await db.players.find_one({"_id": pid}, {"display_name": 1, "hero.level": 1})
         if pl:
             roster_players[pid] = {"display_name": pl["display_name"], "hero_level": pl["hero"]["level"]}

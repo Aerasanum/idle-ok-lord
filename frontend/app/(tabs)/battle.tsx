@@ -8,6 +8,7 @@ import { api } from "@/src/api/client";
 import { QK, useAction, useCanon, useProfile } from "@/src/api/hooks";
 import { Attempt, BattleScene } from "@/src/battle/BattleScene";
 import { ChatDock } from "@/src/social/ChatDock";
+import { WarCallBanner } from "@/src/war/WarCallBanner";
 import { paletteFor } from "@/src/battle/regions";
 import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
@@ -130,6 +131,7 @@ export default function BattleTab() {
         <ResourceBar resources={profile.resources} />
       </View>
       <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+        <WarCallBanner />
         {attempt ? (
           <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.cosmetics?.army?.color ?? profile.heraldic_color} armyBanner={profile.cosmetics?.army ?? null} onFinished={onFinished} skills={skills} firstClear={Number(attempt.stage) > highest} lordName={profile.hero.name} lordLevel={profile.hero.level} />
         ) : (
