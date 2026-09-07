@@ -1,9 +1,11 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { View } from "react-native";
 
 import { QK, useAction, useOffline } from "@/src/api/hooks";
 import { useTheme } from "@/src/theme";
-import { Btn, Icon, Loading, Panel, Progress, RARITY_LABEL, Res, Row, SLOT_LABEL, Screen, Stat, Txt, fmt } from "@/src/ui";
+import { Btn, Icon, Loading, Panel, Progress, RARITY_LABEL, Res, Row, Screen, Stat, Txt, fmt } from "@/src/ui";
+import { ItemIcon } from "@/src/ui/ItemIcon";
 
 export default function OfflineScreen() {
   const { colors } = useTheme();
@@ -21,10 +23,22 @@ export default function OfflineScreen() {
           <Txt v="h2" color={colors.onSurfaceInverse}>Riscattato!</Txt>
           <Txt v="small" color={colors.onSurfaceInverse}>{result.hours.toFixed(2)} ore · {fmt(result.kills)} nemici · {fmt(result.xp)} XP{result.levels_gained ? ` · +${result.levels_gained} livelli` : ""}</Txt>
           <Row style={{ flexWrap: "wrap", gap: 12, marginTop: 6 }}>
-            <Res kind="gold" value={result.gold} />
-            {Object.entries(result.soft).map(([k, v]) => <Res key={k} kind={k} value={v as number} />)}
+            <Res kind="gold" value={result.gold} art />
+            {Object.entries(result.soft).map(([k, v]) => <Res key={k} kind={k} value={v as number} art />)}
           </Row>
-          {result.gear?.found?.length ? <Txt v="small" color={colors.onSurfaceInverse}>Equipaggiamento: {result.gear.found.map((g: any) => `${RARITY_LABEL[g.rarity]} ${SLOT_LABEL[g.slot]}`).join(", ")}{result.gear.salvaged.length ? ` (${result.gear.salvaged.length} auto-smantellati)` : ""}</Txt> : null}
+          {result.gear?.found?.length ? (
+            <View style={{ gap: 4, marginTop: 8 }}>
+              <Txt v="small" color={colors.onSurfaceInverse}>Equipaggiamento trovato{result.gear.salvaged.length ? ` (${result.gear.salvaged.length} auto-smantellati)` : ""}</Txt>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }} testID="offline-loot">
+                {result.gear.found.map((g: any) => (
+                  <View key={g.id} style={{ alignItems: "center", width: 64, gap: 2 }}>
+                    <ItemIcon slot={g.slot} rarity={g.rarity} size={52} />
+                    <Txt v="small" color={colors.onSurfaceInverse} style={{ fontSize: 10 }} numberOfLines={1}>{RARITY_LABEL[g.rarity]}</Txt>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
           <Btn title="Torna in battaglia" style={{ marginTop: 8 }} onPress={() => router.back()} testID="offline-done-button" />
         </Panel>
       ) : (
@@ -41,7 +55,7 @@ export default function OfflineScreen() {
           <Panel variant="wood" testID="offline-production">
             <Txt v="h3">Produzione del Regno (85%)</Txt>
             <Row style={{ flexWrap: "wrap", gap: 12, marginTop: 6 }}>
-              {Object.entries(o.production).map(([k, v]) => <Res key={k} kind={k} value={v as number} />)}
+              {Object.entries(o.production).map(([k, v]) => <Res key={k} kind={k} value={v as number} art />)}
               {!Object.keys(o.production).length ? <Txt v="small" color={colors.muted}>Nessuna produzione offline accumulata (sei stato online).</Txt> : null}
             </Row>
           </Panel>

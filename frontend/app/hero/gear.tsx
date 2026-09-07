@@ -2,8 +2,9 @@ import React, { useMemo, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 
 import { QK, useAction, useForgeCosts, useInventory, useProfile } from "@/src/api/hooks";
-import { rarityColor, useTheme } from "@/src/theme";
-import { Btn, Chip, ChipRow, Icon, Loading, Panel, RARITY_LABEL, RarityFrame, Row, SLOT_ICON, SLOT_LABEL, Screen, Txt, fmt } from "@/src/ui";
+import { useTheme } from "@/src/theme";
+import { Btn, Chip, ChipRow, Icon, Loading, Panel, RARITY_LABEL, RES_LABEL, RarityFrame, Res, Row, SLOT_ICON, SLOT_LABEL, Screen, Txt, fmt } from "@/src/ui";
+import { ItemIcon } from "@/src/ui/ItemIcon";
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 
 const AFFIX_LABEL: Record<string, string> = { crit_chance_pct: "Crit %", crit_damage_pct: "Danno crit %", attack_speed_pct: "Vel. attacco %", lifesteal_pct: "Rubavita %", dodge_pct: "Schivata %", gold_find_pct: "Oro trovato %", gear_find_pct: "Equip. trovato %", army_power_pct: "Potenza esercito %", boss_damage_pct: "Danno boss %" };
@@ -19,7 +20,7 @@ export default function GearScreen() {
   const equip = useAction("post", "/gear/equip", [QK.inventory, QK.forge], { success: () => "Equipaggiato" });
   const unequip = useAction("post", "/gear/unequip", [QK.inventory, QK.forge]);
   const autoEquip = useAction("post", "/gear/auto-equip", [QK.inventory, QK.forge], { success: (d) => `Auto-equip: ${d.changed} cambi` });
-  const salvage = useAction("post", "/gear/salvage", [QK.inventory], { success: (d) => `Smantellati ${d.salvaged.length}: ${Object.entries(d.materials).map(([k, v]) => `${v} ${k}`).join(", ")}` });
+  const salvage = useAction("post", "/gear/salvage", [QK.inventory], { success: (d) => `Smantellati ${d.salvaged.length}: ${Object.entries(d.materials).map(([k, v]) => `${v} ${RES_LABEL[k] ?? k}`).join(", ")}` });
   const forgeUp = useAction("post", "/forge/upgrade", [QK.inventory, QK.forge], { success: (d) => `Forgia ${SLOT_LABEL[d.slot]} +${d.forge_level}` });
   const reforge = useAction("post", "/gear/reforge", [QK.inventory], { success: () => "Affisso riforgiato" });
   const expand = useAction("post", "/gear/expand", [QK.inventory], { success: (d) => `Inventario: ${d.inventory_capacity} slot` });
@@ -38,15 +39,14 @@ export default function GearScreen() {
             const fc = forge?.[slot];
             return (
               <Pressable key={slot} testID={`slot-${slot}`} onPress={() => { if (it) { setSel(it); sheet.current?.present(); } }} style={{ alignItems: "center", width: 96, gap: 2 }}>
-                <RarityFrame rarity={it?.rarity ?? "common"} size={60}>
-                  <Icon name={SLOT_ICON[slot]} size={26} color={it ? rarityColor(colors, it.rarity) : colors.muted} />
-                  {inv.forge[slot] ? <View style={{ position: "absolute", bottom: -2, right: -2, backgroundColor: colors.gold, borderRadius: 3, paddingHorizontal: 3 }}><Txt v="small" color={colors.onBrandSecondary} style={{ fontSize: 9 }}>+{inv.forge[slot]}</Txt></View> : null}
-                </RarityFrame>
+                {it ? <ItemIcon slot={slot} rarity={it.rarity} size={64} forge={inv.forge[slot]} /> : (
+                  <RarityFrame rarity="common" size={64}><Icon name={SLOT_ICON[slot]} size={26} color={colors.muted} /></RarityFrame>
+                )}
                 <Txt v="small">{SLOT_LABEL[slot]}</Txt>
                 <Txt v="small" color={colors.muted} style={{ fontSize: 10 }}>{it ? `Lv ${it.item_level} · ${fmt(it.score_forged)}` : "vuoto"}</Txt>
                 {fc?.next_cost ? (
-                  <Pressable testID={`forge-${slot}`} onPress={() => forgeUp.mutate({ slot })} style={{ flexDirection: "row", gap: 4, alignItems: "center", paddingVertical: 4, paddingHorizontal: 6, borderWidth: 1, borderColor: colors.gold, borderRadius: 4, minHeight: 28 }}>
-                    <Icon name="anvil" size={12} color={colors.goldBright} /><Txt v="small" style={{ fontSize: 10 }}>{fmt(fc.next_cost.gold)} / {fc.next_cost.forge_dust}</Txt>
+                  <Pressable testID={`forge-${slot}`} onPress={() => forgeUp.mutate({ slot })} style={{ flexDirection: "row", gap: 6, alignItems: "center", paddingVertical: 4, paddingHorizontal: 6, borderWidth: 1, borderColor: colors.gold, borderRadius: 4, minHeight: 32 }}>
+                    <Icon name="anvil" size={12} color={colors.goldBright} /><Res kind="gold" value={fc.next_cost.gold} size={10} art /><Res kind="forge_dust" value={fc.next_cost.forge_dust} size={10} art />
                   </Pressable>
                 ) : null}
               </Pressable>
@@ -73,10 +73,9 @@ export default function GearScreen() {
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {items.map((it: any) => (
           <Pressable key={it.id} testID={`item-${it.id}`} onPress={() => { setSel(it); sheet.current?.present(); }} style={{ width: "22%", flexGrow: 1, maxWidth: 96, alignItems: "center", gap: 2 }}>
-            <RarityFrame rarity={it.rarity} size={58}>
-              <Icon name={SLOT_ICON[it.slot]} size={24} color={rarityColor(colors, it.rarity)} />
+            <ItemIcon slot={it.slot} rarity={it.rarity} size={62}>
               {it.equipped_slot ? <View style={{ position: "absolute", top: -6, right: -6, backgroundColor: colors.success, borderRadius: 8, padding: 2 }}><Icon name="check" size={10} color={colors.onSuccess} /></View> : null}
-            </RarityFrame>
+            </ItemIcon>
             <Txt v="small" style={{ fontSize: 10 }}>Lv {it.item_level} · {fmt(it.score)}</Txt>
           </Pressable>
         ))}
@@ -109,7 +108,7 @@ function ItemDetail({ item, equipped, forgeLevel, onEquip, onUnequip, onSalvage,
   return (
     <View style={{ gap: 10 }}>
       <Row style={{ gap: 12 }}>
-        <RarityFrame rarity={item.rarity} size={72}><Icon name={SLOT_ICON[item.slot]} size={34} color={rarityColor(colors, item.rarity)} /></RarityFrame>
+        <ItemIcon slot={item.slot} rarity={item.rarity} size={84} forge={forgeLevel} testID="item-detail-icon" />
         <View style={{ flex: 1 }}>
           <Txt v="h3">Livello oggetto {item.item_level}</Txt>
           <Txt v="small" color={colors.muted}>Origine: {item.source} · Punteggio {fmt(item.score)}{forgeLevel ? ` → ${fmt(item.score * mult)} con forgia +${forgeLevel}` : ""}</Txt>
@@ -137,7 +136,7 @@ function ItemDetail({ item, equipped, forgeLevel, onEquip, onUnequip, onSalvage,
               <Btn title={`Riforgia (${{ common: 0, uncommon: 0, rare: 1, epic: 2, legendary: 3, mythic: 4, ancient: 5 }[item.rarity as string] ?? 1} pietre)`} small variant="ghost" onPress={() => onReforge(i)} disabled={busy} testID={`reforge-${i}`} />
             </Row>
           ))}
-          <Txt v="small" color={colors.muted}>Pietre di Riforgia disponibili: {rubiesStones}</Txt>
+          <Row><Txt v="small" color={colors.muted}>Pietre di Riforgia disponibili:</Txt><Res kind="reforge_stone" value={rubiesStones} size={11} art /></Row>
         </View>
       ) : null}
       <Row>

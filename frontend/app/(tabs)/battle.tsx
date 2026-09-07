@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
 import { Btn, Icon, IconName, Loading, Panel, RARITY_LABEL, Res, ResourceBar, Row, SLOT_LABEL, Txt, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
+import { ItemIcon } from "@/src/ui/ItemIcon";
 import { lordArt } from "@/src/art";
 import { TutorialTarget, useTutorial } from "@/src/tutorial/Tutorial";
 
@@ -249,19 +250,25 @@ function ResultCard({ result, onClose }: { result: any; onClose: () => void }) {
         <Pressable onPress={onClose} testID="result-close-button" style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}><Icon name="close" color={colors.onSurfaceInverse} /></Pressable>
       </Row>
       <Row style={{ flexWrap: "wrap", gap: 12 }}>
-        <Res kind="gold" value={r.gold ?? 0} testID="result-gold" />
+        <Res kind="gold" value={r.gold ?? 0} testID="result-gold" art />
         <Row gap={4}><Icon name="star-four-points" size={14} color={colors.res_event_tokens} /><Txt v="bodyBold" color={colors.onSurfaceInverse}>{fmt(r.xp ?? 0)} XP</Txt></Row>
-        {Object.entries(r.soft_split ?? {}).map(([k, v]) => <Res key={k} kind={k} value={v as number} />)}
+        {Object.entries(r.soft_split ?? {}).map(([k, v]) => <Res key={k} kind={k} value={v as number} art />)}
       </Row>
       {result.first_clear ? <Txt v="small" color={colors.onSurfaceInverse}>Dominio: {result.domain_tiles} tessere · Record stage {result.highest_cleared}</Txt> : null}
       {result.gear?.found?.length ? (
-        <View style={{ gap: 4, marginTop: 6 }}>
-          {result.gear.found.map((g: any) => (
-            <Row key={g.id}>
-              <View style={{ width: 10, height: 10, backgroundColor: rarityColor(colors, g.rarity), borderRadius: 2 }} />
-              <Txt v="small" color={colors.onSurfaceInverse}>{RARITY_LABEL[g.rarity]} {SLOT_LABEL[g.slot]} (Lv {g.item_level}) {result.gear.equipped.includes(g.id) ? "· equipaggiato" : result.gear.salvaged.some((s: any) => s.id === g.id) ? "· smantellato" : ""}</Txt>
-            </Row>
-          ))}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 }} testID="result-loot">
+          {result.gear.found.map((g: any) => {
+            const state = result.gear.equipped.includes(g.id) ? "equipaggiato" : result.gear.salvaged.some((s: any) => s.id === g.id) ? "smantellato" : null;
+            return (
+              <View key={g.id} style={{ alignItems: "center", width: 76, gap: 2 }} testID={`loot-${g.id}`}>
+                <ItemIcon slot={g.slot} rarity={g.rarity} size={56}>
+                  {state ? <View style={{ position: "absolute", top: -6, right: -6, backgroundColor: state === "equipaggiato" ? colors.success : colors.iron, borderRadius: 8, padding: 2 }}><Icon name={state === "equipaggiato" ? "check" : "hammer"} size={10} color={colors.onSuccess} /></View> : null}
+                </ItemIcon>
+                <Txt v="small" color={rarityColor(colors, g.rarity)} style={{ fontSize: 10, textAlign: "center" }} numberOfLines={1}>{RARITY_LABEL[g.rarity]}</Txt>
+                <Txt v="small" color={colors.onSurfaceInverse} style={{ fontSize: 10, textAlign: "center" }} numberOfLines={1}>{SLOT_LABEL[g.slot]} Lv {g.item_level}</Txt>
+              </View>
+            );
+          })}
         </View>
       ) : null}
     </Panel>

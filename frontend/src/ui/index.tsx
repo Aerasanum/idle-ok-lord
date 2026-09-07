@@ -2,9 +2,10 @@ import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, TextProps, View, ViewProps } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, TextProps, View, ViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { resourceArt } from "@/src/art";
 import { fonts, makeStyles, radius, rarityColor, resourceColor, spacing, useTheme } from "@/src/theme";
 
 export type IconName = React.ComponentProps<typeof MaterialDesignIcons>["name"];
@@ -153,11 +154,12 @@ export function Stat({ label, value, color, testID }: { label: string; value: st
 export const RES_ICON: Record<string, IconName> = { grain: "barley", wood: "pine-tree", clay: "cube", iron: "anvil", gold: "gold", rubies: "diamond-stone", forge_dust: "creation", reforge_stone: "hexagon-slice-6", mythic_essence: "star-four-points", war_coins: "shield-sword", event_tokens: "ticket" };
 export const RES_LABEL: Record<string, string> = { grain: "Grano", wood: "Legno", clay: "Argilla", iron: "Ferro", gold: "Oro", rubies: "Rubini", forge_dust: "Polvere", reforge_stone: "Pietre", mythic_essence: "Essenza", war_coins: "Monete", event_tokens: "Gettoni" };
 
-export function Res({ kind, value, size = 14, testID }: { kind: string; value: number | string; size?: number; testID?: string }) {
+export function Res({ kind, value, size = 14, testID, art: withArt }: { kind: string; value: number | string; size?: number; testID?: string; art?: boolean }) {
   const { colors } = useTheme();
+  const img = withArt ? resourceArt(kind) : undefined;
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }} testID={testID}>
-      <Icon name={RES_ICON[kind] ?? "circle"} size={size} color={resourceColor(colors, kind)} />
+      {img ? <Image source={img} style={{ width: size * 1.6, height: size * 1.6 }} resizeMode="contain" testID={testID ? `${testID}-art` : undefined} /> : <Icon name={RES_ICON[kind] ?? "circle"} size={size} color={resourceColor(colors, kind)} />}
       <Text style={{ fontFamily: fonts.displaySemi, fontSize: size + 1, color: colors.onSurface }}>{typeof value === "number" ? fmt(value) : value}</Text>
     </View>
   );

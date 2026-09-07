@@ -47,8 +47,12 @@ Lingua utente: **italiano**.
 - Mappa Dominio 3D: 10 tessere terreno illustrate (`tiles/*`) + varianti "nebbia" derivate; mappa inclinata in prospettiva; animazione di rivelazione per le tessere conquistate dall'ultima visita (AsyncStorage `idle1.domain.seenOwned`).
 - Audio (`backend/scripts/gen_audio.py`, sintesi procedurale numpy→MP3, licenza libera): 9 SFX + 10 loop musicali per regione (32 s, ~200 KB ciascuno). Modulo `src/audio` (expo-audio): musica per regione in battaglia, SFX su colpi/uccisioni/skill/vittoria/sconfitta/costruzione; volumi Musica/Effetti nel Profilo (cache locale + `settings.music_volume/sfx_volume` server).
 
+### Iterazione 6 (giugno 2026) — Icone oggetti + verifica Alleanze/Guerre 10v10
+- Icone oggetti: 45 illustrazioni (`assets/art/items/<slot>_<tier>.webp`, 9 slot × 5 tier visivi; tier per rarità: comune=basic_a, non comune=basic_b, raro=fine_a, epico=fine_b, leggendario/mitico/antico=ornate) + 11 icone risorse (`assets/art/resources`). Componente `src/ui/ItemIcon.tsx` (cornice rarità, bagliore per leggendario+, badge forgia +N) in Equipaggiamento (griglia equipaggiati, inventario, scheda dettaglio, costo forgia con icone Oro/Polvere), loot della scheda risultato battaglia (tile oggetto + rarità + slot), Forziere offline. `Res` accetta `art` (immagine al posto del glifo) — usato **solo** in inventario/forgia/loot per scelta utente; barra risorse e costi edifici restano vettoriali.
+- Verifica Alleanze & Guerre: scenario demo `backend/scripts/seed_war_demo.py` (idempotente): QA Lord leader di [QAT] con 10 membri (bot `qa.bot1..9@idle1.app`), rivale [ORS] Orsi Neri con 10 membri e una guerra già vinta. Testing agent iterazione 6: dichiarazione dal UI → roster 10 → lock/risoluzione via `_test/war-shift` + `_test/tick` → 10 corsie, nodo conquistato, +100 punti, monete non duplicate al secondo tick; Titan Hunt start/attacco OK. Nuovo test live `backend/tests/test_alliance_wars.py`.
+- UX guerra: legenda mappa (tuo territorio / altre alleanze / guerra in corso / castello), colori proprietà più leggibili, stati guerra in italiano, roster pre-compilato con quello salvato.
+
 ### Da fare / backlog
-- Testing agent end-to-end su frontend (in corso in questa sessione).
 - Sign in with Apple: solo UI disabilitata (deployment input).
 - Input del proprietario al deploy: chiavi RevenueCat (`EXPO_PUBLIC_RC_IOS_KEY`, `EXPO_PUBLIC_RC_ANDROID_KEY`, `REVENUECAT_SECRET_KEY`, signing secret), `google-services.json`, URL Privacy/Termini, `EMERGENT_PUSH_KEY` (impostato al Publish).
 - v1.2+: tuning bilanciamento da telemetria (fuori canon v1.1).

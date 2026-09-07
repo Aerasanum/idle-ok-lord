@@ -32,3 +32,12 @@ export const kingdomGround = (): number | undefined => ART["kingdom/ground"];
 export function unitArt(key: string): number | undefined {
   return ART[`units/${key}`];
 }
+
+const ITEM_TIER: Record<string, string> = { common: "basic_a", uncommon: "basic_b", rare: "fine_a", epic: "fine_b", legendary: "ornate", mythic: "ornate", ancient: "ornate" };
+export function itemArt(slot: string, rarity: string): number | undefined {
+  return ART[`items/${slot}_${ITEM_TIER[rarity] ?? "basic_a"}`];
+}
+
+export function resourceArt(kind: string): number | undefined {
+  return ART[`resources/${kind}`];
+}

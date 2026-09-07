@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 
 import { QK, useAction, useMyAlliance, useWar, useWarMap, useWars } from "@/src/api/hooks";
@@ -7,6 +7,8 @@ import { Btn, Icon, Loading, Panel, Row, Screen, Txt, fmt, fmtDuration } from "@
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useCountdown } from "@/src/ui/useCountdown";
 import { NODE_LABEL, WarMap, allianceColor } from "@/src/war/WarMap";
+
+const STATUS_LABEL: Record<string, string> = { prep: "Preparazione", locking: "Blocco roster", locked: "Roster bloccato", resolving: "Risoluzione", resolved: "Risolta", cancelled: "Annullata" };
 
 export default function WarScreen() {
   const { colors } = useTheme();
@@ -20,6 +22,9 @@ export default function WarScreen() {
   const declare = useAction("post", "/wars/declare", [QK.warMap, QK.wars], { success: () => "Guerra dichiarata! Preparazione 8h." });
   const roster = useAction("post", "/wars/roster", [QK.wars], { success: () => "Roster aggiornato" });
   const [picked, setPicked] = useState<string[]>([]);
+  const myId = mine?.alliance?.id;
+  const currentRoster: string[] | undefined = detail ? (detail.war.attacker_id === myId ? detail.war.attack_roster : detail.war.defense_roster) : undefined;
+  useEffect(() => { setPicked(currentRoster ?? []); }, [detail?.war?.id, currentRoster?.length]); // eslint-disable-line react-hooks/exhaustive-deps
   if (isLoading || !m) return <Loading label="Carico la mappa del territorio..." />;
   const a = mine?.alliance;
   const officer = a?.my_role === "leader" || a?.my_role === "officer";
@@ -28,7 +33,7 @@ export default function WarScreen() {
   return (
     <Screen title="Territorio" subtitle={`Stagione ${m.season.key} · termina in ${fmtDuration(seasonEnds / 1000)} · shard ${m.shard_id.slice(-6)}`} testID="war-screen">
       {!a ? <Txt v="small" color={colors.warning}>Entra in un&apos;alleanza per partecipare alle guerre. La mappa è visibile a tutti.</Txt> : null}
-      <WarMap nodes={m.nodes} myAlliance={m.my_alliance_id} selected={sel?.node_id} contested={contested} onSelect={(n) => { setSel(n); sheet.current?.present(); }} />
+      <WarMap nodes={m.nodes} myAlliance={m.my_alliance_id} selected={sel?.node_id} contested={contested} alliances={m.alliances} onSelect={(n) => { setSel(n); sheet.current?.present(); }} />
       <Panel testID="territory-bonus">
         <Txt v="h3">Bonus territorio della tua alleanza</Txt>
         {Object.keys(m.territory_bonus).length ? Object.entries(m.territory_bonus).map(([k, v]) => <Txt key={k} v="small">{k.replace(/_/g, " ")}: +{Number(v).toFixed(1)}%</Txt>) : <Txt v="small" color={colors.muted}>Nessun nodo con bonus conquistato.</Txt>}
@@ -39,7 +44,7 @@ export default function WarScreen() {
       {!wars?.wars?.length ? <Txt v="small" color={colors.muted}>Nessuna guerra. Seleziona un nodo adiacente al tuo territorio per dichiararla.</Txt> : null}
       {detail ? (
         <Panel variant="parchment" testID="war-detail">
-          <Txt v="h3" color={colors.onSurfaceInverse}>Nodo {detail.war.node_id} · {NODE_LABEL[detail.war.node_type]} · {detail.war.status}</Txt>
+          <Txt v="h3" color={colors.onSurfaceInverse}>Nodo {detail.war.node_id} · {NODE_LABEL[detail.war.node_type]} · {STATUS_LABEL[detail.war.status] ?? detail.war.status}</Txt>
           <Txt v="small" color={colors.onSurfaceInverse}>Attaccante {detail.alliances[detail.war.attacker_id]?.name} vs {detail.war.defender_id ? detail.alliances[detail.war.defender_id]?.name : "Guarnigione neutrale"}</Txt>
           {detail.war.status === "prep" && officer ? (
             <View style={{ gap: 6, marginTop: 6 }}>
@@ -90,7 +95,7 @@ function WarRow({ w, mine, serverTime, onOpen, open }: { w: any; mine?: string; 
         <Row style={{ justifyContent: "space-between" }}>
           <View>
             <Txt v="h3" color={open ? colors.onSurfaceInverse : colors.onSurface}>{role} · nodo {w.node_id} · {NODE_LABEL[w.node_type]}</Txt>
-            <Txt v="small" color={open ? colors.onSurfaceInverse : colors.muted}>{w.status === "prep" ? `Roster si blocca in ${fmtDuration(lock)} · risoluzione in ${fmtDuration(res)}` : w.status === "locked" ? `Snapshot congelato · risoluzione in ${fmtDuration(res)}` : w.status}</Txt>
+            <Txt v="small" color={open ? colors.onSurfaceInverse : colors.muted}>{w.status === "prep" ? `Roster si blocca in ${fmtDuration(lock)} · risoluzione in ${fmtDuration(res)}` : w.status === "locked" ? `Snapshot congelato · risoluzione in ${fmtDuration(res)}` : w.status === "resolved" && w.result ? `${STATUS_LABEL.resolved} · ${w.result.attacker_won ? "attaccante" : "difensore"} vince ${w.result.attacker_points}-${w.result.defender_points}` : STATUS_LABEL[w.status] ?? w.status}</Txt>
           </View>
           <Icon name={open ? "chevron-up" : "chevron-down"} color={open ? colors.onSurfaceInverse : colors.goldBright} />
         </Row>

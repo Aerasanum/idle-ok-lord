@@ -145,14 +145,52 @@ def fog_variant(img: Image.Image) -> Image.Image:
     return Image.blend(g, tint, 0.35)
 
 
+ITEM_SLOT_DESC = {
+    "weapon": "longsword", "offhand": "round shield", "helmet": "knight helmet", "chest": "chest armor breastplate", "gloves": "pair of gauntlets",
+    "boots": "pair of armored boots", "cloak": "ONE single hooded cloak draped on a wooden hanger (only one cloak, never several)", "ring": "ring", "amulet": "amulet pendant on a chain",
+}
+ITEM_TIERS = {
+    "basic_a": "worn iron and brown leather, simple and battered",
+    "basic_b": "dull steel with dark leather straps and bronze rivets",
+    "fine_a": "polished blue steel with silver trim and a sapphire gem",
+    "fine_b": "dark violet enamel with silver filigree and an amethyst gem",
+    "ornate": "gleaming gold and crimson with glowing runes, dragon motifs and a radiant ruby, legendary aura",
+}
+RESOURCE_DESC = {
+    "grain": "a bundle of golden wheat sheaves tied with twine",
+    "wood": "a stack of three cut oak logs",
+    "clay": "a stack of terracotta clay bricks",
+    "iron": "three stacked dark iron ingots",
+    "gold": "a pile of shiny gold coins",
+    "rubies": "a large faceted glowing red ruby gem",
+    "forge_dust": "a small leather pouch spilling glowing orange ember dust",
+    "reforge_stone": "a hexagonal rune-carved violet stone glowing softly",
+    "mythic_essence": "a swirling cyan-white magical essence orb with sparkles",
+    "war_coins": "a heavy bronze war medal coin with crossed swords",
+    "event_tokens": "a golden festival token with a star emblem",
+}
+
+
+def item_prompts():
+    items = []
+    for slot, desc in ITEM_SLOT_DESC.items():
+        for tier, look in ITEM_TIERS.items():
+            items.append((f"items/{slot}_{tier}", f"Single fantasy game inventory icon: a {desc}, {look}, exactly one object, slight 3/4 view, centered, filling the frame, {STYLE}, {GREEN}"))
+    return items
+
+
+def resource_prompts():
+    return [(f"resources/{k}", f"Single fantasy game resource icon: {v}, exactly one object group, centered, filling the frame, {STYLE}, {GREEN}") for k, v in RESOURCE_DESC.items()]
+
+
 def ground_prompts():
     return [("kingdom/ground", "Top-down isometric fantasy game terrain plane for a kingdom builder: lush green meadow with two crossing dirt roads (one horizontal across the lower middle, one vertical in the center), "
              "small flowers, subtle grass texture, soft shadows, no buildings, no characters, no text, 16:9, " + STYLE)]
 
 
-GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts}
-TRANSPARENT = {"monsters", "lord", "buildings", "units"}
-MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256}
+GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts}
+TRANSPARENT = {"monsters", "lord", "buildings", "units", "items", "resources"}
+MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192}
 
 
 def chroma_key(img: Image.Image) -> Image.Image:
