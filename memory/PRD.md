@@ -80,6 +80,11 @@ Lingua utente: **italiano**.
 - Tab Battaglia: badge "In corso: Stage X" sotto il selettore quando la battaglia attiva è su uno stage diverso da quello selezionato.
 - Test alleanze: `own_node` (nodo già conquistato in run precedenti) ora → skip invece di fail.
 
+### Regolamento PDF (giugno 2026)
+- `scripts/gen_rules_pdf.py` (reportlab + pypdf) genera `static/IDLE1_Regolamento_v1.2.pdf` (41 pagine) leggendo il CANONICAL_SPEC e le formule di `app/domain/formulas.py`: intro/regole, risorse, eroe (tabella XP 1→100, talenti, abilità), campagna (regioni, tabella 200 stage con potenza richiesta e ricompense), unità (statistiche, costi/tempi/sblocchi, contro-unità, classi nemiche, unità consigliate per regione), regno (sblocchi per castello, 16 edifici × 20 livelli), ricerca (8 rami × 6 nodi × 5 livelli), equipaggiamento (rarità, slot, affissi, forgia 0→20, riforgiatura, smantellamento), dominio/offline, dungeon/eventi/missioni, alleanze/guerra, traguardi/negozio, formule riassuntive. Indice cliccabile + segnalibri.
+- Sola lettura: cifratura AES-256 con password utente vuota (si apre senza password) e owner password casuale; permessi stampa + copia testo, niente modifica.
+- Servito da `GET /api/docs/regolamento.pdf` (inline, cache 1h). Link in Profilo → "Regolamento completo (PDF)" (`rules-pdf-button`). Rigenerare dopo ogni modifica al canon: `cd backend && python scripts/gen_rules_pdf.py`.
+
 ### Da fare / backlog
 - Sign in with Apple: solo UI disabilitata (deployment input).
 - Input del proprietario al deploy: chiavi RevenueCat (`EXPO_PUBLIC_RC_IOS_KEY`, `EXPO_PUBLIC_RC_ANDROID_KEY`, `REVENUECAT_SECRET_KEY`, signing secret), `google-services.json`, URL Privacy/Termini, `EMERGENT_PUSH_KEY` (impostato al Publish).
