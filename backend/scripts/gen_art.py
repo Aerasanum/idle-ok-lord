@@ -118,14 +118,41 @@ def splash_prompts():
              "no text, no watermark, " + STYLE)]
 
 
+TILE_DESC = {
+    "plains": "lush green meadow with wildflowers and a winding footpath",
+    "forest": "dense pine and oak forest canopy seen from above with a small clearing",
+    "hills": "rolling golden-green hills with rocky outcrops and sheep",
+    "river": "a blue river crossing the tile diagonally with grassy banks and a small wooden bridge",
+    "mountains": "snow-capped rocky mountain peaks with pine trees at the base",
+    "village": "small medieval village with thatched cottages, a well and vegetable gardens",
+    "mine": "hillside mine with a wooden shaft entrance, ore carts and rails",
+    "ruins": "ancient stone ruins with broken pillars overgrown by moss",
+    "fort": "square stone fort with corner towers, a gate and a burgundy banner",
+    "city": "walled medieval city with dense rooftops, a cathedral spire and golden domes",
+}
+
+
+def tile_prompts():
+    return [(f"tiles/{k}", f"Top-down (bird's eye, orthographic) square game map tile for a fantasy kingdom map: {v}. Fills the whole square edge to edge, "
+             f"consistent overhead lighting from top-left, edges that blend into generic grass so tiles can sit side by side, no border, no text, {STYLE}") for k, v in TILE_DESC.items()]
+
+
+def fog_variant(img: Image.Image) -> Image.Image:
+    from PIL import ImageEnhance
+    g = ImageEnhance.Color(img.convert("RGB")).enhance(0.2)
+    g = ImageEnhance.Brightness(g).enhance(0.5)
+    tint = Image.new("RGB", g.size, (38, 46, 66))
+    return Image.blend(g, tint, 0.35)
+
+
 def ground_prompts():
     return [("kingdom/ground", "Top-down isometric fantasy game terrain plane for a kingdom builder: lush green meadow with two crossing dirt roads (one horizontal across the lower middle, one vertical in the center), "
              "small flowers, subtle grass texture, soft shadows, no buildings, no characters, no text, 16:9, " + STYLE)]
 
 
-GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts}
+GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts}
 TRANSPARENT = {"monsters", "lord", "buildings", "units"}
-MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280}
+MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256}
 
 
 def chroma_key(img: Image.Image) -> Image.Image:
@@ -180,6 +207,10 @@ def postprocess(group: str, raw_path: Path, out_path: Path):
         s = m / max(img.size)
         img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    if group == "tiles":
+        side = min(img.size)
+        img = img.crop(((img.width - side) // 2, (img.height - side) // 2, (img.width + side) // 2, (img.height + side) // 2))
+        fog_variant(img).save(out_path.with_name(out_path.stem + "_fog.webp"), "WEBP", quality=80, method=6)
     img.save(out_path, "WEBP", quality=82, method=6)
     return img.size
 

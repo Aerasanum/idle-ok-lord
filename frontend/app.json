@@ -20,7 +20,11 @@
         "backgroundColor": "#11151C"
       },
       "package": "com.idlempirelordsdragon.game",
-      "permissions": ["com.google.android.c2dm.permission.RECEIVE", "android.permission.POST_NOTIFICATIONS", "com.android.vending.BILLING"]
+      "permissions": [
+        "com.google.android.c2dm.permission.RECEIVE",
+        "android.permission.POST_NOTIFICATIONS",
+        "com.android.vending.BILLING"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -50,7 +54,8 @@
           "color": "#B89947",
           "defaultChannel": "default"
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

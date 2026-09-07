@@ -70,6 +70,8 @@ class SettingsIn(BaseModel):
     analytics: bool | None = None
     language: str | None = None
     tutorial_done: bool | None = None
+    music_volume: float | None = Field(default=None, ge=0, le=1)
+    sfx_volume: float | None = Field(default=None, ge=0, le=1)
     display_name: str | None = None
     heraldic_color: str | None = None
 
@@ -166,7 +168,7 @@ async def delete(body: DeleteIn, p: Principal = Depends(current_user)):
 @acc_router.patch("/settings")
 async def update_settings(body: SettingsIn, p: Principal = Depends(current_user)):
     sets = {}
-    for k in ("push_nonessential", "analytics", "language", "tutorial_done"):
+    for k in ("push_nonessential", "analytics", "language", "tutorial_done", "music_volume", "sfx_volume"):
         v = getattr(body, k)
         if v is not None:
             sets[f"settings.{k}"] = v

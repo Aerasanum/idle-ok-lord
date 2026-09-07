@@ -9,6 +9,7 @@ import { useTheme } from "@/src/theme";
 import { Btn, Divider, Input, Loading, Panel, Row, Screen, Stat, Txt, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
 import { useTutorial } from "@/src/tutorial/Tutorial";
+import { AudioSettings } from "@/src/audio/AudioSettings";
 
 const COLORS = ["#800020", "#1B2A44", "#2E472D", "#B89947", "#5C6470", "#4A6B8C", "#7851A9", "#B0361D"];
 
@@ -69,6 +70,8 @@ export default function ProfileScreen() {
       </Panel>
       <Panel testID="settings-panel">
         <Txt v="h3">Impostazioni</Txt>
+        <AudioSettings />
+        <View style={{ height: 1, backgroundColor: colors.wood, marginVertical: 8, opacity: 0.6 }} />
         <Row style={{ justifyContent: "space-between" }}>
           <Txt v="body">Notifiche non essenziali (eventi, forziere pieno)</Txt>
           <Btn title={p.settings.push_nonessential ? "ON" : "OFF"} small variant={p.settings.push_nonessential ? "gold" : "secondary"} onPress={() => settings.mutate({ push_nonessential: !p.settings.push_nonessential })} testID="push-toggle" />

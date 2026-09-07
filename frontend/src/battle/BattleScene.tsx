@@ -6,6 +6,7 @@ import { Image, PixelRatio, Platform, Text, View, useWindowDimensions } from "re
 import Animated, { Easing, FadeIn, ZoomOut, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
 import { regionBackground } from "@/src/art";
+import { playRegionMusic, playSfx } from "@/src/audio";
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
 import { Ambient, BannerRise, BossBar, Burst, Clouds, CoinShower, DamageNumber, Fx, LightningBolt, OutcomeBanner, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SteelRain } from "./effects";
@@ -71,9 +72,11 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
     return () => clearInterval(id);
   }, []);
 
-  // camera shake + full-scene flash
+  // camera shake + full-scene flash + march bob + Lord lunge (driven imperatively by the strike cadence)
   const shake = useSharedValue(0);
   const flash = useSharedValue(0);
+  const bob = useSharedValue(0);
+  const lunge = useSharedValue(0);
   const [flashColor, setFlashColor] = useState("#FFFFFF");
   const doShake = useCallback((amp: number) => {
     shake.value = withSequence(withTiming(amp, { duration: 40 }), withTiming(-amp, { duration: 60 }), withTiming(amp * 0.5, { duration: 60 }), withTiming(0, { duration: 90 }));
@@ -122,21 +125,59 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
     doShake(bossKill ? 12 : fresh > 1 ? 7 : 4);
     doFlash(bossKill ? colors.goldBright : "#FFFFFF", bossKill ? 0.5 : 0.16, bossKill ? 500 : 180);
     haptic(bossKill ? "heavy" : "light");
+    playSfx(bossKill || items.some((x) => x.crit) ? "crit" : "kill", bossKill ? 1 : 0.8);
   }, [kills]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Lord swing cadence (1.2s) -> slash arc, hit flash on the front monster, small white hit numbers
+  // region music
+  useEffect(() => {
+    playRegionMusic(attempt.timeline.region.region);
+  }, [attempt.timeline.region.region]);
+
+  // Lord strike cadence (1.2s): light slash; every 4th strike is a HEAVY strike (big lunge, golden arc, impact burst, shake, sfx)
+  const swingCount = useRef(0);
   useEffect(() => {
     if (finished) return;
     const id = setInterval(() => {
-      const h = hashStr(`${attempt.id}:swing:${Math.floor(Date.now() / 1200)}`);
+      swingCount.current += 1;
+      const heavy = swingCount.current % 4 === 0;
+      const h = hashStr(`${attempt.id}:swing:${swingCount.current}`);
+      lunge.value = withSequence(withTiming(heavy ? 52 : 22, { duration: heavy ? 170 : 240, easing: Easing.out(Easing.cubic) }), withTiming(0, { duration: heavy ? 680 : 560, easing: Easing.inOut(Easing.quad) }));
       setHurtTick((t) => t + 1);
-      spawn([
-        { kind: "slash", x: width * 0.28 + 62, y: sceneH - 150, color: colors.parchment },
-        { kind: "dmg", x: width * 0.5 + (h % 4) * 10, y: sceneH * 0.62, value: Math.round(attempt.hero_power * (0.3 + (h % 30) / 100)), color: colors.parchmentDark },
-      ], 900);
+      const frontX = width * 0.5 + (h % 4) * 10;
+      if (heavy) {
+        spawn([
+          { kind: "slash", x: width * 0.3 + 30, y: sceneH - 210, color: colors.goldBright, size: 128 },
+          { kind: "slash", x: width * 0.3 + 60, y: sceneH - 180, color: "#FFFFFF", size: 84 },
+          { kind: "burst", x: width * 0.56, y: sceneH - 140, color: colors.goldBright },
+          { kind: "dmg", x: frontX, y: sceneH * 0.5, value: Math.round(attempt.hero_power * (1.2 + (h % 30) / 100)), crit: true, color: colors.goldBright },
+        ], 1100);
+        doShake(5);
+        doFlash("#FFFFFF", 0.14, 160);
+        playSfx("crit", 0.7);
+        haptic("light");
+      } else {
+        spawn([
+          { kind: "slash", x: width * 0.28 + 62, y: sceneH - 150, color: colors.parchment },
+          { kind: "dmg", x: frontX, y: sceneH * 0.62, value: Math.round(attempt.hero_power * (0.3 + (h % 30) / 100)), color: colors.parchmentDark },
+        ], 900);
+        playSfx("hit", 0.45);
+      }
     }, 1200);
     return () => clearInterval(id);
-  }, [attempt.id, attempt.hero_power, finished, spawn, width, sceneH, colors.parchment, colors.parchmentDark]);
+  }, [attempt.id, attempt.hero_power, finished, spawn, width, sceneH, colors.parchment, colors.parchmentDark, colors.goldBright, lunge, doShake, doFlash]);
+
+  // enemy counter-attacks: the horde strikes back (Lord recoil + red numbers); more often when the battle is being lost
+  const [lordHurtTick, setLordHurtTick] = useState(0);
+  useEffect(() => {
+    if (finished) return;
+    const id = setInterval(() => {
+      const h = hashStr(`${attempt.id}:enemy:${Math.floor(Date.now() / 700)}`);
+      setLordHurtTick((t) => t + 1);
+      spawn([{ kind: "dmg", x: width * 0.24 + (h % 3) * 12, y: sceneH - 200, value: Math.round(Math.max(1, attempt.required_power) * (0.12 + (h % 20) / 100)), color: colors.error }], 900);
+      playSfx("hit", 0.3);
+    }, attempt.win ? 2700 : 1500);
+    return () => clearInterval(id);
+  }, [attempt.id, attempt.required_power, attempt.win, finished, spawn, width, sceneH, colors.error]);
 
   // auto-skill activations: each cooldown cycle fires the skill's signature effect + flashing name (presentational)
   useEffect(() => {
@@ -154,6 +195,7 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
       setSkillFx((f) => [...f, { id, key: s.key, kind: s.key, x: s.key === "shield_wall" || s.key === "war_cry" ? lordX : frontX, y: s.key === "shield_wall" || s.key === "war_cry" ? lordY : frontY }]);
       setTimeout(() => setSkillFx((f) => f.filter((x) => x.id !== id)), 1800);
       setTimeout(() => setBanner((b) => (b?.id === id ? null : b)), 1300);
+      playSfx("skill");
       const h = hashStr(`${attempt.id}:${s.key}:${cycle}`);
       if (s.key === "power_strike") {
         spawn([{ kind: "dmg", x: frontX + 10, y: frontY - 10, value: Math.round(attempt.hero_power * 1.8), crit: true, color }, { kind: "burst", x: frontX + 20, y: frontY + 20, color }], 1200);
@@ -183,10 +225,13 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
       doShake(10);
       doFlash(colors.goldBright, 0.7, 700);
       haptic("success");
+      playSfx("victory");
+      setTimeout(() => playSfx("coin"), 450);
     } else {
       doShake(6);
       doFlash(colors.error, 0.55, 600);
       haptic("error");
+      playSfx("defeat");
     }
     const t = setTimeout(() => onFinished(attempt.id), OUTCOME_HOLD_MS);
     return () => clearTimeout(t);
@@ -196,13 +241,9 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
   const proxies = useMemo(() => allocateProxies(formation, cap), [formation, cap]);
   const bgCohorts = armyTier?.background_cohorts ?? 0;
 
-  // march bob (shared per scene), lord lunge
-  const bob = useSharedValue(0);
-  const lunge = useSharedValue(0);
   useEffect(() => {
     bob.value = withRepeat(withSequence(withTiming(-3, { duration: 420, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: 420, easing: Easing.inOut(Easing.quad) })), -1, true);
-    lunge.value = withRepeat(withSequence(withTiming(22, { duration: 240, easing: Easing.out(Easing.cubic) }), withTiming(0, { duration: 560, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: 400 })), -1, false);
-  }, [bob, lunge]);
+  }, [bob]);
   const bobStyle = useAnimatedStyle(() => ({ transform: [{ translateY: bob.value }] }));
   const lungeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: lunge.value }, { translateY: bob.value * 0.6 }] }));
   const bobStyle2 = useAnimatedStyle(() => ({ transform: [{ translateY: -bob.value }] }));
@@ -245,7 +286,7 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
         </Animated.View>
         {/* Lord */}
         <Animated.View style={[{ position: "absolute", left: width * 0.22, bottom: 34 }, lungeStyle]} testID="lord-sprite">
-          <LordSprite equipped={equipped} size={104} tier={armyTier?.tier ?? 0} heraldicColor={heraldicColor} swinging={!outcome} />
+          <LordSprite equipped={equipped} size={104} tier={armyTier?.tier ?? 0} heraldicColor={heraldicColor} swinging={!outcome} attack={lunge} hurtTick={outcome ? 0 : lordHurtTick} />
           <View style={{ position: "absolute", top: -14, alignSelf: "center", paddingHorizontal: 6, backgroundColor: colors.overlay, borderRadius: 3, borderWidth: 1, borderColor: colors.gold }}>
             <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: colors.goldBright }}>LORD</Text>
           </View>
@@ -255,13 +296,13 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
           {alive > MAX_VISIBLE ? <View style={{ position: "absolute", left: 4, top: -18, paddingHorizontal: 6, borderRadius: 3, backgroundColor: colors.overlay, borderWidth: 1, borderColor: colors.gold }}><Text style={{ fontFamily: fonts.bodyBold, fontSize: 10, color: colors.onSurface }}>+{alive - MAX_VISIBLE} nemici</Text></View> : null}
           {wave.monsters.slice(0, Math.min(alive, MAX_VISIBLE)).map((m, i) => (
             <Animated.View key={`${waveIdx}-${i}`} entering={FadeIn.duration(250)} exiting={ZoomOut.duration(220)}>
-              <MonsterSprite family={m.family} type={m.type} palette={pal.monster} size={monsterSize(m.type)} hurtTick={i === alive - 1 && !outcome ? hurtTick : 0} />
+              <MonsterSprite family={m.family} type={m.type} palette={pal.monster} size={monsterSize(m.type)} hurtTick={i === Math.min(alive, MAX_VISIBLE) - 1 && !outcome ? hurtTick : 0} fighting={!outcome} />
             </Animated.View>
           ))}
         </Animated.View>
         {/* VFX layer */}
         {fx.map((f) => f.kind === "dmg" ? <DamageNumber key={f.id} x={f.x} y={f.y} value={f.value ?? 0} crit={f.crit} color={f.color ?? colors.onSurface} seed={f.id} />
-          : f.kind === "slash" ? <Slash key={f.id} x={f.x} y={f.y} color={f.color ?? colors.parchment} />
+          : f.kind === "slash" ? <Slash key={f.id} x={f.x} y={f.y} color={f.color ?? colors.parchment} size={f.size} />
           : <Burst key={f.id} x={f.x} y={f.y} color={f.color ?? colors.goldBright} seed={f.id} />)}
         {outcome && attempt.win ? <CoinShower x={width * 0.5} y={sceneH * 0.5} /> : null}
         {outcome && attempt.win ? <Burst x={width * 0.5} y={sceneH * 0.45} color={colors.goldBright} count={14} big /> : null}

@@ -16,6 +16,7 @@ import { useTheme } from "@/src/theme";
 import { ToastProvider } from "@/src/ui/Toast";
 import { PushBootstrap } from "@/src/push";
 import { TutorialOverlay, TutorialProvider } from "@/src/tutorial/Tutorial";
+import { AudioBootstrap } from "@/src/audio/AudioSettings";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -46,6 +47,7 @@ export default function RootLayout() {
                     <TutorialProvider>
                       <StatusBar style="light" />
                       <PushBootstrap />
+                      <AudioBootstrap />
                       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface }, animation: "fade" }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(auth)" />

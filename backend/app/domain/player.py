@@ -56,7 +56,7 @@ def initial_state(account_id: str, display_name: str) -> dict:
         "season": {"points": 0, "claimed_free": [], "claimed_premium": [], "season_key": None},
         "alliance_id": None,
         "cosmetics": {"owned": [], "hero_cloak": None, "profile_frame": None, "castle_skin": None},
-        "settings": {"push_nonessential": True, "analytics": False, "consent_at": None, "language": "it", "tutorial_done": False},
+        "settings": {"push_nonessential": True, "analytics": False, "consent_at": None, "language": "it", "tutorial_done": False, "music_volume": 0.6, "sfx_volume": 0.8},
         "recent_ledger_keys": [],
         "recent_attempts": [],
     }

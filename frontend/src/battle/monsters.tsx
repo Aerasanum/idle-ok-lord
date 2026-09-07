@@ -1,7 +1,7 @@
 // Enemy sprites: vector silhouettes per archetype (Art Direction v1.1 monster regions). Colors are fixed art identity, not theme tokens.
 import React, { memo, useEffect } from "react";
 import { Image, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Ellipse, G, Path, Rect } from "react-native-svg";
 
 import { monsterArt } from "@/src/art";
@@ -359,7 +359,7 @@ function Dragon({ body, dark, light, eye, f }: P) {
 const RENDER: Record<Arch, (p: P) => React.ReactElement> = { goblin: Goblin, humanoid: Humanoid, knight: Knight, robed: Robed, canine: Canine, boar: Boar, arthropod: Arthropod, brute: Brute, golem: Golem, treant: Treant, flyer: Flyer, spirit: Spirit, dragon: Dragon };
 const FLOATERS: Arch[] = ["flyer", "spirit"];
 
-export const MonsterSprite = memo(function MonsterSprite({ family, type, palette, size, hurtTick = 0 }: { family: string; type: MonsterType; palette: string[]; size: number; hurtTick?: number }) {
+export const MonsterSprite = memo(function MonsterSprite({ family, type, palette, size, hurtTick = 0, fighting = true }: { family: string; type: MonsterType; palette: string[]; size: number; hurtTick?: number; fighting?: boolean }) {
   const h = hashStr(family);
   const arch = archetypeFor(family);
   const f = family.toLowerCase();
@@ -369,20 +369,40 @@ export const MonsterSprite = memo(function MonsterSprite({ family, type, palette
 
   const breath = useSharedValue(0);
   const hurt = useSharedValue(0);
+  const attack = useSharedValue(0);
   useEffect(() => {
     const d = 700 + (h % 5) * 90;
     breath.value = withRepeat(withSequence(withTiming(1, { duration: d, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: d, easing: Easing.inOut(Easing.quad) })), -1, false);
   }, [breath, h]);
+  // combat loop: wind-up, lunge toward the Lord, recoil, pause (desynced per creature)
+  useEffect(() => {
+    if (!fighting) {
+      attack.value = withTiming(0, { duration: 200 });
+      return;
+    }
+    const pause = 900 + (h % 6) * 260;
+    attack.value = withDelay((h % 5) * 170, withRepeat(withSequence(
+      withTiming(-0.35, { duration: 260, easing: Easing.inOut(Easing.quad) }),
+      withTiming(1, { duration: 140, easing: Easing.out(Easing.cubic) }),
+      withTiming(0.7, { duration: 90 }),
+      withTiming(0, { duration: 320, easing: Easing.inOut(Easing.quad) }),
+      withTiming(0, { duration: pause }),
+    ), -1, false));
+  }, [fighting, attack, h]);
   useEffect(() => {
     if (!hurtTick) return;
     hurt.value = 1;
     hurt.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.quad) });
   }, [hurtTick, hurt]);
-  const bodyStyle = useAnimatedStyle(() => ({
-    transform: floater
-      ? [{ translateY: -6 * breath.value }, { translateX: 6 * hurt.value }]
-      : [{ scaleY: 1 + 0.035 * breath.value }, { translateX: 6 * hurt.value }, { rotate: `${-4 * hurt.value}deg` }],
-  }));
+  const bodyStyle = useAnimatedStyle(() => {
+    const a = attack.value;
+    const lungeX = -Math.max(0, a) * size * 0.28 + Math.min(0, a) * size * 0.12 + 6 * hurt.value; // toward the Lord (left), small step back on wind-up
+    return {
+      transform: floater
+        ? [{ translateY: -6 * breath.value - Math.max(0, a) * 10 }, { translateX: lungeX }, { rotate: `${-10 * Math.max(0, a) - 4 * hurt.value}deg` }]
+        : [{ translateX: lungeX }, { scaleY: 1 + 0.035 * breath.value - 0.06 * Math.max(0, a) + 0.05 * Math.max(0, -a) }, { scaleX: 1 + 0.08 * Math.max(0, a) }, { rotate: `${-9 * Math.max(0, a) + 3 * Math.max(0, -a) - 4 * hurt.value}deg` }],
+    };
+  });
   const flashStyle = useAnimatedStyle(() => ({ opacity: 0.7 * hurt.value }));
   const img = monsterArt(family);
 

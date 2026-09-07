@@ -1,7 +1,7 @@
 // The Lord: vector knight whose armor, colors and glow follow the equipped gear rarity (Art Direction v1.1). Sword is a separate layer so it can swing.
 import React, { memo, useEffect } from "react";
 import { Image, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
+import Animated, { Easing, SharedValue, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 
 import { lordArt } from "@/src/art";
@@ -12,7 +12,7 @@ type Item = { slot: string; rarity: string; item_level: number } | null | undefi
 const SKIN = "#D9B48F", CLOTH = "#6B5A44", LEATHER = "#5A4632", STEEL = "#9AA1A9", STEEL_D = "#6E7580", HAIR = "#3A2A1E", INK = "#111111";
 const RARITY_RANK: Record<string, number> = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, mythic: 5, ancient: 6 };
 
-export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier = 0, heraldicColor = "#800020", swinging = true }: { equipped: Record<string, Item>; size?: number; tier?: number; heraldicColor?: string; swinging?: boolean }) {
+export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier = 0, heraldicColor = "#800020", swinging = true, attack, hurtTick = 0 }: { equipped: Record<string, Item>; size?: number; tier?: number; heraldicColor?: string; swinging?: boolean; attack?: SharedValue<number>; hurtTick?: number }) {
   const { colors } = useTheme();
   const u = size / 80;
   const has = (s: string) => !!equipped[s];
@@ -34,8 +34,18 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
     swing.value = withRepeat(withSequence(withTiming(-80, { duration: 170, easing: Easing.out(Easing.cubic) }), withTiming(-70, { duration: 130 }), withTiming(20, { duration: 480, easing: Easing.inOut(Easing.quad) }), withTiming(20, { duration: 420 })), -1, false);
   }, [swing, swinging]);
   const swordStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${swing.value}deg` }] }));
-  // rendered variant: the whole figure leans into the strike instead of a separate sword layer
-  const artStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${(swing.value - 20) * 0.12}deg` }, { scaleX: 1 + Math.max(0, -(swing.value - 20)) * 0.0012 }] }));
+  // rendered variant: the whole figure leans into the strike (driven by the scene's lunge value when provided) and recoils when hit
+  const hurt = useSharedValue(0);
+  useEffect(() => {
+    if (!hurtTick) return;
+    hurt.value = 1;
+    hurt.value = withTiming(0, { duration: 320, easing: Easing.out(Easing.quad) });
+  }, [hurtTick, hurt]);
+  const artStyle = useAnimatedStyle(() => {
+    const a = attack ? Math.min(1, attack.value / 22) : Math.max(0, -(swing.value - 20)) / 100;
+    return { transform: [{ translateX: -8 * hurt.value }, { rotate: `${-11 * a + 5 * hurt.value}deg` }, { scaleX: 1 + 0.06 * a }, { scaleY: 1 - 0.03 * a }] };
+  });
+  const hurtStyle = useAnimatedStyle(() => ({ opacity: 0.55 * hurt.value }));
   const img = lordArt(equipped, tier);
 
   if (img) {
@@ -46,6 +56,9 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
         <View style={{ position: "absolute", bottom: 2, width: w * 0.7, height: h * 0.1, borderRadius: w, backgroundColor: "#000", opacity: 0.35 }} />
         <Animated.View style={[{ width: w, height: h, transformOrigin: "50% 100%" }, artStyle]}>
           <Image source={img} style={{ width: w, height: h }} resizeMode="contain" />
+          <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, hurtStyle]}>
+            <Image source={img} style={{ width: w, height: h, tintColor: colors.error }} resizeMode="contain" />
+          </Animated.View>
         </Animated.View>
       </View>
     );

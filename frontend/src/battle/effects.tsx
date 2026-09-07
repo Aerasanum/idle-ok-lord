@@ -6,7 +6,7 @@ import Animated, { Easing, SharedValue, useAnimatedStyle, useSharedValue, withRe
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
 
-export type Fx = { id: number; kind: "dmg" | "slash" | "burst"; x: number; y: number; value?: number; crit?: boolean; color?: string };
+export type Fx = { id: number; kind: "dmg" | "slash" | "burst"; x: number; y: number; value?: number; crit?: boolean; color?: string; size?: number };
 
 export function DamageNumber({ x, y, value, crit, color, seed }: { x: number; y: number; value: number; crit?: boolean; color: string; seed: number }) {
   const t = useSharedValue(0);
@@ -27,13 +27,20 @@ export function DamageNumber({ x, y, value, crit, color, seed }: { x: number; y:
   );
 }
 
-export function Slash({ x, y, color }: { x: number; y: number; color: string }) {
+export function Slash({ x, y, color, size = 64 }: { x: number; y: number; color: string; size?: number }) {
   const t = useSharedValue(0);
+  const big = size > 80;
   useEffect(() => {
-    t.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.quad) });
-  }, [t]);
-  const style = useAnimatedStyle(() => ({ opacity: 1 - t.value, transform: [{ rotate: `${-60 + 110 * t.value}deg` }, { scale: 0.6 + 0.7 * t.value }] }));
-  return <Animated.View pointerEvents="none" style={[{ position: "absolute", left: x, top: y, width: 64, height: 64, borderRadius: 32, borderTopWidth: 5, borderRightWidth: 5, borderColor: color, borderLeftColor: "transparent", borderBottomColor: "transparent" }, style]} />;
+    t.value = withTiming(1, { duration: big ? 380 : 280, easing: Easing.out(Easing.quad) });
+  }, [t, big]);
+  const style = useAnimatedStyle(() => ({ opacity: 1 - t.value, transform: [{ rotate: `${-70 + 130 * t.value}deg` }, { scale: 0.5 + 0.8 * t.value }] }));
+  const bw = big ? 9 : 5;
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: "absolute", left: x, top: y, width: size, height: size }, style]}>
+      <View style={{ width: size, height: size, borderRadius: size / 2, borderTopWidth: bw, borderRightWidth: bw, borderColor: color, borderLeftColor: "transparent", borderBottomColor: "transparent" }} />
+      {big ? <View style={{ position: "absolute", left: size * 0.12, top: size * 0.12, width: size * 0.76, height: size * 0.76, borderRadius: size, borderTopWidth: 3, borderRightWidth: 3, borderColor: "#FFFFFF", borderLeftColor: "transparent", borderBottomColor: "transparent", opacity: 0.8 }} /> : null}
+    </Animated.View>
+  );
 }
 
 function Particle({ t, angle, dist, color, size, gravity }: { t: SharedValue<number>; angle: number; dist: number; color: string; size: number; gravity: number }) {

@@ -41,6 +41,12 @@ Lingua utente: **italiano**.
 - Fix UX ricerca: pulsanti Ricerca/Esercito subito sotto la scena del Regno; scheda Università con "Apri Ricerca"; schermata Ricerca mostra il motivo se "Avvia" è disabilitato (coda occupata / risorse mancanti con quantità).
 - Costo: ~100 generazioni immagine sulla Universal Key.
 
+### Iterazione 5 (giugno 2026) — Combattimento vivo, Dominio 3D, audio
+- Nemici in combattimento: ogni creatura ha un ciclo caricamento → affondo verso il Lord → rinculo (desincronizzato), flash quando colpita; il Lord subisce contrattacchi (rinculo + numeri rossi, più frequenti se la battaglia è persa).
+- Colpi spettacolari del Lord: cadenza 1,2 s; ogni 4° colpo è un **colpo pesante** (affondo lungo, doppio arco dorato, esplosione di scintille, scossa, flash, suono).
+- Mappa Dominio 3D: 10 tessere terreno illustrate (`tiles/*`) + varianti "nebbia" derivate; mappa inclinata in prospettiva; animazione di rivelazione per le tessere conquistate dall'ultima visita (AsyncStorage `idle1.domain.seenOwned`).
+- Audio (`backend/scripts/gen_audio.py`, sintesi procedurale numpy→MP3, licenza libera): 9 SFX + 10 loop musicali per regione (32 s, ~200 KB ciascuno). Modulo `src/audio` (expo-audio): musica per regione in battaglia, SFX su colpi/uccisioni/skill/vittoria/sconfitta/costruzione; volumi Musica/Effetti nel Profilo (cache locale + `settings.music_volume/sfx_volume` server).
+
 ### Da fare / backlog
 - Testing agent end-to-end su frontend (in corso in questa sessione).
 - Sign in with Apple: solo UI disabilitata (deployment input).
