@@ -1,11 +1,64 @@
-"""All canonical formulas (CANONICAL_SPEC v1.1). No constant here is invented: each maps to a spec field."""
+"""All canonical formulas (CANONICAL_SPEC v1.1 + v1.2 live update). No constant here is invented: each maps to a spec field."""
 from ..core.canon import canon, region_for_stage, stage_drop_weights, units_by_key
 from ..core.util import ceil, rnd
 
 
 # ---- battle -----------------------------------------------------------------
+def difficulty_ramp(stage: int) -> float:
+    r = canon()["battle"]["difficulty_ramp"]
+    return 1 + r["per_stage"] * max(0, stage - r["start_stage"])
+
+
 def enemy_power(stage: int) -> int:
-    return rnd(75 * (1.047 ** (stage - 1)))
+    return rnd(75 * (1.047 ** (stage - 1)) * difficulty_ramp(stage))
+
+
+# ---- unit counters (v1.2) ---------------------------------------------------
+def enemy_class(family: str) -> str:
+    return canon()["battle"]["enemy_classes"][family]
+
+
+def stage_enemy_mix(stage: int) -> dict:
+    """Share of each enemy class in a stage: region families equally; boss stages 50% boss class + 50% families."""
+    region = region_for_stage(min(stage, canon()["battle"]["campaign_stages"]))
+    fams = region["enemy_families"]
+    mix: dict = {}
+    fam_share = 1.0 / len(fams)
+    if stage_kind(stage) == "boss":
+        bm = canon()["units"]["counters"]["pve_stage_mix"]["boss"]
+        mix[enemy_class(region["region_boss"])] = bm["boss_class"]
+        fam_share *= bm["families"]
+    for f in fams:
+        c = enemy_class(f)
+        mix[c] = mix.get(c, 0) + fam_share
+    return mix
+
+
+def army_class_mix(formation: dict) -> dict:
+    """Class shares of a deployed army weighted by command cost (0 shares when nothing is deployed)."""
+    ct = canon()["units"]["counters"]["unit_class"]
+    units = units_by_key()
+    w: dict = {}
+    for k, q in formation.items():
+        if q and k in units:
+            w[ct[k]] = w.get(ct[k], 0) + units[k]["command_cost"] * q
+    tot = sum(w.values())
+    return {c: v / tot for c, v in w.items()} if tot else {}
+
+
+def unit_counter_pct(unit_key: str, mix: dict | None) -> float:
+    """Signed % applied to one unit's power against an enemy class mix (+bonus_pct strong, -malus_pct weak, weighted by share)."""
+    if not mix:
+        return 0.0
+    cc = canon()["units"]["counters"]
+    row = cc["table"][unit_key]
+    pct = 0.0
+    for cls, share in mix.items():
+        if cls in row["strong_vs"]:
+            pct += share * cc["bonus_pct"]
+        elif cls in row["weak_vs"]:
+            pct -= share * cc["malus_pct"]
+    return pct
 
 
 def stage_kind(stage: int) -> str:

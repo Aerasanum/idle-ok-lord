@@ -7,6 +7,7 @@ from ..core.security import Principal, current_user
 from ..core.util import clean, fail, now
 from ..domain import campaign as C
 from ..domain import domain_map as D
+from ..domain import formulas as F
 from ..domain import gear as G
 from ..domain import hero as H
 from ..domain import kingdom as K
@@ -66,9 +67,15 @@ class ClaimIn(BaseModel):
 @router.get("/battle/stage/{stage}")
 async def stage_preview(stage: int, p: Principal = Depends(current_user)):
     pl = await load(p)
-    prof = await P.combat_profile(pl)
+    mix = F.stage_enemy_mix(stage)
+    prof = await P.combat_profile(pl, enemy_mix=mix)
+    base_army = P.army_power(pl, prof["hero"]["affixes"].get("army_power_pct", 0))[0]
     pv = C.stage_preview(stage)
     pv["player_power"] = prof["total_power"]
+    pv["army_power"] = prof["army_power"]
+    pv["army_counter_pct"] = prof["army_counter_pct"]
+    pv["army_counter_net_pct"] = round((prof["army_power"] / base_army - 1) * 100, 1) if base_army else 0.0
+    pv["enemy_mix"] = mix
     pv["can_win"] = prof["total_power"] >= pv["required_power"]
     pv["locked"] = stage > pl["campaign"]["highest_cleared"] + 1
     pv["army_visual_tier"] = army_visual_tier(stage, prof["army_deployed"])
@@ -271,9 +278,15 @@ async def research_start(body: ResearchIn, p: Principal = Depends(current_user))
 async def army(p: Principal = Depends(current_user)):
     pl = await load(p)
     prof = await P.combat_profile(pl)
+    stage = max(pl["campaign"]["highest_cleared"] + 1, pl["campaign"]["current_stage"])
+    mix = F.stage_enemy_mix(stage)
+    cc = canon()["units"]["counters"]
+    region_counter = {u["key"]: round(F.unit_counter_pct(u["key"], mix), 1) for u in canon()["units"]["catalog"]}
     return {"units": K.army_view(pl), "formation": pl["army"]["formation"], "command_capacity": prof["command_capacity"], "command_used": prof["command_used"], "formation_slots": prof["formation_slots"],
             "army_power": prof["army_power"], "army_per_unit": prof["army_per_unit"], "queue": [clean(i) for i in pl["kingdom"].get("recruit_queue", [])], "campaign_army_unlock_stage": canon()["units"]["campaign_army_unlock_stage"],
-            "visual_tier": army_visual_tier(max(pl["campaign"]["highest_cleared"], pl["campaign"]["current_stage"]), prof["army_deployed"]), "server_time": now().isoformat()}
+            "visual_tier": army_visual_tier(max(pl["campaign"]["highest_cleared"], pl["campaign"]["current_stage"]), prof["army_deployed"]), "server_time": now().isoformat(),
+            "counters": {"bonus_pct": cc["bonus_pct"], "malus_pct": cc["malus_pct"], "class_labels": cc["class_labels"], "unit_class": cc["unit_class"], "table": cc["table"]},
+            "region_counter": {"stage": stage, "region": F.region_for_stage(min(stage, 200))["name"], "enemy_mix": mix, "unit_pct": region_counter}}
 
 
 @router.post("/army/recruit")

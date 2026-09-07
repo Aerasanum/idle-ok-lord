@@ -136,18 +136,22 @@ def hero_stats(p: dict, items: list[dict]) -> dict:
             "gear_find_pct": affix.get("gear_find_pct", 0) + tp["fortune"]}
 
 
-def army_power(p: dict, affix_army_pct: float, territory_pct: float = 0.0) -> tuple[int, dict]:
+def army_power(p: dict, affix_army_pct: float, territory_pct: float = 0.0, enemy_mix: dict | None = None) -> tuple[int, dict, dict]:
+    """Returns (total, per-unit power, per-unit counter %). Counter % (v1.2) applies only when an enemy class mix is given."""
     units = units_by_key()
     total = 0.0
     per_unit = {}
+    counter = {}
     for key, qty in p["army"]["formation"].items():
         if not qty or key not in units:
             continue
         mult = F.unit_power_multiplier(key, p["research"], p["hero"]["talents"], affix_army_pct, territory_pct)
-        val = qty * units[key]["base_power"] * mult
+        cpct = F.unit_counter_pct(key, enemy_mix)
+        val = qty * units[key]["base_power"] * mult * (1 + cpct / 100)
         per_unit[key] = rnd(val)
+        counter[key] = round(cpct, 1)
         total += val
-    return rnd(total), per_unit
+    return rnd(total), per_unit, counter
 
 
 async def equipped_items(p: dict) -> list[dict]:
@@ -157,17 +161,19 @@ async def equipped_items(p: dict) -> list[dict]:
     return await db.gear_items.find({"_id": {"$in": ids}, "owner_id": p["_id"]}).to_list(20)
 
 
-async def combat_profile(p: dict, territory: dict | None = None) -> dict:
+async def combat_profile(p: dict, territory: dict | None = None, enemy_mix: dict | None = None) -> dict:
     items = await equipped_items(p)
     hs = hero_stats(p, items)
     tb = territory or {}
-    ap, per_unit = army_power(p, hs["affixes"].get("army_power_pct", 0), tb.get("war_roster_power_pct", 0))
+    ap, per_unit, counter = army_power(p, hs["affixes"].get("army_power_pct", 0), tb.get("war_roster_power_pct", 0), enemy_mix)
     cap = F.command_capacity(p["hero"]["level"], p["kingdom"]["castle_level"])
     used = sum(units_by_key()[k]["command_cost"] * q for k, q in p["army"]["formation"].items() if k in units_by_key())
     return {
         "hero": hs,
         "army_power": ap,
         "army_per_unit": per_unit,
+        "army_counter_pct": counter,
+        "enemy_mix": enemy_mix or {},
         "total_power": hs["power"] + ap,
         "command_capacity": cap,
         "command_used": used,

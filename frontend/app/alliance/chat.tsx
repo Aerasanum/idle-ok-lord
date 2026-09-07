@@ -40,7 +40,15 @@ export default function ChatScreen() {
         keyExtractor={(m: any) => m.id}
         contentContainerStyle={{ padding: 12, gap: 8, paddingBottom: 90 }}
         renderScrollComponent={(props) => <KeyboardAwareScrollView {...props} />}
-        renderItem={({ item: m }: any) => (
+        renderItem={({ item: m }: any) => m.system && m.kind ? (
+          <View style={{ alignSelf: "stretch", flexDirection: "row", gap: 8, alignItems: "center", backgroundColor: colors.surfaceTertiary, borderWidth: 1.5, borderColor: m.kind === "titan" ? colors.brandPrimary : colors.gold, borderLeftWidth: 5, borderRadius: 8, padding: 8 }} testID={`message-${m.id}`}>
+            <Icon name={m.kind === "titan" ? "paw" : "sword-cross"} size={20} color={colors.goldBright} />
+            <View style={{ flex: 1 }}>
+              <Txt v="caption" color={colors.goldBright}>{m.display_name} · {new Date(m.created_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}</Txt>
+              <Txt v="bodyBold">{m.text}</Txt>
+            </View>
+          </View>
+        ) : (
           <Pressable onLongPress={() => { if (!m.system) { setSel(m); sheet.current?.present(); } }} style={{ alignSelf: m.player_id === user?.player_id ? "flex-end" : "flex-start", maxWidth: "85%", backgroundColor: m.system ? colors.surfaceTertiary : m.player_id === user?.player_id ? colors.brandPrimary : colors.surfaceSecondary, borderWidth: 1, borderColor: m.system ? colors.iron : colors.wood, borderRadius: 8, padding: 8 }} testID={`message-${m.id}`}>
             <Txt v="caption" color={m.system ? colors.goldBright : colors.muted}>{m.display_name} · {new Date(m.created_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}</Txt>
             <Txt v="body">{m.text}</Txt>

@@ -24,6 +24,7 @@ class GrantIn(BaseModel):
 
 class ShiftIn(BaseModel):
     seconds: int
+    include_resolved: bool = False  # war-shift only: also age resolved/cancelled wars (clears the 24h attack cooldown in QA)
 
 
 @router.get("/last-code")
@@ -96,6 +97,10 @@ async def war_shift(body: ShiftIn, p: Principal = Depends(current_user)):
     async for w in db.alliance_wars.find({"status": {"$in": ["prep", "locked"]}}):
         await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"lock_at": aware(w["lock_at"]) - d, "resolves_at": aware(w["resolves_at"]) - d, "declared_at": aware(w["declared_at"]) - d}})
         n += 1
+    if body.include_resolved:
+        async for w in db.alliance_wars.find({"status": {"$in": ["resolved", "cancelled"]}}):
+            await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"declared_at": aware(w["declared_at"]) - d}})
+            n += 1
     return {"wars_shifted": n}
 
 

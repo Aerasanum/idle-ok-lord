@@ -7,6 +7,7 @@ import { Btn, Icon, Loading, Panel, Row, Screen, Txt, fmt, fmtDuration } from "@
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useCountdown } from "@/src/ui/useCountdown";
 import { NODE_LABEL, WarMap, allianceColor } from "@/src/war/WarMap";
+import { WarReplay } from "@/src/war/WarReplay";
 
 const STATUS_LABEL: Record<string, string> = { prep: "Preparazione", locking: "Blocco roster", locked: "Roster bloccato", resolving: "Risoluzione", resolved: "Risolta", cancelled: "Annullata" };
 
@@ -60,9 +61,18 @@ export default function WarScreen() {
             </View>
           ) : null}
           {detail.war.result?.lanes ? (
-            <View style={{ marginTop: 6 }}>
+            <View style={{ marginTop: 8, gap: 8 }}>
               <Txt v="h3" color={colors.onSurfaceInverse}>{detail.war.result.attacker_won ? "Attaccante vince" : "Difensore vince"} {detail.war.result.attacker_points}-{detail.war.result.defender_points}{detail.war.result.tie_break_used ? " (spareggio margini)" : ""}{detail.war.result.captured ? " · nodo conquistato" : ""}</Txt>
-              {detail.war.result.lanes.map((l: any) => <Txt key={l.lane} v="small" color={colors.onSurfaceInverse}>Corsia {l.lane}: {l.attacker} {fmt(l.attacker_power)} vs {l.defender} {fmt(l.defender_power)} → {l.attacker_wins ? "A" : "D"}</Txt>)}
+              <WarReplay
+                key={detail.war.id}
+                lanes={detail.war.result.lanes}
+                attackerName={`[${detail.alliances[detail.war.attacker_id]?.tag ?? "?"}] ${detail.alliances[detail.war.attacker_id]?.name ?? "Attaccante"}`}
+                defenderName={detail.war.defender_id ? `[${detail.alliances[detail.war.defender_id]?.tag ?? "?"}] ${detail.alliances[detail.war.defender_id]?.name ?? "Difensore"}` : "Guarnigione neutrale"}
+                attackerWon={detail.war.result.attacker_won}
+                points={[detail.war.result.attacker_points, detail.war.result.defender_points]}
+                captured={!!detail.war.result.captured}
+                mineIsAttacker={myId ? detail.war.attacker_id === myId : null}
+              />
             </View>
           ) : null}
         </Panel>

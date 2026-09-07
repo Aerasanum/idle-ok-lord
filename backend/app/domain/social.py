@@ -248,6 +248,12 @@ async def system_feed(alliance_id: str, text: str) -> None:
     await db.chat_messages.insert_one({"_id": new_id("msg_"), "channel": f"system:{alliance_id}", "player_id": None, "display_name": "System", "text": text, "created_at": now(), "system": True})
 
 
+async def alliance_alert(alliance_id: str, text: str, kind: str = "war") -> None:
+    """Live alert: posted both in the read-only feed and inside the alliance chat channel (system message)."""
+    await system_feed(alliance_id, text)
+    await db.chat_messages.insert_one({"_id": new_id("msg_"), "channel": f"alliance:{alliance_id}", "player_id": None, "display_name": "Araldo di guerra", "text": text, "created_at": now(), "system": True, "kind": kind})
+
+
 async def channel_allowed(p: dict, channel: str) -> None:
     kind, _, ident = channel.partition(":")
     if kind == "global":

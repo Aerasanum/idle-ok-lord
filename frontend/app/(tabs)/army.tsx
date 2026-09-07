@@ -44,6 +44,11 @@ export default function ArmyTab() {
           </Row>
           <Progress value={cmdUsed} max={a.command_capacity} color={cmdUsed > a.command_capacity ? colors.error : undefined} label={`Comando ${cmdUsed}/${a.command_capacity} · Tipi ${types}/${a.formation_slots} (Castello ${profile.kingdom.castle_level})`} testID="command-bar" />
           {a.formation_slots === 0 ? <Txt v="small" color={colors.warning}>Gli slot formazione si sbloccano al Castello 3. L&apos;esercito combatte dallo stage {a.campaign_army_unlock_stage}.</Txt> : null}
+          {a.region_counter ? (
+            <Txt v="small" color={colors.muted} testID="enemy-mix">
+              Prossimo stage {a.region_counter.stage} · {a.region_counter.region}: {Object.entries(a.region_counter.enemy_mix).map(([c, s]) => `${a.counters.class_labels[c]} ${Math.round((s as number) * 100)}%`).join(" · ")}
+            </Txt>
+          ) : null}
           {formation ? (
             <Row style={{ marginTop: 8 }}>
               <Btn title="Salva formazione" small icon="content-save" loading={setForm.isPending} disabled={cmdUsed > a.command_capacity || types > a.formation_slots} onPress={() => setForm.mutate({ formation: f }, { onSuccess: () => setFormation(null) })} testID="save-formation-button" />
@@ -70,6 +75,26 @@ export default function ArmyTab() {
                 </Row>
                 <Txt v="small" color={colors.muted}>Potenza {u.base_power} · Comando {u.command_cost} · {u.recruit_minutes_each}m/unità</Txt>
                 <Txt v="small">Possedute {fmt(u.owned)} · Schierate {fmt(u.deployed)}{a.army_per_unit[u.key] ? ` · ${fmt(a.army_per_unit[u.key])} pot.` : ""}</Txt>
+                {a.counters?.table?.[u.key] ? (
+                  <View style={{ marginTop: 4, gap: 2 }} testID={`counters-${u.key}`}>
+                    <Row gap={4} style={{ flexWrap: "wrap" }}>
+                      <Icon name="sword" size={12} color={colors.success} />
+                      <Txt v="small" color={colors.success}>Forte contro (+{a.counters.bonus_pct}%): {a.counters.table[u.key].strong_vs.map((c: string) => a.counters.class_labels[c]).join(", ")}</Txt>
+                    </Row>
+                    <Row gap={4} style={{ flexWrap: "wrap" }}>
+                      <Icon name="shield-off-outline" size={12} color={colors.error} />
+                      <Txt v="small" color={colors.error}>Debole contro (−{a.counters.malus_pct}%): {a.counters.table[u.key].weak_vs.map((c: string) => a.counters.class_labels[c]).join(", ")}</Txt>
+                    </Row>
+                    {a.region_counter?.unit_pct?.[u.key] !== undefined ? (
+                      <Row gap={4}>
+                        <Icon name="map-marker" size={12} color={colors.goldBright} />
+                        <Txt v="small" color={a.region_counter.unit_pct[u.key] > 0 ? colors.success : a.region_counter.unit_pct[u.key] < 0 ? colors.error : colors.muted} testID={`region-pct-${u.key}`}>
+                          {a.region_counter.region} (stage {a.region_counter.stage}): {a.region_counter.unit_pct[u.key] > 0 ? "+" : ""}{a.region_counter.unit_pct[u.key]}% potenza
+                        </Txt>
+                      </Row>
+                    ) : null}
+                  </View>
+                ) : null}
                 {!u.unlocked ? (
                   <Txt v="small" color={colors.warning}>
                     {[!u.gates.castle && `Castello ${u.unlock_castle_level}`, !u.gates.campaign && `Stage ${u.unlock_campaign_stage}`, !u.gates.research && `Ricerca ${u.required_research}`].filter(Boolean).join(" · ")}

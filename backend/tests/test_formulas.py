@@ -1,5 +1,5 @@
-"""Unit tests: canonical formulas must reproduce the CANONICAL_SPEC v1.1 sample tables exactly."""
-from app.core.canon import canon, validation_report
+"""Unit tests: canonical formulas must reproduce the CANONICAL_SPEC sample tables exactly (v1.1 baseline + v1.2 live update)."""
+from app.core.canon import canon, compute_spec_hash, validation_report
 from app.domain import formulas as F
 from app.domain.domain_map import conquest_order
 from app.domain.hero import apply_xp
@@ -7,16 +7,51 @@ from app.domain.hero import apply_xp
 
 def test_canon_validation():
     r = validation_report()
-    assert r["VERSION"] == "1.1"
-    assert r["SPEC_HASH"] == "a5ba20db1ccc157207f7e4e90197a5a82b1b8fda10dce01ffffb2b3ee8cf5995"
+    assert r["VERSION"] == "1.2"
+    assert r["SPEC_HASH"] == "481dd02413642f7935c9efbb946a9d1e1a1a39cfccae8137067c3ff9cd42e0a8" == compute_spec_hash(canon())
     assert r["GEAR_SLOTS"] == 9 and r["CAMPAIGN_STAGES"] == 200 and r["RESEARCH_NODES"] == 48 and r["UNITS"] == 13
 
 
 def test_enemy_power_table():
-    # audit table (04_GAMEPLAY_ECONOMIA_LIVEOPS): stage 1 = 75, stage 200 = 698,958
-    assert F.enemy_power(1) == 75 and F.enemy_power(200) == 698958
-    assert F.enemy_required_power(200) == round(698958 * 1.85)
+    # v1.1 audit table (04_GAMEPLAY_ECONOMIA_LIVEOPS): stage 1 = 75, stage 200 = 698,958 before the v1.2 ramp (x1.6 at 200)
+    assert F.enemy_power(1) == 75 and F.enemy_power(50) == round(75 * 1.047 ** 49)
+    assert F.difficulty_ramp(50) == 1 and F.difficulty_ramp(100) == 1.2 and abs(F.difficulty_ramp(200) - 1.6) < 1e-9
+    assert F.enemy_power(200) == round(75 * 1.047 ** 199 * 1.6) and abs(F.enemy_power(200) / 698958 - 1.6) < 0.001
+    assert F.enemy_required_power(200) == round(F.enemy_power(200) * 1.85)
     assert F.enemy_required_power(5) == round(F.enemy_power(5) * 1.35)
+
+
+def test_unit_counters_v12():
+    cc = canon()["units"]["counters"]
+    assert cc["bonus_pct"] == 30 and cc["malus_pct"] == 20 and len(cc["table"]) == 13
+    assert next(u for u in canon()["units"]["catalog"] if u["key"] == "conquest_wagon")["name"] == "Ariete d'Assedio"
+    # every family and boss has a class
+    fams = {f for r in canon()["battle"]["regions"] for f in r["enemy_families"]} | {r["region_boss"] for r in canon()["battle"]["regions"]}
+    assert fams <= set(canon()["battle"]["enemy_classes"])
+    # region 1: 2 umanoidi + 2 bestie -> infantry (+30 vs bestie) = +15%; boss stage 10: 50% giganti + 25% umanoidi + 25% bestie
+    assert F.stage_enemy_mix(5) == {"umanoidi": 0.5, "bestie": 0.5}
+    assert F.unit_counter_pct("infantry", F.stage_enemy_mix(5)) == 15.0
+    assert F.unit_counter_pct("archer", F.stage_enemy_mix(5)) == 5.0  # +30*0.5 -20*0.5
+    m10 = F.stage_enemy_mix(10)
+    assert abs(m10["giganti"] - 0.5) < 1e-9 and abs(F.unit_counter_pct("catapult", m10) - (15 - 5)) < 1e-9
+    assert F.unit_counter_pct("dragon", None) == 0.0
+    # army class mix weighted by command cost
+    mix = F.army_class_mix({"infantry": 10, "cavalry": 2})  # 10*1 umanoidi, 2*3 bestie
+    assert abs(mix["umanoidi"] - 10 / 16) < 1e-9 and abs(mix["bestie"] - 6 / 16) < 1e-9
+    assert F.army_class_mix({}) == {}
+
+
+def test_war_lane_counters_v12():
+    from app.domain.wars import lane_power
+    a = {"war_power": 1000, "hero_power": 500, "army_per_unit": {"archer": 500}, "army_class_mix": {"umanoidi": 1.0}, "roster_pct": 0}
+    d = {"war_power": 1000, "hero_power": 500, "army_per_unit": {"catapult": 500}, "army_class_mix": {"corazzati": 1.0}, "roster_pct": 0}
+    pa, ca = lane_power(a, d)  # archers -20% vs corazzati -> 500 + 400
+    pd, cd = lane_power(d, a)  # catapult neutral vs umanoidi
+    assert abs(pa - 900) < 1e-6 and abs(ca + 20) < 1e-6 and abs(pd - 1000) < 1e-6 and cd == 0.0
+    npc = {"npc": True, "war_power": 700}
+    assert lane_power(a, npc) == (1000.0, 0.0) and lane_power(npc, a) == (700.0, 0.0)
+    legacy = {"war_power": 1234}
+    assert lane_power(legacy, a) == (1234.0, 0.0)
 
 
 def test_first_clear_rewards_table():

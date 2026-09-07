@@ -11,7 +11,7 @@ import { ConstructionSite, Flag, Peasant, Smoke } from "./life";
 const SMOKING = new Set(["castle", "farm", "lumberyard", "workshop", "barracks", "iron_mine", "gold_mine", "temple", "university"]);
 
 const BUILDING_ICON: Record<string, IconName> = { castle: "castle", farm: "barley", lumberyard: "pine-tree", clay_pit: "cube", iron_mine: "pickaxe", gold_mine: "gold", warehouse: "warehouse", barracks: "sword-cross", stable: "horse", workshop: "hammer-wrench", university: "school", walls: "wall", alliance_hall: "account-group", bestiary: "paw", temple: "church", mythic_sanctuary: "star-four-points" };
-const LAYOUT: Record<string, [number, number]> = { castle: [0.5, 0.4], walls: [0.5, 0.9], farm: [0.14, 0.74], lumberyard: [0.86, 0.74], clay_pit: [0.17, 0.54], iron_mine: [0.83, 0.52], gold_mine: [0.86, 0.32], warehouse: [0.32, 0.62], barracks: [0.68, 0.62], stable: [0.72, 0.84], workshop: [0.28, 0.84], university: [0.14, 0.32], alliance_hall: [0.32, 0.2], bestiary: [0.68, 0.2], temple: [0.5, 0.1], mythic_sanctuary: [0.5, 0.7] };
+const LAYOUT: Record<string, [number, number]> = { castle: [0.5, 0.4], walls: [0.5, 0.9], farm: [0.14, 0.74], lumberyard: [0.86, 0.74], clay_pit: [0.17, 0.54], iron_mine: [0.83, 0.52], gold_mine: [0.86, 0.32], warehouse: [0.32, 0.62], barracks: [0.68, 0.62], stable: [0.72, 0.84], workshop: [0.28, 0.84], university: [0.14, 0.32], alliance_hall: [0.32, 0.2], bestiary: [0.68, 0.2], temple: [0.5, 0.1], mythic_sanctuary: [0.5, 0.63] };
 
 export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSelect, queued, serverTime }: { buildings: { key: string; name: string; level: number; unlocked: boolean }[]; castleLevel: number; tier: { tier: number; name: string; walls: string; roofs: string; banners: string; landmark: string; density?: string }; heraldicColor: string; onSelect: (key: string) => void; queued: Record<string, any>; serverTime?: string }) {
   const { colors } = useTheme();
@@ -50,7 +50,10 @@ export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSe
       )}
       {/* soft vignette + dwellings density hint (tier growth) */}
       <LinearGradient colors={["rgba(0,0,0,0.25)", "transparent", "rgba(0,0,0,0.3)"]} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }} pointerEvents="none" />
-      {t >= 2 ? <View style={{ position: "absolute", left: width * 0.06, right: width * 0.06, top: h * 0.2, bottom: h * 0.04, borderWidth: 3 + t, borderColor: wallColor, borderRadius: 60, opacity: 0.35 }} pointerEvents="none" /> : null}
+      {(() => {
+        const wb = buildings.find((b) => b.key === "walls");
+        return wb ? <WallRing width={width} h={h} level={wb.level} unlocked={wb.unlocked} tier={t} color={wallColor} heraldic={heraldicColor} queued={queued.walls ? progressOf(queued.walls) : null} onPress={() => onSelect("walls")} /> : null;
+      })()}
       <View style={{ position: "absolute", left: width * 0.36, right: width * 0.36, top: h * 0.58, flexDirection: "row", flexWrap: "wrap", gap: 4, justifyContent: "center" }} pointerEvents="none">
         {Array.from({ length: Math.min(houses, 14) }).map((_, i) => (
           <View key={i} style={{ width: 8 + (i % 3) * 2, height: 6 + (i % 2) * 3, backgroundColor: i % 5 === 0 ? colors.parchmentDark : colors.wood, borderTopWidth: 3, borderColor: t >= 5 ? colors.gold : t >= 3 ? "#7A4E3B" : "#5A4A3A", opacity: 0.85 }} />
@@ -66,8 +69,8 @@ export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSe
         const size = sizeOf(b.key, b.level);
         return <Smoke key={`s${b.key}`} x={width * pos[0] + size * 0.18} y={h * pos[1] - size / 2 + 4} />;
       })}
-      {/* buildings */}
-      {buildings.map((b) => {
+      {/* buildings (walls are drawn as the perimeter ring above) */}
+      {buildings.filter((b) => b.key !== "walls").map((b) => {
         const pos = LAYOUT[b.key];
         if (!pos) return null;
         const size = sizeOf(b.key, b.level);
@@ -100,5 +103,54 @@ export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSe
         <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.onSurface }}>Castello {castleLevel} · Tier {t} · {tier.landmark}</Text>
       </View>
     </View>
+  );
+}
+
+/** City walls: a real perimeter (thickness, towers and gatehouse grow with the wall level) instead of a small building icon. */
+function WallRing({ width, h, level, unlocked, tier, color, heraldic, queued, onPress }: { width: number; h: number; level: number; unlocked: boolean; tier: number; color: string; heraldic: string; queued: number | null; onPress: () => void }) {
+  const { colors } = useTheme();
+  const built = level > 0;
+  const lv = Math.min(30, level);
+  const thick = built ? 10 + Math.round(lv * 0.5) : 4; // 10..25px
+  const towerR = built ? 14 + Math.round(lv * 0.6) : 0; // corner towers 14..32
+  const gate = built ? Math.min(width * 0.4, 84 + lv * 2.4) : 72; // gatehouse art 84..156
+  const left = width * 0.05, right = width * 0.05, top = h * 0.17, bottom = h * 0.02;
+  const dark = "rgba(0,0,0,0.35)", light = "rgba(255,255,255,0.22)";
+  const img = buildingArt("walls", tier);
+  const corners = [{ x: left, y: top }, { x: width - right, y: top }, { x: left, y: h - bottom }, { x: width - right, y: h - bottom }];
+  return (
+    <>
+      {built ? (
+        <View pointerEvents="none" style={{ position: "absolute", left, right, top, bottom }} testID="kingdom-walls">
+          {/* wall body + crenellations (dashed cap) + shading */}
+          <View style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, borderWidth: thick, borderColor: color, borderRadius: 40 + thick }} />
+          <View style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, borderWidth: Math.max(3, thick * 0.38), borderColor: dark, borderStyle: "dashed", borderRadius: 40 + thick }} />
+          <View style={{ position: "absolute", left: thick * 0.55, right: thick * 0.55, top: thick * 0.55, bottom: thick * 0.55, borderWidth: 1.5, borderColor: light, borderRadius: 40 }} />
+          <View style={{ position: "absolute", left: thick, right: thick, top: thick, bottom: thick, borderTopWidth: thick * 0.5, borderColor: dark, borderRadius: 34 }} />
+          {/* corner towers with roofs and pennants */}
+          {corners.map((c, i) => (
+            <View key={i} style={{ position: "absolute", left: c.x - left - towerR, top: c.y - top - towerR * 1.3, width: towerR * 2, height: towerR * 2.3, alignItems: "center" }}>
+              <View style={{ width: 0, height: 0, borderLeftWidth: towerR * 0.95, borderRightWidth: towerR * 0.95, borderBottomWidth: towerR * 0.9, borderLeftColor: "transparent", borderRightColor: "transparent", borderBottomColor: tier >= 5 ? colors.gold : "#3C4A66" }} />
+              <View style={{ width: towerR * 2, height: towerR * 1.5, borderRadius: towerR * 0.5, backgroundColor: color, borderWidth: 2, borderColor: dark }}>
+                <View style={{ position: "absolute", left: towerR * 0.35, right: towerR * 0.35, top: towerR * 0.25, height: towerR * 0.35, borderRadius: 2, backgroundColor: dark }} />
+              </View>
+              <View style={{ position: "absolute", top: -towerR * 0.7, alignItems: "center" }}><View style={{ width: 2, height: towerR * 0.9, backgroundColor: "#5A4A3A" }} /><View style={{ position: "absolute", top: 0, left: 2, width: 0, height: 0, borderTopWidth: towerR * 0.25, borderBottomWidth: towerR * 0.25, borderLeftWidth: towerR * 0.6, borderTopColor: "transparent", borderBottomColor: "transparent", borderLeftColor: heraldic }} /></View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View pointerEvents="none" style={{ position: "absolute", left, right, top, bottom, borderWidth: thick, borderColor: unlocked ? color : colors.iron, borderStyle: "dashed", borderRadius: 50, opacity: 0.45 }} testID="kingdom-walls-unbuilt" />
+      )}
+      {/* gatehouse (tap target for the walls building) */}
+      <Pressable testID="building-walls" onPress={onPress} style={{ position: "absolute", left: width * 0.5 - gate / 2, top: h - bottom - gate * 0.82, width: gate, height: gate + 14, alignItems: "center", opacity: unlocked ? 1 : 0.5 }}>
+        <View style={{ width: gate, height: gate, alignItems: "center", justifyContent: "center" }}>
+          <View style={{ position: "absolute", bottom: gate * 0.08, width: gate * 0.85, height: gate * 0.2, borderRadius: gate, backgroundColor: "#000", opacity: 0.3 }} />
+          {img ? <Image source={img} style={{ width: gate, height: gate, opacity: built ? 1 : 0.5 }} resizeMode="contain" /> : <Icon name="wall" size={gate * 0.5} color={colors.parchment} />}
+          {!built ? <View style={{ position: "absolute", width: 34, height: 34, borderRadius: 20, backgroundColor: colors.overlay, borderWidth: 1.5, borderColor: unlocked ? colors.gold : colors.iron, alignItems: "center", justifyContent: "center" }}><Icon name={unlocked ? "hammer" : "lock"} size={18} color={unlocked ? colors.goldBright : colors.muted} /></View> : null}
+          {queued !== null ? <ConstructionSite size={gate} progress={queued} /> : null}
+        </View>
+        <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: colors.onSurface, backgroundColor: colors.overlay, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, marginTop: -gate * 0.16, borderWidth: 1, borderColor: colors.wood }} numberOfLines={1}>{built ? `Mura · Lv ${level}` : unlocked ? "Costruisci le mura" : "Bloccato"}</Text>
+      </Pressable>
+    </>
   );
 }

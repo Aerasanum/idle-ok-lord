@@ -10,7 +10,6 @@ import { Btn, Icon, Loading, Panel, Res, ResourceBar, Row, Txt, fmt, fmtDuration
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useCountdown } from "@/src/ui/useCountdown";
 import { TutorialTarget } from "@/src/tutorial/Tutorial";
-import { playSfx } from "@/src/audio";
 
 export default function KingdomTab() {
   const { colors } = useTheme();
@@ -88,7 +87,7 @@ export default function KingdomTab() {
                   <Row gap={4}><Icon name="clock-outline" size={14} color={colors.onSurfaceInverse} /><Txt v="small" color={colors.onSurfaceInverse}>{b.next.minutes <= 0 ? "istantaneo" : fmtDuration(b.next.minutes * 60)}</Txt></Row>
                 </Row>
                 {b.in_queue ? <Txt v="small" color={colors.onSurfaceInverse}>In costruzione…</Txt> : (
-                  <Btn title={b.level === 0 ? "Costruisci" : "Potenzia"} icon="hammer" disabled={!b.unlocked || !canAfford(b.next.cost) || k.queues.construction_queue.length >= k.queue_caps.construction} loading={upgrade.isPending} onPress={() => upgrade.mutate({ building: b.key }, { onSuccess: () => { playSfx("build"); sheet.current?.dismiss(); } })} testID="building-upgrade-button" />
+                  <Btn title={b.level === 0 ? "Costruisci" : "Potenzia"} icon="hammer" disabled={!b.unlocked || !canAfford(b.next.cost) || k.queues.construction_queue.length >= k.queue_caps.construction} loading={upgrade.isPending} onPress={() => upgrade.mutate({ building: b.key }, { onSuccess: () => sheet.current?.dismiss() })} testID="building-upgrade-button" />
                 )}
                 {!canAfford(b.next.cost) ? <Txt v="small" color={colors.burgundy}>Risorse insufficienti</Txt> : null}
               </Panel>

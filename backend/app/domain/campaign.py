@@ -53,7 +53,7 @@ async def start_attempt(p: dict, stage: int, client_key: str | None = None) -> d
                 return {"attempt": clean(a), "reused": True}
             await claim_attempt(p, active)  # auto-settle a resolved but unclaimed attempt
             p = await db.players.find_one({"_id": p["_id"]})
-    prof = await combat_profile(p)
+    prof = await combat_profile(p, enemy_mix=F.stage_enemy_mix(stage))
     kind = F.stage_kind(stage)
     required = F.enemy_required_power(stage)
     hero_power = prof["hero"]["power"]

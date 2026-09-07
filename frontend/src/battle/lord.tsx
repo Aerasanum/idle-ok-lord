@@ -12,7 +12,11 @@ type Item = { slot: string; rarity: string; item_level: number } | null | undefi
 const SKIN = "#D9B48F", CLOTH = "#6B5A44", LEATHER = "#5A4632", STEEL = "#9AA1A9", STEEL_D = "#6E7580", HAIR = "#3A2A1E", INK = "#111111";
 const RARITY_RANK: Record<string, number> = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, mythic: 5, ancient: 6 };
 
-export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier = 0, heraldicColor = "#800020", swinging = true, attack, hurtTick = 0 }: { equipped: Record<string, Item>; size?: number; tier?: number; heraldicColor?: string; swinging?: boolean; attack?: SharedValue<number>; hurtTick?: number }) {
+// ---- Lord move set (v1.2): 1 slash · 2 heavy · 3 spin · 4 dash · 5 leap · 6 super charge · 7 super release ----
+export type LordMove = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export const LORD_MOVE_MS: Record<LordMove, number> = { 0: 0, 1: 760, 2: 820, 3: 640, 4: 760, 5: 820, 6: 1700, 7: 620 };
+
+export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier = 0, heraldicColor = "#800020", swinging = true, move, hurtTick = 0, superMode = false }: { equipped: Record<string, Item>; size?: number; tier?: number; heraldicColor?: string; swinging?: boolean; move?: { kind: SharedValue<number>; t: SharedValue<number>; dist: SharedValue<number> }; hurtTick?: number; superMode?: boolean }) {
   const { colors } = useTheme();
   const u = size / 80;
   const has = (s: string) => !!equipped[s];
@@ -34,18 +38,33 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
     swing.value = withRepeat(withSequence(withTiming(-80, { duration: 170, easing: Easing.out(Easing.cubic) }), withTiming(-70, { duration: 130 }), withTiming(20, { duration: 480, easing: Easing.inOut(Easing.quad) }), withTiming(20, { duration: 420 })), -1, false);
   }, [swing, swinging]);
   const swordStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${swing.value}deg` }] }));
-  // rendered variant: the whole figure leans into the strike (driven by the scene's lunge value when provided) and recoils when hit
+  // rendered variant: whole-figure choreography driven by the scene's move (kind + progress) and recoil when hit
   const hurt = useSharedValue(0);
   useEffect(() => {
     if (!hurtTick) return;
     hurt.value = 1;
     hurt.value = withTiming(0, { duration: 320, easing: Easing.out(Easing.quad) });
   }, [hurtTick, hurt]);
+  const glow = useSharedValue(0);
+  useEffect(() => {
+    if (superMode) glow.value = withRepeat(withSequence(withTiming(1, { duration: 140 }), withTiming(0.45, { duration: 140 })), -1, true);
+    else glow.value = withTiming(0, { duration: 300 });
+  }, [superMode, glow]);
   const artStyle = useAnimatedStyle(() => {
-    const a = attack ? Math.min(1, attack.value / 22) : Math.max(0, -(swing.value - 20)) / 100;
-    return { transform: [{ translateX: -8 * hurt.value }, { rotate: `${-11 * a + 5 * hurt.value}deg` }, { scaleX: 1 + 0.06 * a }, { scaleY: 1 - 0.03 * a }] };
+    const k = move ? move.kind.value : 0, t = move ? move.t.value : 0, d = move ? move.dist.value : 0, hv = hurt.value;
+    const s = Math.sin(Math.PI * Math.min(1, Math.max(0, t)));
+    let tx = -8 * hv, ty = 0, rot = 5 * hv, sx = 1, sy = 1;
+    if (k === 1) { tx += 24 * s; rot += -11 * s; sx = 1 + 0.05 * s; sy = 1 - 0.03 * s; }
+    else if (k === 2) { tx += 54 * s; rot += -17 * s; sx = 1 + 0.1 * s; sy = 1 - 0.05 * s; }
+    else if (k === 3) { tx += 30 * s; rot += 360 * t; }
+    else if (k === 4) { const p = t < 0.5 ? 1 - (1 - t * 2) * (1 - t * 2) : 1 - (t - 0.5) * 2; tx += d * p; sx = 1 + 0.15 * s; rot += -8 * s; }
+    else if (k === 5) { const up = Math.min(1, t / 0.7); tx += 44 * Math.sin((Math.PI / 2) * up); ty = -78 * Math.sin(Math.PI * up); rot += -12 * Math.sin(Math.PI * up); sy = t > 0.7 ? 1 - 0.18 * Math.sin(Math.PI * ((t - 0.7) / 0.3)) : 1 + 0.06 * Math.sin(Math.PI * up); sx = t > 0.7 ? 1 + 0.12 * Math.sin(Math.PI * ((t - 0.7) / 0.3)) : 1; }
+    else if (k === 6) { ty = -14 * Math.min(1, t * 1.4); tx += Math.sin(t * 90) * 2.2 * Math.min(1, t * 2); sx = sy = 1 + 0.08 * Math.min(1, t * 1.2); }
+    else if (k === 7) { tx += 70 * s; sx = 1.12; sy = 1.12; rot += -6 * s; }
+    return { transform: [{ translateX: tx }, { translateY: ty }, { rotate: `${rot}deg` }, { scaleX: sx }, { scaleY: sy }] };
   });
   const hurtStyle = useAnimatedStyle(() => ({ opacity: 0.55 * hurt.value }));
+  const glowStyle = useAnimatedStyle(() => ({ opacity: 0.85 * glow.value, transform: [{ scale: 1.06 + 0.05 * glow.value }] }));
   const img = lordArt(equipped, tier);
 
   if (img) {
@@ -55,6 +74,9 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
         {aura ? <View style={{ position: "absolute", bottom: -4, width: w * 0.9, height: h * 0.2, borderRadius: w, backgroundColor: weaponGlow ?? colors.goldBright, opacity: 0.35 }} /> : null}
         <View style={{ position: "absolute", bottom: 2, width: w * 0.7, height: h * 0.1, borderRadius: w, backgroundColor: "#000", opacity: 0.35 }} />
         <Animated.View style={[{ width: w, height: h, transformOrigin: "50% 100%" }, artStyle]}>
+          <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, glowStyle]}>
+            <Image source={img} style={{ width: w, height: h, tintColor: "#FFD84A" }} resizeMode="contain" />
+          </Animated.View>
           <Image source={img} style={{ width: w, height: h }} resizeMode="contain" />
           <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, hurtStyle]}>
             <Image source={img} style={{ width: w, height: h, tintColor: colors.error }} resizeMode="contain" />

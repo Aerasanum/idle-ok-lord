@@ -642,11 +642,68 @@
     "boss_power_multiplier": 1.85,
     "campaign_stages": 200,
     "combat_animation": "server resolves deterministic outcome/rewards; client animates hero, representative army cohorts and monster hordes from the authoritative result",
+    "difficulty_ramp": {
+      "note": "v1.2 progressive late-game difficulty: +20% at 100, +40% at 150, +60% at 200",
+      "per_stage": 0.004,
+      "start_stage": 50
+    },
     "domain_tile_every_stages": 2,
     "elite_every_stages": 5,
     "elite_power_multiplier": 1.35,
     "endless_frontier_unlock_stage": 200,
-    "enemy_power_formula": "round(75 * 1.047^(stage-1))",
+    "enemy_classes": {
+      "Abyss Wyrm": "draghi",
+      "Ancient Titan": "giganti",
+      "Ancient Treant": "giganti",
+      "Armored Ogre": "corazzati",
+      "Ash Raider": "umanoidi",
+      "Bone Colossus": "spiriti",
+      "Celestial Construct": "corazzati",
+      "Cultist": "umanoidi",
+      "Dark Wolf": "bestie",
+      "Demon Legionary": "spiriti",
+      "Desert Marauder": "umanoidi",
+      "Djinn Acolyte": "spiriti",
+      "Dragon Cultist": "umanoidi",
+      "Drake": "draghi",
+      "Drowned Soldier": "spiriti",
+      "Elder Dragon": "draghi",
+      "Fallen Knight": "corazzati",
+      "Fallen Seraph": "volanti",
+      "Fire Imp": "spiriti",
+      "Forest Troll": "giganti",
+      "Frost Wolf": "bestie",
+      "Frost Wraith": "spiriti",
+      "Giant Scorpion": "bestie",
+      "Giant Spider": "bestie",
+      "Goblin Raider": "umanoidi",
+      "Harpy": "volanti",
+      "Ice Giant King": "giganti",
+      "Ice Troll": "giganti",
+      "Infernal Herald": "spiriti",
+      "Leviathan": "draghi",
+      "Leviathan Spawn": "draghi",
+      "Magma Golem": "corazzati",
+      "Marsh Wolf": "bestie",
+      "Mountain Tyrant": "giganti",
+      "North Raider": "umanoidi",
+      "Ogre Warlord": "giganti",
+      "Orc Reaver": "umanoidi",
+      "Road Bandit": "umanoidi",
+      "Sand Golem": "corazzati",
+      "Sand Wyrm": "draghi",
+      "Sea Troll": "giganti",
+      "Siren": "spiriti",
+      "Stone Golem": "corazzati",
+      "Undead Legionary": "spiriti",
+      "Warg": "bestie",
+      "Wild Boar": "bestie",
+      "Winged Horror": "volanti",
+      "World Beast": "bestie",
+      "World Devourer": "draghi",
+      "Wyvern": "volanti"
+    },
+    "enemy_power_formula": "round(75 * 1.047^(stage-1) * (1 + 0.004*max(0, stage-50)))",
     "failure_rule": "failed stage gives 20% of kill-earned XP/Gold already escrowed but no clear bonus, domain tile or boss chest",
     "farm_highest_cleared_stage_offline": true,
     "first_clear_gold_formula": "round(18 * stage^1.22)",
@@ -4871,12 +4928,18 @@
       "Guardrails v1.1",
       "Art Direction v1.1"
     ],
-    "balance_status": "audited build baseline; live changes require v1.2+ canonical update",
+    "balance_status": "v1.2 live update (owner-approved): unit counters, late-game difficulty ramp, siege wagon rename; unit statistics unchanged from v1.1",
+    "changelog_v1_2": [
+      "units.counters: strong_vs (+30%) / weak_vs (-20%) per unit against 7 enemy classes (PvE stage mix, war lane opponent mix)",
+      "battle.enemy_classes: class of every enemy family and region boss",
+      "battle.enemy_power_formula: multiplied by difficulty ramp 1 + 0.004*max(0, stage-50)",
+      "units.catalog[conquest_wagon].name: 'Ariete d'Assedio'"
+    ],
     "project": "IDLE 1",
     "relationship_to_empire_lords_dragon": "same medieval-fantasy universe inspiration; independent gameplay runtime; do not import multiplayer rules unless explicitly present here",
-    "spec_hash": "a5ba20db1ccc157207f7e4e90197a5a82b1b8fda10dce01ffffb2b3ee8cf5995",
-    "status": "FROZEN_FOR_BUILD",
-    "version": "1.1",
+    "spec_hash": "481dd02413642f7935c9efbb946a9d1e1a1a39cfccae8137067c3ff9cd42e0a8",
+    "status": "LIVE_UPDATE_v1.2",
+    "version": "1.2",
     "working_marketing_title": "TBD - do not invent without approval"
   },
   "dungeons": {
@@ -9914,7 +9977,7 @@
         "defense": 20,
         "hp": 300,
         "key": "conquest_wagon",
-        "name": "Carro di Conquista",
+        "name": "Ariete d'Assedio",
         "pve_permanent_death": false,
         "recruit_cost": {
           "clay": 30,
@@ -9925,6 +9988,7 @@
         },
         "recruit_gate_rule": "all listed castle/research/campaign-stage gates must be satisfied",
         "recruit_time_minutes_each": 8,
+        "rename_note": "v1.2: renamed from 'Carro di Conquista' (does not conquer domain tiles); key unchanged",
         "required_research": "siege.conquest_wagons",
         "role": "domain",
         "unlock_campaign_stage": 80,
@@ -10141,6 +10205,178 @@
       }
     ],
     "command_capacity_formula": "50 + hero_level*10 + castle_level^2*20",
+    "counters": {
+      "bonus_pct": 30,
+      "class_labels": {
+        "bestie": "Bestie",
+        "corazzati": "Corazzati",
+        "draghi": "Draghi",
+        "giganti": "Giganti",
+        "spiriti": "Spiriti",
+        "umanoidi": "Umanoidi",
+        "volanti": "Volanti"
+      },
+      "malus_pct": 20,
+      "pve_rule": "unit_power *= 1 + sum(mix_share[class] * (bonus_pct if class in strong_vs else -malus_pct if class in weak_vs else 0))/100; mix = stage enemy classes",
+      "pve_stage_mix": {
+        "boss": {
+          "boss_class": 0.5,
+          "families": 0.5
+        },
+        "normal_elite": "region enemy_families, equal shares"
+      },
+      "table": {
+        "angel": {
+          "strong_vs": [
+            "spiriti",
+            "draghi",
+            "volanti",
+            "umanoidi"
+          ],
+          "weak_vs": [
+            "corazzati"
+          ]
+        },
+        "archer": {
+          "strong_vs": [
+            "volanti",
+            "umanoidi"
+          ],
+          "weak_vs": [
+            "corazzati",
+            "bestie"
+          ]
+        },
+        "bear": {
+          "strong_vs": [
+            "umanoidi",
+            "corazzati"
+          ],
+          "weak_vs": [
+            "volanti",
+            "draghi"
+          ]
+        },
+        "catapult": {
+          "strong_vs": [
+            "corazzati",
+            "giganti"
+          ],
+          "weak_vs": [
+            "volanti",
+            "bestie"
+          ]
+        },
+        "cavalry": {
+          "strong_vs": [
+            "umanoidi",
+            "spiriti"
+          ],
+          "weak_vs": [
+            "corazzati",
+            "giganti"
+          ]
+        },
+        "conquest_wagon": {
+          "strong_vs": [
+            "umanoidi",
+            "corazzati"
+          ],
+          "weak_vs": [
+            "volanti",
+            "spiriti"
+          ]
+        },
+        "demon": {
+          "strong_vs": [
+            "umanoidi",
+            "bestie",
+            "giganti",
+            "spiriti"
+          ],
+          "weak_vs": [
+            "draghi"
+          ]
+        },
+        "dragon": {
+          "strong_vs": [
+            "umanoidi",
+            "bestie",
+            "corazzati",
+            "giganti"
+          ],
+          "weak_vs": [
+            "spiriti"
+          ]
+        },
+        "falcon": {
+          "strong_vs": [
+            "volanti",
+            "umanoidi"
+          ],
+          "weak_vs": [
+            "corazzati",
+            "draghi"
+          ]
+        },
+        "infantry": {
+          "strong_vs": [
+            "bestie",
+            "giganti"
+          ],
+          "weak_vs": [
+            "volanti",
+            "spiriti"
+          ]
+        },
+        "lion": {
+          "strong_vs": [
+            "bestie",
+            "spiriti"
+          ],
+          "weak_vs": [
+            "corazzati",
+            "volanti"
+          ]
+        },
+        "war_elephant": {
+          "strong_vs": [
+            "corazzati",
+            "giganti"
+          ],
+          "weak_vs": [
+            "spiriti",
+            "volanti"
+          ]
+        },
+        "wolf": {
+          "strong_vs": [
+            "bestie",
+            "umanoidi"
+          ],
+          "weak_vs": [
+            "corazzati",
+            "giganti"
+          ]
+        }
+      },
+      "unit_class": {
+        "angel": "volanti",
+        "archer": "umanoidi",
+        "bear": "bestie",
+        "catapult": "corazzati",
+        "cavalry": "bestie",
+        "conquest_wagon": "corazzati",
+        "demon": "spiriti",
+        "dragon": "draghi",
+        "falcon": "volanti",
+        "infantry": "umanoidi",
+        "lion": "bestie",
+        "war_elephant": "bestie",
+        "wolf": "bestie"
+      },
+      "war_rule": "per lane, each side's per-unit army power is multiplied against the opponent's deployed army class mix (share = command_cost*quantity); NPC defenders are neutral"
+    },
     "formation_representation": "squad icon/formation; do not render every owned soldier",
     "formation_rule": "Lord is always present; deploy up to the unlocked formation-type slots without exceeding command capacity",
     "ownership": "recruited quantities persist; no permanent PvE or Alliance War death in v1.1",

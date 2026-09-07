@@ -145,6 +145,14 @@ async def test_war_full_cycle_deterministic_and_idempotent(client):
     # season leaderboard updated
     mp2 = (await client.get("/wars/map", headers=h2)).json()
     assert any(l["alliance_id"] == a1["id"] and l["season_points"] == 100 for l in mp2["leaderboard"])
+    # v1.2: live war alerts in the alliance chat (declare, roster, lock, result) + lane counter fields for the animated replay
+    chat = (await client.get(f"/chat/messages?channel=alliance:{a1['id']}", headers=h1)).json()["messages"]
+    alerts = [m for m in chat if m.get("system") and m.get("kind") == "war"]
+    texts = " | ".join(m["text"] for m in alerts)
+    assert "ha dichiarato guerra" in texts and "ha salvato il roster" in texts and "Roster bloccato" in texts and "VITTORIA" in texts
+    assert all({"attacker_counter_pct", "defender_counter_pct", "attacker_npc", "defender_npc", "attacker_level"} <= set(l) for l in res["lanes"])
+    assert all(l["defender_counter_pct"] == 0 and l["attacker_counter_pct"] == 0 for l in res["lanes"])  # NPC garrison is neutral
+    assert "army_class_mix" in detail["snapshot"]["attackers"][0] and "army_per_unit" in detail["snapshot"]["attackers"][0]
 
 
 async def test_titan_hunt(client):

@@ -51,7 +51,7 @@ export const useAlliances = (q: string) => useQuery({ queryKey: [...QK.alliances
 export const useWarMap = () => useQuery({ queryKey: QK.warMap, queryFn: () => api.get("/wars/map"), refetchInterval: 30000 });
 export const useWars = () => useQuery({ queryKey: QK.wars, queryFn: () => api.get("/wars"), refetchInterval: 30000 });
 export const useWar = (id: string | undefined) => useQuery({ queryKey: [...QK.wars, id], queryFn: () => api.get(`/wars/${id}`), enabled: !!id, refetchInterval: 30000 });
-export const useBoss = () => useQuery({ queryKey: QK.boss, queryFn: () => api.get("/alliance-boss"), refetchInterval: 20000 });
+export const useBoss = () => useQuery({ queryKey: QK.boss, queryFn: () => api.get("/alliance-boss"), refetchInterval: 8000 });
 export const useStore = () => useQuery({ queryKey: QK.store, queryFn: () => api.get("/store/catalog") });
 export const usePurchases = () => useQuery({ queryKey: QK.purchases, queryFn: () => api.get("/account/purchases") });
 export const useNotifications = () => useQuery({ queryKey: QK.notifications, queryFn: () => api.get("/notifications"), refetchInterval: 30000 });

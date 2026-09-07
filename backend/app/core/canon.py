@@ -1,16 +1,24 @@
-"""Canonical runtime loader (I02). Every runtime number is read from CANONICAL_SPEC v1.1."""
+"""Canonical runtime loader (I02). Every runtime number is read from the CANONICAL_SPEC (v1.1 frozen baseline + v1.2 live update)."""
+import hashlib
 import json
 import math
 from functools import lru_cache
 
 from .config import settings
 
-REQUIRED_VERSION = "1.1"
-REQUIRED_SPEC_HASH = "a5ba20db1ccc157207f7e4e90197a5a82b1b8fda10dce01ffffb2b3ee8cf5995"
+REQUIRED_VERSION = "1.2"
+REQUIRED_SPEC_HASH = "481dd02413642f7935c9efbb946a9d1e1a1a39cfccae8137067c3ff9cd42e0a8"
 
 
 class CanonError(RuntimeError):
     pass
+
+
+def compute_spec_hash(data: dict) -> str:
+    """sha256 of the canonical JSON with document.spec_hash blanked (sorted keys, compact separators, UTF-8)."""
+    d = json.loads(json.dumps(data))
+    d["document"]["spec_hash"] = ""
+    return hashlib.sha256(json.dumps(d, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
 def _load() -> dict:
@@ -19,7 +27,7 @@ def _load() -> dict:
     doc = data.get("document", {})
     if doc.get("version") != REQUIRED_VERSION:
         raise CanonError(f"Canonical version mismatch: {doc.get('version')}")
-    if doc.get("spec_hash") != REQUIRED_SPEC_HASH:
+    if doc.get("spec_hash") != REQUIRED_SPEC_HASH or compute_spec_hash(data) != REQUIRED_SPEC_HASH:
         raise CanonError("Canonical spec_hash mismatch")
     checks = {
         "GEAR_SLOTS": (len(data["gear"]["slots"]), 9),

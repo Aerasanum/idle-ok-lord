@@ -6,7 +6,6 @@ import { Image, Pressable, Text, View, useWindowDimensions } from "react-native"
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
 import { ART } from "@/src/art/manifest";
-import { playSfx } from "@/src/audio";
 import { fonts, useTheme } from "@/src/theme";
 import { Icon, IconName } from "@/src/ui";
 
@@ -65,7 +64,6 @@ export function DomainMap({ tiles, ownedCount, heraldicColor, growth, onSelect, 
       const seen = raw ? Number(raw) : ownedCount;
       if (ownedCount > seen) {
         setRevealFrom(seen);
-        setTimeout(() => playSfx("coin"), 200);
       }
       AsyncStorage.setItem(SEEN_KEY, String(ownedCount)).catch(() => {});
     }).catch(() => {});

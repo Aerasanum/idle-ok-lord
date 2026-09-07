@@ -18,6 +18,8 @@ import { TutorialTarget, useTutorial } from "@/src/tutorial/Tutorial";
 
 type Result = any;
 
+const CLASS_LABEL: Record<string, string> = { umanoidi: "Umanoidi", bestie: "Bestie", giganti: "Giganti", corazzati: "Corazzati", volanti: "Volanti", spiriti: "Spiriti", draghi: "Draghi" };
+
 export default function BattleTab() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -149,10 +151,15 @@ export default function BattleTab() {
             </Pressable>
           </Row>
           <Row style={{ justifyContent: "space-between", marginTop: 6 }}>
-            <View>
+            <View style={{ flex: 1, paddingRight: 8 }}>
               <Txt v="caption">La tua potenza</Txt>
-              <Txt v="num" testID="player-power">{fmt(profile.combat.total_power)}</Txt>
-              <Txt v="small" color={colors.muted}>Lord {fmt(profile.combat.hero.power)} · Esercito {fmt(profile.combat.army_power)}</Txt>
+              <Txt v="num" testID="player-power">{fmt(preview?.player_power ?? profile.combat.total_power)}</Txt>
+              <Txt v="small" color={colors.muted}>Lord {fmt(profile.combat.hero.power)} · Esercito {fmt(preview?.army_power ?? profile.combat.army_power)}</Txt>
+              {preview?.army_counter_net_pct ? (
+                <Txt v="small" color={preview.army_counter_net_pct > 0 ? colors.success : colors.error} testID="army-counter-net">
+                  Contro-unità: {preview.army_counter_net_pct > 0 ? "+" : ""}{preview.army_counter_net_pct}% · nemici {Object.entries(preview.enemy_mix ?? {}).map(([c, s]) => `${CLASS_LABEL[c] ?? c} ${Math.round((s as number) * 100)}%`).join(", ")}
+                </Txt>
+              ) : null}
             </View>
             <View style={{ alignItems: "flex-end" }}>
               <Txt v="caption">Richiesta</Txt>

@@ -1,12 +1,12 @@
-// Audio bootstrap + volume UI. Mounted once in the root layout; volumes come from the player profile (server) with a local cache.
+// Audio bootstrap + music volume UI. Mounted once in the root layout; volume comes from the player profile (server) with a local cache.
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 
 import { useProfile } from "@/src/api/hooks";
 import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
-import { Btn, Icon, IconName, Row, Txt } from "@/src/ui";
-import { getVolumes, initAudio, playSfx, setVolumes, stopMusic, subscribeAudio } from "./index";
+import { Btn, Icon, Row, Txt } from "@/src/ui";
+import { getVolumes, initAudio, setVolumes, stopMusic, subscribeAudio } from "./index";
 
 export function AudioBootstrap() {
   const { user } = useAuth();
@@ -21,10 +21,10 @@ export function AudioBootstrap() {
 
 function ProfileVolumeSync() {
   const { data: profile } = useProfile();
-  const music = profile?.settings?.music_volume, sfx = profile?.settings?.sfx_volume;
+  const music = profile?.settings?.music_volume;
   useEffect(() => {
-    if (typeof music === "number" || typeof sfx === "number") initAudio({ music_volume: music, sfx_volume: sfx });
-  }, [music, sfx]);
+    if (typeof music === "number") initAudio({ music_volume: music });
+  }, [music]);
   return null;
 }
 
@@ -34,35 +34,27 @@ export function useAudioVolumes() {
   return v;
 }
 
-function VolumeRow({ label, icon, value, onChange, testID }: { label: string; icon: IconName; value: number; onChange: (v: number) => void; testID: string }) {
+export function AudioSettings() {
   const { colors } = useTheme();
-  const pct = Math.round(value * 100);
+  const v = useAudioVolumes();
+  const pct = Math.round(v.music * 100);
   return (
-    <View style={{ gap: 6 }} testID={testID}>
-      <Row style={{ justifyContent: "space-between" }}>
+    <View style={{ gap: 6 }} testID="audio-settings">
+      <Row style={{ justifyContent: "space-between" }} testID="music-volume">
         <Row>
-          <Icon name={pct === 0 ? "volume-off" : icon} size={18} color={colors.goldBright} />
-          <Txt v="body">{label}</Txt>
+          <Icon name={pct === 0 ? "volume-off" : "music"} size={18} color={colors.goldBright} />
+          <Txt v="body">Musica</Txt>
         </Row>
-        <Txt v="bodyBold" testID={`${testID}-value`}>{pct}%</Txt>
+        <Txt v="bodyBold" testID="music-volume-value">{pct}%</Txt>
       </Row>
       <Row>
-        <Btn title="−" small variant="secondary" onPress={() => onChange(Math.max(0, value - 0.1))} testID={`${testID}-minus`} />
+        <Btn title="−" small variant="secondary" onPress={() => setVolumes({ music: Math.max(0, v.music - 0.1) })} testID="music-volume-minus" />
         <View style={{ flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.scrim, borderWidth: 1, borderColor: colors.wood, overflow: "hidden" }}>
           <View style={{ width: `${pct}%`, height: "100%", backgroundColor: colors.goldBright }} />
         </View>
-        <Btn title="+" small variant="secondary" onPress={() => onChange(Math.min(1, value + 0.1))} testID={`${testID}-plus`} />
+        <Btn title="+" small variant="secondary" onPress={() => setVolumes({ music: Math.min(1, v.music + 0.1) })} testID="music-volume-plus" />
       </Row>
-    </View>
-  );
-}
-
-export function AudioSettings() {
-  const v = useAudioVolumes();
-  return (
-    <View style={{ gap: 12 }} testID="audio-settings">
-      <VolumeRow label="Musica" icon="music" value={v.music} onChange={(music) => setVolumes({ music })} testID="music-volume" />
-      <VolumeRow label="Effetti sonori" icon="volume-high" value={v.sfx} onChange={(sfx) => { setVolumes({ sfx }); playSfx("coin"); }} testID="sfx-volume" />
+      <Txt v="small" color={colors.muted}>Colonna sonora per regione. Gli effetti sonori sono disattivati.</Txt>
     </View>
   );
 }

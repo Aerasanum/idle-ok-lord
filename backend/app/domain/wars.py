@@ -10,9 +10,10 @@ from . import formulas as F
 from .liveops import season_bounds, season_key
 from .player import combat_profile, research_pct
 from .progress import Ops, quest_progress, resources_inc
-from .social import membership, role_rank, system_feed
+from .social import alliance_alert, membership, role_rank, system_feed
 
 N = 19
+NODE_LABEL_IT = {"wilderness": "Terre selvagge", "village": "Villaggio", "town": "Borgo", "mine": "Miniera", "fortress": "Fortezza", "city": "Città", "home_castle": "Castello"}
 
 
 def xy(node_id: int) -> tuple[int, int]:
@@ -161,11 +162,12 @@ async def declare(p: dict, node_id: int) -> dict:
            "declared_at": now(), "resolves_at": resolves, "lock_at": resolves - timedelta(minutes=aw["roster_lock_minutes_before_resolution"]), "status": "prep",
            "attack_roster": [], "defense_roster": [], "result": None, "archived_at": None}
     await db.alliance_wars.insert_one(war)
-    await system_feed(a["_id"], f"War declared on node {node_id} ({node['type']}). Roster needed!")
+    label = NODE_LABEL_IT.get(node["type"], node["type"])
+    await alliance_alert(a["_id"], f"⚔️ {p['display_name']} ha dichiarato guerra al nodo {node_id} ({label}). Serve il roster d'attacco (10) prima del blocco!")
     members = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": a["_id"]}).to_list(40)]
     await safe_push(members, {"title": "Alliance War", "message": f"War declared on node {node_id}. Set the roster before lock.", "action_url": "/alliance/war"}, f"war_roster:{war['_id']}")
     if defender_id:
-        await system_feed(defender_id, f"Your node {node_id} is under attack! Set the defense roster.")
+        await alliance_alert(defender_id, f"🛡️ Il nodo {node_id} ({label}) è sotto attacco da [{a['tag']}] {a['name']}! Impostate il roster di difesa.")
         dmembers = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": defender_id}).to_list(40)]
         await safe_push(dmembers, {"title": "Alliance War", "message": f"Node {node_id} is under attack. Set the defense roster.", "action_url": "/alliance/war"}, f"war_defend:{war['_id']}")
     return clean(war)
@@ -192,6 +194,7 @@ async def set_roster(p: dict, war_id: str, player_ids: list[str]) -> dict:
     if any(i not in members for i in ids):
         raise fail(400, "not_members")
     await db.alliance_wars.update_one({"_id": war_id, "status": "prep"}, {"$set": {side: ids}})
+    await alliance_alert(me["alliance_id"], f"📜 {p['display_name']} ha salvato il roster di {'attacco' if side == 'attack_roster' else 'difesa'} per il nodo {w['node_id']}: {len(ids)}/{size} guerrieri.")
     return {"war_id": war_id, side: ids}
 
 
@@ -208,6 +211,7 @@ async def _player_snapshot(pid: str, shard_id: str, alliance_id: str | None) -> 
         "equipped_gear_and_affixes": [{"slot": i["slot"], "rarity": i["rarity"], "item_level": i["item_level"], "stats": i["stats"], "affixes": i["affixes"]} for i in items],
         "forge_levels": p["forge"], "talents": p["hero"]["talents"], "deployed_army": p["army"]["formation"], "research": p["research"], "territory_bonuses": tb,
         "hero_power": prof["hero"]["power"], "army_power": prof["army_power"], "total_power": prof["total_power"],
+        "army_per_unit": prof["army_per_unit"], "army_class_mix": F.army_class_mix(p["army"]["formation"]), "roster_pct": roster_pct,
         "war_power": rnd(prof["total_power"] * (1 + roster_pct / 100)),
         "defense_pct": research_pct(p["research"], "wall_defense_pct") + research_pct(p["research"], "war_defense_pct"),
         "fortress_attack_pct": research_pct(p["research"], "fortress_attack_pct"),
@@ -233,7 +237,7 @@ async def lock_war(w: dict) -> dict | None:
     w = await db.alliance_wars.find_one({"_id": w["_id"]})
     if len(w["attack_roster"]) < aw["attack_roster_size"]:
         await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"status": "cancelled", "result": {"reason": "underfilled_attack_roster"}, "resolved_at": now(), "archived_at": now() + timedelta(hours=24)}})
-        await system_feed(w["attacker_id"], f"War on node {w['node_id']} cancelled: attack roster underfilled (10 required).")
+        await alliance_alert(w["attacker_id"], f"❌ Guerra sul nodo {w['node_id']} annullata: roster d'attacco incompleto ({len(w['attack_roster'])}/10).")
         return None
     attackers = [s for s in [await _player_snapshot(pid, w["shard_id"], w["attacker_id"]) for pid in w["attack_roster"]] if s]
     defenders = [s for s in [await _player_snapshot(pid, w["shard_id"], w["defender_id"]) for pid in w["defense_roster"]] if s] if w.get("defender_id") else []
@@ -250,7 +254,21 @@ async def lock_war(w: dict) -> dict | None:
             "variance_range": aw["seeded_variance_range"], "seed": w["_id"]}
     await db.war_snapshots.insert_one(snap)
     await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"status": "locked", "locked_at": now(), "snapshot_id": snap["_id"]}})
+    for aid in filter(None, (w["attacker_id"], w.get("defender_id"))):
+        await alliance_alert(aid, f"🔒 Roster bloccato per il nodo {w['node_id']}: schieramenti congelati, risoluzione tra {aw['roster_lock_minutes_before_resolution']} minuti.")
     return snap
+
+
+def lane_power(s: dict, opp: dict) -> tuple[float, float]:
+    """(power, counter %) of one roster entry against its lane opponent: army re-evaluated with v1.2 unit counters vs the opponent's
+    deployed class mix. NPC entries and snapshots without army detail keep their frozen war_power."""
+    if s.get("npc") or "army_per_unit" not in s:
+        return float(s["war_power"]), 0.0
+    mix = None if opp.get("npc") else opp.get("army_class_mix")
+    base_army = sum(s["army_per_unit"].values())
+    army = sum(v * (1 + F.unit_counter_pct(k, mix) / 100) for k, v in s["army_per_unit"].items())
+    pct = (army / base_army - 1) * 100 if base_army else 0.0
+    return (s["hero_power"] + army) * (1 + s.get("roster_pct", 0) / 100), pct
 
 
 def resolve_lanes(snap: dict) -> dict:
@@ -264,15 +282,19 @@ def resolve_lanes(snap: dict) -> dict:
     for i in range(aw["attack_roster_size"]):
         rng = seeded_rng(snap["seed"], "lane", i)
         a, d = att[i], dfd[i]
-        a_pow = a["war_power"] * (1 + (a.get("fortress_attack_pct", 0) if snap["node_type"] == "fortress" else 0) / 100) * rng.uniform(lo, hi)
-        d_pow = d["war_power"] * (1 + (d.get("defense_pct", 0) + snap.get("defender_fortress_adjacent_pct", 0)) / 100) * rng.uniform(lo, hi)
+        a_base, a_cpct = lane_power(a, d)
+        d_base, d_cpct = lane_power(d, a)
+        a_pow = a_base * (1 + (a.get("fortress_attack_pct", 0) if snap["node_type"] == "fortress" else 0) / 100) * rng.uniform(lo, hi)
+        d_pow = d_base * (1 + (d.get("defense_pct", 0) + snap.get("defender_fortress_adjacent_pct", 0)) / 100) * rng.uniform(lo, hi)
         win = a_pow >= d_pow
         margin = (a_pow - d_pow) / max(a_pow, d_pow, 1)
         margins += margin
         a_pts += 1 if win else 0
         d_pts += 0 if win else 1
         lanes.append({"lane": i + 1, "attacker": a.get("display_name"), "attacker_id": a.get("player_id"), "defender": d.get("display_name"), "defender_id": d.get("player_id"),
-                      "attacker_power": rnd(a_pow), "defender_power": rnd(d_pow), "attacker_wins": win, "margin": round(margin, 4)})
+                      "attacker_level": a.get("hero_level"), "defender_level": d.get("hero_level"), "attacker_npc": bool(a.get("npc")), "defender_npc": bool(d.get("npc")),
+                      "attacker_power": rnd(a_pow), "defender_power": rnd(d_pow), "attacker_counter_pct": round(a_cpct, 1), "defender_counter_pct": round(d_cpct, 1),
+                      "attacker_wins": win, "margin": round(margin, 4)})
     attacker_won = a_pts > d_pts or (a_pts == d_pts and margins > 0)
     return {"lanes": lanes, "attacker_points": a_pts, "defender_points": d_pts, "margin_sum": round(margins, 4), "attacker_won": attacker_won, "tie_break_used": a_pts == d_pts}
 
@@ -312,7 +334,9 @@ async def resolve_war(w: dict) -> dict | None:
     result.update({"captured": captured, "winner_alliance_id": winner, "resolved_at": now().isoformat()})
     await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"status": "resolved", "result": result, "resolved_at": now(), "archived_at": now() + timedelta(hours=24)}})
     for aid in filter(None, (w["attacker_id"], w.get("defender_id"))):
-        await system_feed(aid, f"War on node {w['node_id']} resolved: {'attacker' if result['attacker_won'] else 'defender'} won {result['attacker_points']}-{result['defender_points']}.")
+        mine_won = (aid == w["attacker_id"]) == result["attacker_won"]
+        await alliance_alert(aid, f"{'🏆 VITTORIA' if mine_won else '💀 SCONFITTA'} sul nodo {w['node_id']}: {'attaccante' if result['attacker_won'] else 'difensore'} vince {result['attacker_points']}-{result['defender_points']}"
+                             f"{' · nodo conquistato' if captured else ''}{' · spareggio sui margini' if result['tie_break_used'] else ''}.")
         members = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": aid}).to_list(40)]
         await safe_push(members, {"title": "Alliance War result", "message": f"Node {w['node_id']}: {result['attacker_points']}-{result['defender_points']}", "action_url": "/alliance/war"}, f"war_result:{w['_id']}:{aid}")
     return result
@@ -361,6 +385,26 @@ async def list_wars(p: dict) -> dict:
 
 
 # ---- Titan Hunt --------------------------------------------------------------------------------------------------
+def titan_family(tier: int) -> str:
+    """The Titan of tier t is the region boss of region t (canon regions 1..10)."""
+    regions = canon()["battle"]["regions"]
+    return regions[max(0, min(len(regions) - 1, tier - 1))]["region_boss"]
+
+
+async def boss_leaderboard(run: dict | None) -> list[dict]:
+    if not run:
+        return []
+    attacks = run.get("attacks", {})
+    rows = [(pid, v.get("damage", 0)) for pid, v in attacks.items()]
+    names = {p["_id"]: p for p in await db.players.find({"_id": {"$in": [pid for pid, _ in rows]}}, {"display_name": 1, "hero.level": 1}).to_list(60)}
+    out = sorted(({"player_id": pid, "display_name": names.get(pid, {}).get("display_name", "?"), "hero_level": names.get(pid, {}).get("hero", {}).get("level"), "damage": dmg,
+                   "attacks": sum(d.get("free", 0) + d.get("paid", 0) for k, d in attacks[pid].items() if k != "damage")} for pid, dmg in rows), key=lambda x: -x["damage"])
+    for i, r in enumerate(out):
+        r["rank"] = i + 1
+        r["share_pct"] = round(100 * r["damage"] / max(1, run["hp_max"] - max(0, run["hp"])), 1) if run["hp_max"] > max(0, run["hp"]) else 0.0
+    return out
+
+
 async def boss_view(p: dict) -> dict:
     me = await membership(p["_id"])
     if not me:
@@ -375,6 +419,8 @@ async def boss_view(p: dict) -> dict:
     my_today = mine.get(today, {"free": 0, "paid": 0})
     return {"alliance_id": me["alliance_id"], "my_role": me["role"], "rules": {k: ab[k] for k in ("name", "duration_hours", "free_attacks_per_day", "extra_attack_rubies", "paid_extra_attacks_cap_per_day", "tier_range", "alliance_kill_chest_thresholds_pct", "personal_attack_reward", "kill_reward_per_participant")},
             "run": clean(run) if run else None, "my_attacks_today": my_today, "my_damage": mine.get("damage", 0), "server_time": now().isoformat(),
+            "titan_family": titan_family(run["tier"]) if run else None, "tier_families": {t: titan_family(t) for t in range(ab["tier_range"][0], ab["tier_range"][1] + 1)},
+            "leaderboard": await boss_leaderboard(run), "my_player_id": p["_id"],
             "tier_hp": {t: F.boss_hp(t) for t in range(ab["tier_range"][0], ab["tier_range"][1] + 1)}}
 
 
@@ -390,7 +436,7 @@ async def start_boss(p: dict, tier: int) -> dict:
     run = {"_id": new_id("boss_"), "alliance_id": me["alliance_id"], "tier": tier, "hp_max": F.boss_hp(tier), "hp": F.boss_hp(tier), "started_at": now(), "ends_at": now() + timedelta(hours=ab["duration_hours"]),
            "status": "active", "attacks": {}, "thresholds_hit": [], "participants": []}
     await db.alliance_boss_runs.insert_one(run)
-    await system_feed(me["alliance_id"], f"Titan Hunt tier {tier} has begun! 48 hours to bring it down.")
+    await alliance_alert(me["alliance_id"], f"🐲 {p['display_name']} ha iniziato la Titan Hunt tier {tier}: {titan_family(tier)} ({F.boss_hp(tier):,} HP). 48 ore per abbatterlo!", kind="titan")
     return clean(run)
 
 
@@ -445,6 +491,6 @@ async def attack_boss(p: dict) -> dict:
                 o = Ops()
                 resources_inc(o, ab["kill_reward_per_participant"])
                 await ledger.apply_to_player(f"bosskill:{run['_id']}:{pid}", pid, "boss_kill", o.build(), ab["kill_reward_per_participant"])
-            await system_feed(me["alliance_id"], f"The Titan (tier {run['tier']}) has been slain! Kill rewards delivered to {len(upd['participants'])} hunters.")
+            await alliance_alert(me["alliance_id"], f"🏆 Il Titano (tier {run['tier']}, {titan_family(run['tier'])}) è stato abbattuto da {p['display_name']}! Ricompense consegnate a {len(upd['participants'])} cacciatori.", kind="titan")
     return {"damage": dmg, "paid": paid, "boss_hp": max(upd["hp"], 0), "boss_hp_max": upd["hp_max"], "progress_pct": round(min(100, pct), 2), "thresholds_hit": sorted(set(upd.get("thresholds_hit", []) + hit)), "killed": killed,
-            "personal_reward": ab["personal_attack_reward"]}
+            "personal_reward": ab["personal_attack_reward"], "titan_family": titan_family(run["tier"])}

@@ -1,7 +1,7 @@
 // Enemy sprites: vector silhouettes per archetype (Art Direction v1.1 monster regions). Colors are fixed art identity, not theme tokens.
 import React, { memo, useEffect } from "react";
 import { Image, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Ellipse, G, Path, Rect } from "react-native-svg";
 
 import { monsterArt } from "@/src/art";
@@ -359,7 +359,21 @@ function Dragon({ body, dark, light, eye, f }: P) {
 const RENDER: Record<Arch, (p: P) => React.ReactElement> = { goblin: Goblin, humanoid: Humanoid, knight: Knight, robed: Robed, canine: Canine, boar: Boar, arthropod: Arthropod, brute: Brute, golem: Golem, treant: Treant, flyer: Flyer, spirit: Spirit, dragon: Dragon };
 const FLOATERS: Arch[] = ["flyer", "spirit"];
 
-export const MonsterSprite = memo(function MonsterSprite({ family, type, palette, size, hurtTick = 0, fighting = true }: { family: string; type: MonsterType; palette: string[]; size: number; hurtTick?: number; fighting?: boolean }) {
+// ---- enemy move set (v1.2): 0 lunge · 1 leap · 2 spin charge · 3 roar · 4 dodge · 5 spit (ranged) · 6 swoop (fliers) ----
+export type EnemyMove = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export const MOVE_MS: Record<EnemyMove, number> = { 0: 810, 1: 760, 2: 620, 3: 640, 4: 460, 5: 820, 6: 900 };
+/** Moment (ms after the move starts) when the move "connects" — used by the scene for impact FX. */
+export const MOVE_HIT_MS: Record<EnemyMove, number> = { 0: 400, 1: 470, 2: 300, 3: 60, 4: 0, 5: 300, 6: 450 };
+const MOVE_POOL: Record<Arch, EnemyMove[]> = {
+  goblin: [0, 1, 4, 5, 0, 2], humanoid: [0, 0, 4, 1, 3], knight: [0, 0, 3, 2, 0], robed: [5, 5, 4, 0, 3], canine: [0, 1, 1, 4, 2], boar: [2, 0, 3, 2, 1],
+  arthropod: [1, 0, 5, 4, 1], brute: [0, 3, 1, 0, 3], golem: [0, 3, 2, 0], treant: [0, 3, 5, 0], flyer: [6, 6, 5, 4, 6], spirit: [6, 5, 5, 4, 3], dragon: [6, 5, 3, 0, 6],
+};
+export function pickMove(arch: Arch, seed: number): EnemyMove {
+  const pool = MOVE_POOL[arch];
+  return pool[seed % pool.length];
+}
+
+export const MonsterSprite = memo(function MonsterSprite({ family, type, palette, size, hurtTick = 0, fighting = true, index = 0, onMove }: { family: string; type: MonsterType; palette: string[]; size: number; hurtTick?: number; fighting?: boolean; index?: number; onMove?: (move: EnemyMove, index: number) => void }) {
   const h = hashStr(family);
   const arch = archetypeFor(family);
   const f = family.toLowerCase();
@@ -369,46 +383,71 @@ export const MonsterSprite = memo(function MonsterSprite({ family, type, palette
 
   const breath = useSharedValue(0);
   const hurt = useSharedValue(0);
-  const attack = useSharedValue(0);
+  const a = useSharedValue(0); // move progress (see MOVE shapes below)
+  const kind = useSharedValue<number>(0);
   useEffect(() => {
     const d = 700 + (h % 5) * 90;
     breath.value = withRepeat(withSequence(withTiming(1, { duration: d, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: d, easing: Easing.inOut(Easing.quad) })), -1, false);
   }, [breath, h]);
-  // combat loop: wind-up, lunge toward the Lord, recoil, pause (desynced per creature)
+  // combat loop: every cycle picks a move from the archetype pool (deterministic per creature) and tells the scene about it
   useEffect(() => {
     if (!fighting) {
-      attack.value = withTiming(0, { duration: 200 });
+      a.value = withTiming(0, { duration: 200 });
       return;
     }
-    const pause = 900 + (h % 6) * 260;
-    attack.value = withDelay((h % 5) * 170, withRepeat(withSequence(
-      withTiming(-0.35, { duration: 260, easing: Easing.inOut(Easing.quad) }),
-      withTiming(1, { duration: 140, easing: Easing.out(Easing.cubic) }),
-      withTiming(0.7, { duration: 90 }),
-      withTiming(0, { duration: 320, easing: Easing.inOut(Easing.quad) }),
-      withTiming(0, { duration: pause }),
-    ), -1, false));
-  }, [fighting, attack, h]);
+    let cycle = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const run = () => {
+      cycle += 1;
+      const mv = pickMove(arch, hashStr(`${family}:${index}:${cycle}`));
+      kind.value = mv;
+      a.value = 0;
+      if (mv === 0) a.value = withSequence(withTiming(-0.35, { duration: 260, easing: Easing.inOut(Easing.quad) }), withTiming(1, { duration: 140, easing: Easing.out(Easing.cubic) }), withTiming(0.7, { duration: 90 }), withTiming(0, { duration: 320, easing: Easing.inOut(Easing.quad) }));
+      else if (mv === 1) a.value = withSequence(withTiming(1, { duration: 470, easing: Easing.linear }), withTiming(0, { duration: 290, easing: Easing.out(Easing.quad) }));
+      else if (mv === 2) a.value = withTiming(1, { duration: 620, easing: Easing.inOut(Easing.quad) });
+      else if (mv === 3) a.value = withSequence(withTiming(1, { duration: 220, easing: Easing.out(Easing.back(2)) }), withTiming(1, { duration: 180 }), withTiming(0, { duration: 240 }));
+      else if (mv === 4) a.value = withSequence(withTiming(1, { duration: 170, easing: Easing.out(Easing.cubic) }), withTiming(0, { duration: 290, easing: Easing.inOut(Easing.quad) }));
+      else if (mv === 5) a.value = withSequence(withTiming(-0.5, { duration: 280, easing: Easing.inOut(Easing.quad) }), withTiming(1, { duration: 110, easing: Easing.out(Easing.cubic) }), withTiming(0, { duration: 430, easing: Easing.inOut(Easing.quad) }));
+      else a.value = withSequence(withTiming(1, { duration: 450, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: 450, easing: Easing.inOut(Easing.quad) }));
+      onMove?.(mv, index);
+      timer = setTimeout(run, MOVE_MS[mv] + 650 + (h % 6) * 240);
+    };
+    timer = setTimeout(run, 300 + ((h + index * 7) % 5) * 190);
+    return () => clearTimeout(timer);
+  }, [fighting, a, kind, h, arch, family, index, onMove]);
   useEffect(() => {
     if (!hurtTick) return;
     hurt.value = 1;
-    hurt.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.quad) });
+    hurt.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.quad) });
   }, [hurtTick, hurt]);
   const bodyStyle = useAnimatedStyle(() => {
-    const a = attack.value;
-    const lungeX = -Math.max(0, a) * size * 0.28 + Math.min(0, a) * size * 0.12 + 6 * hurt.value; // toward the Lord (left), small step back on wind-up
-    return {
-      transform: floater
-        ? [{ translateY: -6 * breath.value - Math.max(0, a) * 10 }, { translateX: lungeX }, { rotate: `${-10 * Math.max(0, a) - 4 * hurt.value}deg` }]
-        : [{ translateX: lungeX }, { scaleY: 1 + 0.035 * breath.value - 0.06 * Math.max(0, a) + 0.05 * Math.max(0, -a) }, { scaleX: 1 + 0.08 * Math.max(0, a) }, { rotate: `${-9 * Math.max(0, a) + 3 * Math.max(0, -a) - 4 * hurt.value}deg` }],
-    };
+    const v = a.value, k = kind.value, hv = hurt.value;
+    let tx = 10 * hv, ty = 0, rot = -5 * hv, sx = 1, sy = 1;
+    if (k === 0) { // lunge toward the Lord (left), small step back on wind-up
+      tx += -Math.max(0, v) * size * 0.3 + Math.min(0, v) * size * 0.12; sy = 1 - 0.06 * Math.max(0, v) + 0.05 * Math.max(0, -v); sx = 1 + 0.08 * Math.max(0, v); rot += -9 * Math.max(0, v) + 3 * Math.max(0, -v);
+    } else if (k === 1) { // leap: arc forward, slam, hop back
+      const fwd = Math.sin((Math.PI / 2) * v); tx += -fwd * size * 0.36; ty = -Math.sin(Math.PI * v) * size * 0.5; rot += -14 * v; sy = 1 + 0.1 * Math.sin(Math.PI * v);
+    } else if (k === 2) { // spin charge
+      tx += -Math.sin(Math.PI * v) * size * 0.32; rot += 360 * v; sx = 1 + 0.05 * Math.sin(Math.PI * v);
+    } else if (k === 3) { // roar / stomp
+      sx = 1 + 0.16 * v; sy = 1 + 0.2 * v; ty = -8 * v; rot += 2 * v;
+    } else if (k === 4) { // dodge: hop back-right and up
+      tx += size * 0.22 * v; ty = -size * 0.2 * v; rot += 10 * v;
+    } else if (k === 5) { // spit: lean back, snap forward
+      tx += -Math.min(0, v) * size * 0.12 - Math.max(0, v) * size * 0.06; rot += 8 * Math.min(0, v) - 6 * Math.max(0, v); sx = 1 + 0.12 * Math.max(0, v); sy = 1 - 0.05 * Math.max(0, v);
+    } else if (k === 6) { // swoop: dive toward the Lord and back up
+      tx += -Math.sin(Math.PI * v) * size * 0.42; ty = Math.sin(Math.PI * v) * size * 0.28; rot += -16 * Math.sin(Math.PI * v);
+    }
+    const idleY = floater ? -6 * breath.value : 0;
+    const idleSy = floater ? 1 : 1 + 0.035 * breath.value;
+    return { transform: [{ translateX: tx }, { translateY: idleY + ty }, { rotate: `${rot}deg` }, { scaleX: sx }, { scaleY: sy * idleSy }] };
   });
-  const flashStyle = useAnimatedStyle(() => ({ opacity: 0.7 * hurt.value }));
+  const flashStyle = useAnimatedStyle(() => ({ opacity: 0.75 * hurt.value }));
   const img = monsterArt(family);
 
   if (img) {
     return (
-      <Animated.View style={[{ width: size, height: size, justifyContent: "flex-end", alignItems: "center" }, bodyStyle]} testID="monster-art">
+      <Animated.View style={[{ width: size, height: size, justifyContent: "flex-end", alignItems: "center", transformOrigin: "50% 85%" }, bodyStyle]} testID="monster-art">
         <View style={{ position: "absolute", bottom: size * 0.02, width: size * 0.7, height: size * 0.14, borderRadius: size, backgroundColor: "#000", opacity: floater ? 0.18 : 0.35 }} />
         {type === "boss" ? <View style={{ position: "absolute", bottom: -size * 0.02, width: size * 0.9, height: size * 0.22, borderRadius: size, borderWidth: 3, borderColor: GOLD, opacity: 0.6 }} /> : null}
         <Image source={img} style={{ width: size, height: size }} resizeMode="contain" />
