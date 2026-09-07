@@ -145,6 +145,121 @@ export function Clouds({ width, top, color }: { width: number; top: number; colo
   );
 }
 
+// ---- Lord auto-skills: one signature effect each + flashing name banner (canon hero.auto_skills) ----
+export const SKILL_FX: Record<string, { color: string; label: string }> = {
+  power_strike: { color: "#FF7A2F", label: "COLPO POTENTE" },
+  war_cry: { color: "#FFD166", label: "GRIDO DI GUERRA" },
+  shield_wall: { color: "#7FE3FF", label: "MURO DI SCUDI" },
+  rain_of_steel: { color: "#DDE3EA", label: "PIOGGIA D'ACCIAIO" },
+  royal_strike: { color: "#FFE97A", label: "COLPO REALE" },
+  dragon_banner: { color: "#FF3B3B", label: "VESSILLO DEL DRAGO" },
+};
+
+export function SkillBanner({ name, color, sceneH }: { name: string; color: string; sceneH: number }) {
+  const s = useSharedValue(0);
+  const blink = useSharedValue(1);
+  useEffect(() => {
+    s.value = withSequence(withTiming(1.1, { duration: 220, easing: Easing.out(Easing.back(2.5)) }), withTiming(1, { duration: 160 }));
+    blink.value = withRepeat(withSequence(withTiming(0.25, { duration: 110 }), withTiming(1, { duration: 110 })), 4, false);
+  }, [s, blink]);
+  const style = useAnimatedStyle(() => ({ opacity: blink.value * Math.min(1, s.value), transform: [{ scale: s.value }] }));
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: sceneH * 0.3, alignItems: "center" }, style]} testID="skill-banner">
+      <Text style={{ fontFamily: fonts.display, fontSize: 24, letterSpacing: 3, color, textShadowColor: "#000", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }}>{name}</Text>
+    </Animated.View>
+  );
+}
+
+/** war_cry: expanding shockwave ring from the Lord. */
+export function Shockwave({ x, y, color }: { x: number; y: number; color: string }) {
+  const t = useSharedValue(0);
+  useEffect(() => {
+    t.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) });
+  }, [t]);
+  const style = useAnimatedStyle(() => ({ opacity: 1 - t.value, transform: [{ scale: 0.2 + 3.2 * t.value }] }));
+  return <Animated.View pointerEvents="none" style={[{ position: "absolute", left: x - 40, top: y - 40, width: 80, height: 80, borderRadius: 40, borderWidth: 5, borderColor: color }, style]} />;
+}
+
+/** shield_wall: translucent dome over the Lord that pulses then fades. */
+export function ShieldDome({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
+  const t = useSharedValue(0);
+  useEffect(() => {
+    t.value = withSequence(withTiming(1, { duration: 220, easing: Easing.out(Easing.quad) }), withRepeat(withSequence(withTiming(0.7, { duration: 260 }), withTiming(1, { duration: 260 })), 3, false), withTiming(0, { duration: 400 }));
+  }, [t]);
+  const style = useAnimatedStyle(() => ({ opacity: 0.55 * t.value, transform: [{ scale: 0.6 + 0.4 * Math.min(1, t.value) }] }));
+  return <Animated.View pointerEvents="none" style={[{ position: "absolute", left: x - size / 2, top: y - size / 2, width: size, height: size, borderRadius: size / 2, backgroundColor: color, borderWidth: 3, borderColor: "#FFFFFF" }, style]} />;
+}
+
+function Blade({ t, i, x, height, color }: { t: SharedValue<number>; i: number; x: number; height: number; color: string }) {
+  const delay = (i % 5) * 0.12;
+  const style = useAnimatedStyle(() => {
+    const p = Math.max(0, Math.min(1, (t.value - delay) / (1 - delay)));
+    return { opacity: p < 0.9 ? 1 : 1 - (p - 0.9) / 0.1, transform: [{ translateY: -60 + (height + 60) * p }, { rotate: "18deg" }] };
+  });
+  return <Animated.View style={[{ position: "absolute", left: x, width: 4, height: 34, borderRadius: 2, backgroundColor: color, borderLeftWidth: 1.5, borderLeftColor: "#FFFFFF" }, style]} />;
+}
+
+/** rain_of_steel: blades falling over the horde. */
+export function SteelRain({ x, width, height, color }: { x: number; width: number; height: number; color: string }) {
+  const t = useSharedValue(0);
+  useEffect(() => {
+    t.value = withTiming(1, { duration: 900, easing: Easing.in(Easing.quad) });
+  }, [t]);
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: x, top: 0, width, height }}>
+      {Array.from({ length: 12 }).map((_, i) => <Blade key={i} t={t} i={i} x={(i * 37) % Math.max(1, width - 6)} height={height} color={color} />)}
+    </View>
+  );
+}
+
+/** royal_strike: lightning column striking the front monster. */
+export function LightningBolt({ x, height, color }: { x: number; height: number; color: string }) {
+  const t = useSharedValue(0);
+  useEffect(() => {
+    t.value = withSequence(withTiming(1, { duration: 60 }), withTiming(0.3, { duration: 60 }), withTiming(1, { duration: 60 }), withTiming(0.5, { duration: 80 }), withTiming(0, { duration: 260 }));
+  }, [t]);
+  const core = useAnimatedStyle(() => ({ opacity: t.value }));
+  const halo = useAnimatedStyle(() => ({ opacity: 0.35 * t.value, transform: [{ scaleX: 1 + t.value }] }));
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: x - 14, top: 0, width: 28, height, alignItems: "center" }}>
+      <Animated.View style={[{ position: "absolute", top: 0, width: 20, height, backgroundColor: color }, halo]} />
+      <Animated.View style={[{ position: "absolute", top: 0, width: 5, height: height * 0.45, backgroundColor: "#FFFFFF", transform: [{ translateX: 4 }, { skewX: "12deg" }] }, core]} />
+      <Animated.View style={[{ position: "absolute", top: height * 0.42, width: 5, height: height * 0.58, backgroundColor: "#FFFFFF", transform: [{ translateX: -4 }, { skewX: "-14deg" }] }, core]} />
+    </View>
+  );
+}
+
+function Ember({ t, i, color }: { t: SharedValue<number>; i: number; color: string }) {
+  const style = useAnimatedStyle(() => {
+    const p = (t.value + i / 10) % 1;
+    return { opacity: 1 - p, transform: [{ translateX: (i % 5) * 14 - 28 + Math.sin(p * 8 + i) * 8 }, { translateY: -90 * p }] };
+  });
+  return <Animated.View style={[{ position: "absolute", width: 4, height: 4, borderRadius: 2, backgroundColor: color }, style]} />;
+}
+
+/** dragon_banner: crimson standard rising with embers over the army. */
+export function BannerRise({ x, y, color, heraldic }: { x: number; y: number; color: string; heraldic: string }) {
+  const t = useSharedValue(0);
+  const wave = useSharedValue(0);
+  const ember = useSharedValue(0);
+  useEffect(() => {
+    t.value = withSequence(withTiming(1, { duration: 500, easing: Easing.out(Easing.back(1.5)) }), withTiming(1, { duration: 900 }), withTiming(0, { duration: 300 }));
+    wave.value = withRepeat(withSequence(withTiming(1, { duration: 300 }), withTiming(0, { duration: 300 })), -1, false);
+    ember.value = withRepeat(withTiming(1, { duration: 900, easing: Easing.linear }), -1, false);
+  }, [t, wave, ember]);
+  const pole = useAnimatedStyle(() => ({ opacity: Math.min(1, t.value * 2), transform: [{ translateY: 40 * (1 - t.value) }] }));
+  const flag = useAnimatedStyle(() => ({ transform: [{ skewY: `${-6 + 12 * wave.value}deg` }] }));
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: "absolute", left: x, top: y, alignItems: "flex-start" }, pole]}>
+      <View style={{ width: 4, height: 90, backgroundColor: "#4A3B2C", borderRadius: 2 }} />
+      <Animated.View style={[{ position: "absolute", left: 4, top: 4, width: 44, height: 30, backgroundColor: heraldic, borderWidth: 1.5, borderColor: color }, flag]}>
+        <View style={{ position: "absolute", left: 14, top: 7, width: 16, height: 16, borderRadius: 8, borderWidth: 3, borderColor: color }} />
+      </Animated.View>
+      <View style={{ position: "absolute", left: 20, top: 30 }}>{Array.from({ length: 10 }).map((_, i) => <Ember key={i} t={ember} i={i} color={color} />)}</View>
+    </Animated.View>
+  );
+}
+
 export function BossBar({ name, hp, width }: { name: string; hp: number; width: number }) {
   const { colors } = useTheme();
   const pulse = useSharedValue(0);

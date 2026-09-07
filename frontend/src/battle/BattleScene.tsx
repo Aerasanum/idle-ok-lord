@@ -7,7 +7,7 @@ import Animated, { Easing, FadeIn, ZoomOut, useAnimatedStyle, useSharedValue, wi
 
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
-import { Ambient, BossBar, Burst, Clouds, CoinShower, DamageNumber, Fx, OutcomeBanner, Slash } from "./effects";
+import { Ambient, BannerRise, BossBar, Burst, Clouds, CoinShower, DamageNumber, Fx, LightningBolt, OutcomeBanner, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SteelRain } from "./effects";
 import { LordSprite } from "./lord";
 import { MonsterSprite } from "./monsters";
 import { hashStr, paletteFor } from "./regions";
@@ -61,6 +61,9 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
   const [hurtTick, setHurtTick] = useState(0);
   const fxId = useRef(0);
   const prevKills = useRef(0);
+  const [skillFx, setSkillFx] = useState<{ id: number; key: string; kind: string; x: number; y: number }[]>([]);
+  const [banner, setBanner] = useState<{ id: number; key: string } | null>(null);
+  const skillCycles = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
@@ -133,6 +136,42 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
     }, 1200);
     return () => clearInterval(id);
   }, [attempt.id, attempt.hero_power, finished, spawn, width, sceneH, colors.parchment, colors.parchmentDark]);
+
+  // auto-skill activations: each cooldown cycle fires the skill's signature effect + flashing name (presentational)
+  useEffect(() => {
+    if (finished || elapsed < 1) return;
+    for (const s of skills) {
+      const cycle = Math.floor(elapsed / s.cooldown_seconds);
+      const prev = skillCycles.current[s.key];
+      skillCycles.current[s.key] = cycle;
+      if (prev === undefined || cycle <= prev || !SKILL_FX[s.key]) continue;
+      const id = ++fxId.current;
+      const color = SKILL_FX[s.key].color;
+      const frontX = width * 0.56, frontY = sceneH - 120;
+      const lordX = width * 0.28 + 39, lordY = sceneH - 34 - 50;
+      setBanner({ id, key: s.key });
+      setSkillFx((f) => [...f, { id, key: s.key, kind: s.key, x: s.key === "shield_wall" || s.key === "war_cry" ? lordX : frontX, y: s.key === "shield_wall" || s.key === "war_cry" ? lordY : frontY }]);
+      setTimeout(() => setSkillFx((f) => f.filter((x) => x.id !== id)), 1800);
+      setTimeout(() => setBanner((b) => (b?.id === id ? null : b)), 1300);
+      const h = hashStr(`${attempt.id}:${s.key}:${cycle}`);
+      if (s.key === "power_strike") {
+        spawn([{ kind: "dmg", x: frontX + 10, y: frontY - 10, value: Math.round(attempt.hero_power * 1.8), crit: true, color }, { kind: "burst", x: frontX + 20, y: frontY + 20, color }], 1200);
+        doShake(8); doFlash(color, 0.22, 220); haptic("heavy");
+      } else if (s.key === "rain_of_steel") {
+        spawn(Array.from({ length: 4 }).map((_, i) => ({ kind: "dmg" as const, x: frontX + (i * 31 + (h % 20)) % (width * 0.36), y: frontY - 20 + (i % 2) * 18, value: Math.round(attempt.hero_power * 1.2), color })), 1300);
+        doShake(6); doFlash(color, 0.18, 260);
+      } else if (s.key === "royal_strike") {
+        spawn([{ kind: "dmg", x: frontX + 6, y: frontY - 24, value: Math.round(attempt.hero_power * 3.5), crit: true, color }], 1400);
+        doShake(11); doFlash(color, 0.45, 320); haptic("heavy");
+      } else if (s.key === "war_cry") {
+        doShake(4); doFlash(color, 0.2, 320);
+      } else if (s.key === "shield_wall") {
+        doFlash(color, 0.18, 320);
+      } else if (s.key === "dragon_banner") {
+        doFlash(color, 0.25, 360); doShake(5);
+      }
+    }
+  }, [Math.floor(elapsed)]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // outcome: hold the banner, then let the parent claim (server-authoritative)
   useEffect(() => {
@@ -217,7 +256,17 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
           : <Burst key={f.id} x={f.x} y={f.y} color={f.color ?? colors.goldBright} seed={f.id} />)}
         {outcome && attempt.win ? <CoinShower x={width * 0.5} y={sceneH * 0.5} /> : null}
         {outcome && attempt.win ? <Burst x={width * 0.5} y={sceneH * 0.45} color={colors.goldBright} count={14} big /> : null}
+        {skillFx.map((f) => {
+          const color = SKILL_FX[f.key].color;
+          if (f.kind === "war_cry") return <Shockwave key={f.id} x={f.x} y={f.y} color={color} />;
+          if (f.kind === "shield_wall") return <ShieldDome key={f.id} x={f.x} y={f.y} size={120} color={color} />;
+          if (f.kind === "rain_of_steel") return <SteelRain key={f.id} x={width * 0.5} width={width * 0.46} height={sceneH - 60} color={color} />;
+          if (f.kind === "royal_strike") return <LightningBolt key={f.id} x={f.x + 24} height={sceneH - 70} color={color} />;
+          if (f.kind === "dragon_banner") return <BannerRise key={f.id} x={width * 0.12} y={sceneH * 0.42} color={color} heraldic={heraldicColor} />;
+          return <Slash key={f.id} x={f.x - 20} y={f.y - 30} color={color} />;
+        })}
       </Animated.View>
+      {banner ? <SkillBanner key={banner.id} name={SKILL_FX[banner.key].label} color={SKILL_FX[banner.key].color} sceneH={sceneH} /> : null}
       <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: flashColor }, flashStyle]} />
       {/* HUD */}
       <View style={{ position: "absolute", top: 8, left: 10, right: 10, flexDirection: "row", justifyContent: "space-between" }} pointerEvents="none">

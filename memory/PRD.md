@@ -30,6 +30,11 @@ Lingua utente: **italiano**.
 - Tutorial guidato (`src/tutorial/Tutorial.tsx`): 9 passi con spotlight, navigazione automatica Battaglia→Regno→Battaglia, salta/avanti, completamento salvato server-side (`settings.tutorial_done`, `PATCH /account/settings`), "Rivedi il tutorial" nel Profilo.
 - Testing agent iteration_2: tutto verde, zero errori console.
 
+### Iterazione 3 (giugno 2026) — Fix avvio Expo Go + Abilità visive + Regno animato
+- **Root cause crash Expo Go Android**: `src/push.tsx` importava `expo-notifications` staticamente; da SDK 53 il modulo lancia un errore all'import in Expo Go Android → il modulo `_layout.tsx` falliva la valutazione (da cui "missing default export" e "ErrorBoundary of undefined" a cascata). Fix: adapter `src/push/adapter.ts` con `import()` dinamico guardato da `ExecutionEnvironment.StoreClient`, no-op in Expo Go/web; `src/push/index.tsx` usa solo l'adapter. Inbox in-app invariata. Acceptance test `frontend/scripts/expo-go-acceptance.mjs` (AC-EXPO-GO) aggiunto alla matrice.
+- Abilità visive: effetto distinto per ogni auto-skill (Colpo Potente, Grido di Guerra, Muro di Scudi, Pioggia d'Acciaio, Colpo Reale, Vessillo del Drago) + nome lampeggiante (`effects.tsx`, `BattleScene.tsx`).
+- Regno animato (`src/kingdom/life.tsx`): contadini che camminano sulle strade, fumo dai camini degli edifici attivi, cantieri con impalcature/martello/polvere e barra di avanzamento su tempo server, bandiera araldica che ondeggia sul Castello.
+
 ### Da fare / backlog
 - Testing agent end-to-end su frontend (in corso in questa sessione).
 - Sign in with Apple: solo UI disabilitata (deployment input).

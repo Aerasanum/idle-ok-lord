@@ -32,7 +32,7 @@ export default function KingdomTab() {
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         <TutorialTarget id="kingdom-scene">
-          <KingdomScene buildings={k.buildings} castleLevel={k.castle_level} tier={k.visual_tier} heraldicColor={profile.heraldic_color} queued={queued} onSelect={(key) => { setSel(key); sheet.current?.present(); }} />
+          <KingdomScene buildings={k.buildings} castleLevel={k.castle_level} tier={k.visual_tier} heraldicColor={profile.heraldic_color} queued={queued} serverTime={k.server_time} onSelect={(key) => { setSel(key); sheet.current?.present(); }} />
         </TutorialTarget>
         <TutorialTarget id="production-panel">
         <Panel style={{ margin: 12 }} testID="production-panel">

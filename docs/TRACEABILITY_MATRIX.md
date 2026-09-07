@@ -23,7 +23,7 @@ Stato: **DONE** = implementato e coperto da test automatici; **DONE (manual)** =
 | I12 | Alleanze, chat, moderazione | 30 membri, ruoli, canali, report/block/mute/delete | `app/domain/social.py`, `app/routers/social.py` | `app/(tabs)/social.tsx`, `app/alliance/index.tsx`, `app/alliance/chat.tsx` | `test_alliance_chat_moderation` | DONE |
 | I13 | Guerra 10v10 asincrona + Titan Hunt | mappa 19×19, snapshot al lock, 10 lane, cattura, boss | `app/domain/wars.py` (`generate_map`, `declare`, `set_roster`, `lock_war`, `resolve_lanes`, `resolve_war`, `tick_wars`, `attack_boss`) | `app/alliance/war.tsx`, `src/war/WarMap.tsx`, `app/alliance/boss.tsx` | `test_war_full_cycle_deterministic_and_idempotent` (replay deterministico, snapshot unico), `test_titan_hunt` | DONE |
 | I14 | Store, pagamenti, restore/refund | prezzi localizzati, verifica server, credito idempotente, refund | `app/domain/store.py` (catalogo canonico, webhook Bearer + HMAC opzionale, dedup event id + transaction key, refund `CANCELLATION/CUSTOMER_SUPPORT`, `EXPIRATION`, restore via REST) | `app/shop.tsx`, `src/billing.ts` (react-native-purchases; nessuna simulazione) | `test_store_webhook_idempotent_and_refund` | DONE (sandbox store: BLOCKED su chiavi RevenueCat) |
-| I15 | Shell mobile, push, performance | stesso account iOS/Android, push/deep-link | `app/core/push.py` (relay Emergent), `scheduler.notify` (inbox + push per i 7 tipi canonici), `POST /register-push` | `src/push.tsx` (permessi, token, deep-link `action_url`), `app/inbox.tsx`, `app.json` (bundle `com.idlempirelordsdragon.game`, permessi) | manual (solo build nativa) | DONE (manual) |
+| I15 | Shell mobile, push, performance | stesso account iOS/Android, push/deep-link; **l'app deve avviarsi in Expo Go** | `app/core/push.py` (relay Emergent), `scheduler.notify` (inbox + push per i 7 tipi canonici), `POST /register-push` | `src/push/adapter.ts` (caricamento **lazy e guardato** di `expo-notifications`: no-op in Expo Go/web, modulo reale nelle build native), `src/push/index.tsx` (permessi, token, deep-link `action_url`), `app/inbox.tsx` (inbox in-app sempre attiva), `app.json` (bundle `com.idlempirelordsdragon.game`, permessi) | **AC-EXPO-GO**: `node frontend/scripts/expo-go-acceptance.mjs` (scan statico + grafo bundle Metro android/ios: `expo-notifications` raggiungibile solo via async require dall'adapter; `react-native-purchases` solo dietro guard) + verifica manuale QR Expo Go Android | DONE (push remote: manual su build nativa) |
 | I16 | Audit sicurezza/economia | zero P0/P1, invarianti, concorrenza | rate limit (`slowapi`), CORS, `TEST_HOOKS` vietati in production (`config.py`), ledger, guard versioni | — | suite completa (25 test) + testing agent | IN PROGRESS |
 
 ## 2. Formule canoniche → implementazione → test
@@ -62,6 +62,13 @@ Stato: **DONE** = implementato e coperto da test automatici; **DONE (manual)** =
 | `quests.login_calendar` | 35 Rubini / 7 gg | `liveops.LOGIN_RUBIES` **DERIVED** (3,3,4,4,5,6,10) | `test_events_dungeons_quests` |
 | `events.event_track` | 40 free / +80 premium | `liveops._track_rewards` **DERIVED** | copertura API |
 | `monetization.season_pass` | 150 / 500 Rubini, materiali | `liveops.season_level_rewards` **DERIVED** | copertura API |
+
+## 2b. Criteri di accettazione client (dispositivo reale)
+
+| ID | Scenario | Verifica automatica | Verifica manuale |
+|---|---|---|---|
+| AC-EXPO-GO | Scansione QR → l'app si avvia in Expo Go (Android/iOS) e `app/_layout.tsx` viene caricato; nessun crash `expo-notifications`, nessun "missing default export"/"ErrorBoundary of undefined" | `node frontend/scripts/expo-go-acceptance.mjs` (fallisce se qualunque file importa staticamente `expo-notifications`/`react-native-purchases` o se il bundle Metro li richiede in modo eager) | Aprire il QR in Expo Go: login, 5 tab, Inbox (`/inbox`) navigabili; nel Profilo il toggle push resta disponibile (registrazione remota = "unavailable" in Expo Go, attiva nella build nativa) |
+| AC-PUSH-NATIVE | Development/production build: permesso notifiche → token → `POST /register-push` → push ricevuta → deep-link `action_url` | — | Build da Publish con `google-services.json` + `EMERGENT_PUSH_KEY` |
 
 ## 3. Guardrail / sicurezza
 
