@@ -22,6 +22,20 @@ export function setActiveSkins(c?: { lord_skin?: string | null; castle_skin?: st
 export const skinArt = (key: string): number | undefined => ART[`skins/${key}`];
 export const hubArt = (key: string): number | undefined => ART[`hub/${key}`];
 
+/** Lord image for ANOTHER player (public showcase): their skin, else the gear/tier variant. */
+export function lordArtFor(skin: string | null | undefined, hasChest: boolean, tier: number): number | undefined {
+  if (skin && ART[`skins/${skin}`]) return ART[`skins/${skin}`];
+  if (tier >= 5 && ART["lord/royal"]) return ART["lord/royal"];
+  if (hasChest && ART["lord/armored"]) return ART["lord/armored"];
+  return ART["lord/base"];
+}
+export function castleArtFor(skin: string | null | undefined, castleLevel: number): number | undefined {
+  if (skin && ART[`skins/${skin}`]) return ART[`skins/${skin}`];
+  if (castleLevel >= 13 && ART["buildings/castle_royal"]) return ART["buildings/castle_royal"];
+  if (castleLevel >= 7 && ART["buildings/castle_fortress"]) return ART["buildings/castle_fortress"];
+  return ART["buildings/castle"];
+}
+
 export function lordArt(equipped: Record<string, any>, tier: number): number | undefined {
   if (activeSkins.lord && ART[`skins/${activeSkins.lord}`]) return ART[`skins/${activeSkins.lord}`];
   if (tier >= 5 && ART["lord/royal"]) return ART["lord/royal"];

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { QK, useAction, useMyAlliance } from "@/src/api/hooks";
 import { api } from "@/src/api/client";
@@ -69,10 +69,10 @@ export default function AllianceScreen() {
         <Panel key={m.player_id} testID={`member-${m.player_id}`}>
           <Row style={{ justifyContent: "space-between" }}>
             <Icon name={m.role === "leader" ? "crown" : m.role === "officer" ? "shield-star" : "account"} size={20} color={m.role === "member" ? colors.muted : colors.goldBright} />
-            <View style={{ flex: 1 }}>
+            <Pressable style={{ flex: 1 }} onPress={() => router.push({ pathname: "/player/[id]", params: { id: m.player_id } })} testID={`showcase-${m.player_id}`}>
               <Txt v="bodyBold">{m.display_name} · Lv {m.hero_level}</Txt>
-              <Txt v="small" color={colors.muted}>Castello {m.castle_level} · stage {m.highest_cleared} · {m.role} · donati {fmt(m.donated_gold)}</Txt>
-            </View>
+              <Txt v="small" color={colors.muted}>Castello {m.castle_level} · stage {m.highest_cleared} · {m.role} · donati {fmt(m.donated_gold)} · tocca per la vetrina</Txt>
+            </Pressable>
             {me === "leader" && m.role !== "leader" ? (
               <Row gap={4}>
                 <Btn title={m.role === "member" ? "↑" : "↓"} small variant="ghost" onPress={() => member.mutate({ player_id: m.player_id, action: m.role === "member" ? "promote" : "demote" })} testID={`promote-${m.player_id}`} />

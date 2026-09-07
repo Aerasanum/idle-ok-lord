@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Image, Pressable, View } from "react-native";
 
@@ -10,6 +11,7 @@ import { useCountdown } from "@/src/ui/useCountdown";
 
 export default function BossScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const { data: b, isLoading } = useBoss();
   const { data: profile } = useProfile();
   const [tier, setTier] = useState(1);
@@ -60,7 +62,7 @@ export default function BossScreen() {
             {board.map((h) => {
               const me = h.player_id === b.my_player_id;
               return (
-                <View key={h.player_id} style={{ marginTop: 8, gap: 3 }} testID={`hunter-${h.player_id}`}>
+                <Pressable key={h.player_id} style={{ marginTop: 8, gap: 3 }} onPress={() => router.push({ pathname: "/player/[id]", params: { id: h.player_id } })} testID={`hunter-${h.player_id}`}>
                   <Row style={{ justifyContent: "space-between" }}>
                     <Row gap={6}>
                       <View style={{ width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: h.rank === 1 ? colors.gold : h.rank <= 3 ? colors.iron : colors.surfaceTertiary, borderWidth: 1, borderColor: colors.wood }}>
@@ -74,7 +76,7 @@ export default function BossScreen() {
                     <View style={{ width: `${Math.max(3, (100 * h.damage) / Math.max(1, top))}%`, height: "100%", backgroundColor: h.rank === 1 ? colors.goldBright : me ? colors.brandPrimary : colors.error }} />
                   </View>
                   <Txt v="caption" color={colors.muted}>{h.attacks} colpi · {h.share_pct}% del danno totale</Txt>
-                </View>
+                </Pressable>
               );
             })}
           </Panel>

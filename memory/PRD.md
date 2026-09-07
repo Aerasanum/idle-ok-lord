@@ -108,3 +108,9 @@ Lingua utente: **italiano**.
 - `/app/design_guidelines.json`, `/app/frontend/src/theme.ts` — design tokens.
 - `/app/memory/test_credentials.md` — account QA.
 - `/app/backend/tests/*` — suite pytest (25 test).
+
+### Batch 5 (giugno 2026) — Vetrina profilo + Mappa territorio 3D (testing agent iterazioni 11-12: tutto verde)
+- **Vetrina pubblica** `GET /players/{id}/showcase` + `app/player/[id].tsx`: Lord con skin indossata (animato), stendardo, skin castello, guardia d'onore, potenza/stage/castello/dominio, alleanza, equipaggiamento per slot. Accesso da membri alleanza, classifica Titan, long-press in chat ("Vedi la vetrina"), Profilo ("La tua vetrina pubblica").
+- **Territorio** `src/war/WarMap.tsx`: tile illustrate (assets/art/tiles) con bordo bevel 3D, palette calma (oro = tuo con puntini `war-own-<id>`, cremisi = rivali, rovine = basi libere), edifici sui nodi conquistabili, stendardo sul castello, anello pulsante per le guerre; pulsante "Il mio territorio" (auto-focus all'apertura), D-pad + zoom ±/reset, trascinamento. `ZoomPan` ora supporta contenuto più grande della viewport (`contentWidth/Height`, `minScale/maxScale`), `dpad`, ref `focus/reset/panBy`.
+- Simulazione guerra completa eseguita (QAT vs ORS nodo 22: declare → roster 10v10 → lock → resolve 1-9, punti stagione, messaggi di sistema): nessun bug. Test `tests/test_war_full_simulation.py`. Nota: `_test/war-shift` va seguito da `_test/tick`.
+- **Chat dock sempre visibile** (iterazione 13): `src/social/ChatDock.tsx` ancorata in basso nella tab Battaglia (sopra la tab bar): chip Globale/Alleanza, ultimi messaggi (2 compatti, fino a 40 espansa), input+invio inline, apertura chat completa. Polling 4s. Verificata anche l'isolazione tra alleanze (QAT vs ORS).

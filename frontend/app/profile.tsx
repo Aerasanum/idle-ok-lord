@@ -103,6 +103,7 @@ export default function ProfileScreen() {
         ) : null}
         {!user.account.email_verified ? <Btn title="Verifica email" small variant="ghost" onPress={() => router.push("/verify")} testID="profile-verify-button" /> : null}
         <Btn title="Rivedi il tutorial" small variant="ghost" icon="school" onPress={() => tut.start()} testID="replay-tutorial-button" />
+        <Btn title="La tua vetrina pubblica" small variant="gold" icon="account-star" onPress={() => router.push({ pathname: "/player/[id]", params: { id: user?.player_id ?? "" } })} testID="my-showcase-button" />
         <Btn title="Regolamento completo (PDF)" small variant="secondary" icon="book-open-page-variant" onPress={() => Linking.openURL(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/docs/regolamento.pdf`)} testID="rules-pdf-button" />
         <Txt v="small" color={colors.muted}>Regole, unità e contro-unità, costi e tempi di edifici, ricerche, XP eroe, equipaggiamento e guerre: tutto ciò che il server applica.</Txt>
       </Panel>

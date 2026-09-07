@@ -6,6 +6,7 @@ from ..core.canon import canon, kingdom_visual_tier, army_visual_tier, validatio
 from ..core.security import Principal, current_user
 from ..core.util import clean, fail, now
 from ..domain import campaign as C
+from ..domain import cosmetics as CS
 from ..domain import domain_map as D
 from ..domain import formulas as F
 from ..domain import gear as G
@@ -92,6 +93,29 @@ async def battle_attempt(body: AttemptIn, p: Principal = Depends(current_user)):
 async def battle_claim(body: ClaimIn, p: Principal = Depends(current_user)):
     pl = await load(p)
     return await C.claim_attempt(pl, body.attempt_id)
+
+
+@router.get("/players/{player_id}/showcase")
+async def player_showcase(player_id: str, p: Principal = Depends(current_user)):
+    """Public showcase of any player: Lord (name, level, skin), banner, castle skin, power and campaign progress. No private data."""
+    target = await db.players.find_one({"_id": player_id})
+    if not target:
+        raise fail(404, "player_not_found")
+    prof = await P.combat_profile(target)
+    items = await P.equipped_items(target)
+    alliance = await db.alliances.find_one({"_id": target.get("alliance_id")}, {"name": 1, "tag": 1}) if target.get("alliance_id") else None
+    hc = target["campaign"]["highest_cleared"]
+    return {
+        "player_id": player_id, "is_me": player_id == p.player_id, "display_name": target["display_name"], "heraldic_color": target.get("heraldic_color"),
+        "hero": {"name": target["hero"].get("name") or "Lord", "level": target["hero"]["level"]},
+        "power": {"total": prof["total_power"], "hero": prof["hero"]["power"], "army": prof["army_power"]},
+        "campaign": {"highest_cleared": hc, "region": F.region_info(max(1, hc))["name"]},
+        "castle_level": target["kingdom"]["castle_level"], "army_visual_tier": army_visual_tier(hc, bool(target["army"]["formation"])),
+        "alliance": {"tag": alliance["tag"], "name": alliance["name"]} if alliance else None,
+        "cosmetics": CS.resolved(target), "has_chest": any(i["slot"] == "chest" for i in items),
+        "gear": [{"slot": i["slot"], "rarity": i["rarity"], "item_level": i.get("item_level")} for i in items],
+        "domain_tiles": target["domain"]["owned"] if isinstance(target["domain"].get("owned"), int) else len(target["domain"].get("owned") or []),
+    }
 
 
 @router.get("/battle/attempts")

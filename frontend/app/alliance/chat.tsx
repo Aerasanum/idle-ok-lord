@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
@@ -11,6 +12,7 @@ import { Sheet, SheetRef } from "@/src/ui/Sheet";
 
 export default function ChatScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { data: mine } = useMyAlliance();
@@ -69,6 +71,7 @@ export default function ChatScreen() {
       <Sheet ref={sheet} title={sel ? `Messaggio di ${sel.display_name}` : ""} snap={["40%"]} testID="moderation-sheet">
         {sel ? (
           <View style={{ gap: 8 }}>
+            <Btn title="Vedi la vetrina del giocatore" icon="account-star" variant="gold" onPress={() => { sheet.current?.dismiss(); router.push({ pathname: "/player/[id]", params: { id: sel.player_id } }); }} testID="showcase-button" />
             <Btn title="Segnala messaggio" icon="flag" variant="secondary" onPress={() => moderate.mutate({ action: "report", message_id: sel.id, reason: "inappropriate" }, { onSuccess: () => sheet.current?.dismiss() })} testID="report-button" />
             {sel.player_id !== user?.player_id ? <Btn title="Blocca utente" icon="account-cancel" variant="danger" onPress={() => moderate.mutate({ action: "block", target_id: sel.player_id }, { onSuccess: () => sheet.current?.dismiss() })} testID="block-button" /> : null}
             {officer && !channel.startsWith("global") ? <Btn title="Elimina (moderatore)" icon="delete" variant="ghost" onPress={() => moderate.mutate({ action: "delete", message_id: sel.id }, { onSuccess: () => sheet.current?.dismiss() })} testID="delete-button" /> : null}

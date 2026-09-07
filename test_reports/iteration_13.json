@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration_13 (frontend only) — Always-on ChatDock on Battle tab verified end-to-end at 390x844 for qa.lord and orsi.bot1. Battle tab shows scoped chat-dock (1 instance under battle-screen, position y=647 h=133, bottom-anchored above the 64px tab bar). dock-channel-Globale and dock-channel-Alleanza chips both present for qa.lord (QAT). Dock remains bottom-anchored after mouse-wheel scroll (initial y=647 == after-scroll y=647). Dock remains present after switching to Regno tab (which itself also mounts a dock at the tabs layout) and returning to Battaglia (y=647 unchanged). Send flow: focused dock-input → typed 'IT13 dockG 1788815213' → POST /api/chat/messages 200; message appears in dock-messages within ~5s and also in the full chat via dock-open-full → /alliance/chat (Globale tab shows 'QA LORD · 21:06 IT13 dockG 1788815213'). Switched to Alleanza chip → typed 'IT13 dockA 1788815213' → POST /api/chat/messages 200 to channel=alliance:al_c872ec065d464bbcbc8d4ab7f323fd0f; message posted successfully (visible via dock and full chat). Empty text → dock-send shows opacity 0.5 (visually disabled as designed). dock-open-full precisely tapped (28x28 at x=320,y=601) navigates to /alliance/chat and mounts chat-screen. Cross-account isolation with orsi.bot1@idle1.app (alliance ORS): Battle tab dock renders with Globale + Alleanza chips; QA's global message 'IT13 dockG 1788815213' IS visible in ORS's Globale channel; QA's alliance message 'IT13 dockA' is NOT visible in ORS's Alleanza channel (which correctly shows only ORS system war heralds and Ursus Rex, no 'QA Lord' string anywhere). Battle scene coexists with the dock: with an active BOSS battle running on Stage 70, the BattleScene, stage-panel and hero-card all render inside battle-screen without layout overflow; dock is not covered by the tab bar; battle-fight-button/battle-start-button appears when attempt is idle (auto-battle re-triggers a new attempt on mount which is expected). No red screens, no runtime errors. Note (case sensitivity): first send-verification pass produced a false negative because Txt renders display name & text with text-transform: uppercase; matching against the raw case-preserved string requires case-insensitive comparison — the messages were correctly persisted (POST returned 200 and appeared in /alliance/chat).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "battle (ChatDock)", "issues": ["Collapsed dock height ~133px (header ~34 + messages 44 + composer ~50). When input is focused open→true but total dock height only grows to ~169px on web (ScrollView maxHeight is 260 but rendered content is short); this is cosmetic — expanded scrolling still works. Consider verifying the outer View grows when messages fill the ScrollView. Not a blocker."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/tmp/it13_battle_initial.png",
+    "/tmp/it13_send_test.png",
+    "/tmp/it13_full_chat.png (QA global chat showing 'IT13 dockG 1788815213')",
+    "/tmp/it13_ors_alliance_correct.png (ORS Alleanza chat: no QA messages, only ORS war heralds)"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "/app/frontend/src/social/ChatDock.tsx — clean 74-line component. Channels array conditionally includes Alleanza only when useMyAlliance() returns an alliance (correct — solo players see only Globale chip). channel state defaults to 'global:it'; changing channel via chip Pressable is instant. useChat(channel) drives the message list; useAction posts messages and invalidates [\"chat\", channel] so latest bubbles into dock within one refresh cycle. Empty-state fallback ('Nessun messaggio ancora: saluta tutti!') is nice. dock-message-<id> testIDs are exposed per message.",
+    "onFocus of Input sets open=true (auto-expand), which is the correct UX. However setOpen(true) is called every focus even if already open — harmless but could be gated with `if (!open) setOpen(true)`.",
+    "Message send is gated by `!verified` which prevents unverified accounts from posting — matches the verify-banner shown on Battle for unverified users. Good.",
+    "The dock uses `borderTopWidth: 2` with `colors.gold` — visually separates from BattleScene and quick-links. Padding-bottom uses safe-area insets only on native (Platform.OS !== 'web'), which is correct for web preview.",
+    "/app/frontend/app/(tabs)/battle.tsx wraps ChatDock in KeyboardAvoidingView with keyboardVerticalOffset=insets.bottom+56 — correct for iOS to keep the composer visible when the keyboard opens above the tab bar.",
+    "Two ResourceBar considerations from the reviewer's note: on web, resourcebar mounted in battle-screen + potentially another in tab layout; that is out of ChatDock scope and did not affect the dock testIDs. Scoping via `[data-testid=\"battle-screen\"] [data-testid=\"chat-dock\"]` returns exactly 1 dock on Battle.",
+    "Nit: when the user has no alliance, the header shows 'Entra in un'alleanza per la chat di gruppo' inline; the flex layout leaves the Globale chip visible on the left and toggle/open-full on the right. Copy is Italian-correct.",
+    "Nit: on channel switch (Alleanza → Globale) there is a ~1s empty-list flash before the new query resolves. Consider keeping previous data (react-query keepPreviousData) for smoother UX.",
+    "Nit: shown = open ? msgs.slice(-40) : msgs.slice(-2). If a player has fewer than 40 messages ever, this is fine. Consider explicit sort by created_at ascending to guarantee ordering across paginations (assumed already ascending by backend)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% for the always-on chat-dock review scope"},
+  "seed_data_creation": "None. Two new Global messages posted to production channel by qa.lord ('IT13 dockG 1788815213', 'IT13 dockA 1788815213') and one Alliance QAT message. Historical war heralds already present in ORS alliance chat from iteration_12.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "ChatDock is in /app/frontend/src/social/ChatDock.tsx, mounted from /app/frontend/app/(tabs)/battle.tsx (line 251) inside a KeyboardAvoidingView after the ScrollView (so it stays anchored at bottom regardless of page scroll). testIDs: chat-dock, dock-channel-Globale, dock-channel-Alleanza, dock-messages, dock-message-<id>, dock-input, dock-send, dock-toggle, dock-open-full. Note: messages render via Txt v='caption' which applies text-transform: uppercase in the theme — do case-insensitive string comparisons when asserting message text. On web, page.fill() of the dock-input does update the React state via onChangeText (send button opacity flipping from 0.5→1.0 confirms), but focus() alone does NOT trigger the onFocus prop; using page.focus() then page.keyboard.type() is the reliable path. dock-open-full is 28x28 at x=320,y=601 (tight target) — use page.mouse.click(cx, cy) with computed bounding box to avoid mis-hitting adjacent controls. Second account for isolation: orsi.bot1@idle1.app / QaBot!2026 (alliance ORS al_f40c87fc276646ffb1671ee5343c8104). Reference credentials in /app/memory/test_credentials.md.",
+  "rca_of_issue": "N/A — all review requirements met."
+}

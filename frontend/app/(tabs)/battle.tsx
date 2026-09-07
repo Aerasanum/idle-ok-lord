@@ -1,12 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api/client";
 import { QK, useAction, useCanon, useProfile } from "@/src/api/hooks";
 import { Attempt, BattleScene } from "@/src/battle/BattleScene";
+import { ChatDock } from "@/src/social/ChatDock";
 import { paletteFor } from "@/src/battle/regions";
 import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
@@ -246,6 +247,9 @@ export default function BattleTab() {
           </Pressable>
         ) : null}
       </ScrollView>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={insets.bottom + 56}>
+        <ChatDock />
+      </KeyboardAvoidingView>
     </View>
   );
 }

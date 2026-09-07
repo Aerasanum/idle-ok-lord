@@ -1,53 +1,107 @@
-// Alliance territory 19x19 map with ownership colors, node types, wars in progress.
-import React from "react";
-import { Pressable, Text, View, useWindowDimensions } from "react-native";
+// Alliance territory map (19x19): illustrated 3D-tilted tiles, calm palette (gold = yours, crimson = rivals, stone = free),
+// banners on home castles, pulsing war rings, D-pad + zoom and a "go to my territory" button.
+import React, { useEffect, useMemo, useRef } from "react";
+import { Image, Pressable, Text, View, useWindowDimensions } from "react-native";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
-import { fonts, useTheme } from "@/src/theme";
 import { hashStr } from "@/src/battle/regions";
-import { ZoomPan } from "@/src/ui/ZoomPan";
+import { ART } from "@/src/art/manifest";
+import { useProfile } from "@/src/api/hooks";
+import { skinArt } from "@/src/art";
+import { fonts, useTheme } from "@/src/theme";
+import { Btn, Txt } from "@/src/ui";
+import { ZoomPan, ZoomPanRef } from "@/src/ui/ZoomPan";
 
-const NODE_COLOR: Record<string, string> = { wilderness: "#3C5230", village: "#6F8A46", town: "#8A7A50", mine: "#6E5A4A", fortress: "#5C6470", city: "#B89947", home_castle: "#800020" };
 export const NODE_LABEL: Record<string, string> = { wilderness: "Terre selvagge", village: "Villaggio", town: "Borgo", mine: "Miniera", fortress: "Fortezza", city: "Città", home_castle: "Castello" };
+const OWN = "#E3C16F", RIVAL = "#B3162B", WAR = "#FF4D3D";
+const TILE_FOR: Record<string, string[]> = { wilderness: ["plains", "forest", "hills", "plains", "forest", "mountains", "river"], village: ["village"], town: ["village"], mine: ["mine"], fortress: ["fort"], city: ["city"], home_castle: ["fort"] };
+const CELL = 40;
+const GRID = 19;
 
 export function allianceColor(id: string | null | undefined, mine: string | null | undefined): string {
   if (!id) return "transparent";
-  if (id === mine) return "#E3C16F";
-  const h = hashStr(id);
-  return `hsl(${h % 360}, 55%, 55%)`;
+  return id === mine ? OWN : RIVAL;
 }
 
-export function WarMap({ nodes, myAlliance, onSelect, selected, contested, alliances }: { nodes: { node_id: number; x: number; y: number; type: string; owner: string | null }[]; myAlliance: string | null; onSelect: (n: any) => void; selected?: number | null; contested: Set<number>; alliances?: Record<string, { name: string; tag: string }> }) {
+type Node = { node_id: number; x: number; y: number; type: string; owner: string | null };
+
+export function WarMap({ nodes, myAlliance, onSelect, selected, contested, alliances }: { nodes: Node[]; myAlliance: string | null; onSelect: (n: any) => void; selected?: number | null; contested: Set<number>; alliances?: Record<string, { name: string; tag: string; home_node?: number | null }> }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
-  const cell = Math.max(22, Math.floor((width - 32) / 19));
-  const size = cell * 19;
-  const others = Object.entries(alliances ?? {}).filter(([id]) => id !== myAlliance);
+  const { data: profile } = useProfile();
+  const zoom = useRef<ZoomPanRef>(null);
+  const vw = width - 24, vh = Math.round(vw * 0.92);
+  const size = CELL * GRID;
+  const mine = useMemo(() => nodes.filter((n) => n.owner && n.owner === myAlliance), [nodes, myAlliance]);
+  const centroid = useMemo(() => {
+    if (!mine.length) return null;
+    return { x: (mine.reduce((s, n) => s + n.x, 0) / mine.length + 0.5) * CELL, y: (mine.reduce((s, n) => s + n.y, 0) / mine.length + 0.5) * CELL };
+  }, [mine]);
+  const goMine = () => centroid && zoom.current?.focus(centroid.x, centroid.y, 1.6);
+  useEffect(() => { const t = setTimeout(goMine, 350); return () => clearTimeout(t); }, [centroid?.x, centroid?.y]); // eslint-disable-line react-hooks/exhaustive-deps
+  const banner = profile?.cosmetics?.army ? skinArt(profile.cosmetics.army.key) : undefined;
+  const rivals = Object.entries(alliances ?? {}).filter(([id]) => id !== myAlliance);
   return (
     <View style={{ gap: 8 }}>
-      <ZoomPan width={size} height={size} testID="war-zoom" style={{ alignSelf: "center" }}>
-        <View style={{ width: size, height: size, borderWidth: 3, borderColor: colors.gold, backgroundColor: "#2E3A2A", borderRadius: 4, overflow: "hidden" }} testID="war-map">
-          {nodes.map((n) => {
-            const own = allianceColor(n.owner, myAlliance);
-            return (
-              <Pressable key={n.node_id} testID={`war-node-${n.node_id}`} onPress={() => onSelect(n)} style={{ position: "absolute", left: n.x * cell, top: n.y * cell, width: cell, height: cell, backgroundColor: NODE_COLOR[n.type], borderWidth: 0.5, borderColor: "rgba(0,0,0,0.3)", alignItems: "center", justifyContent: "center" }}>
-                {n.owner ? <View style={{ position: "absolute", inset: 0, backgroundColor: own, opacity: 0.7 } as any} /> : null}
-                {n.type === "home_castle" ? <Text style={{ fontFamily: fonts.bodyBold, fontSize: cell * 0.5, color: n.owner ? "#11151C" : colors.parchment }}>♜</Text> : n.type === "city" ? <Text style={{ fontSize: cell * 0.45, color: colors.onSurfaceInverse }}>◆</Text> : n.type === "fortress" ? <Text style={{ fontSize: cell * 0.45, color: colors.parchment }}>▲</Text> : n.type === "mine" ? <Text style={{ fontSize: cell * 0.4, color: colors.parchment }}>⛏</Text> : n.type === "town" ? <Text style={{ fontSize: cell * 0.4, color: colors.parchment }}>■</Text> : n.type === "village" ? <Text style={{ fontSize: cell * 0.35, color: colors.parchment }}>▪</Text> : null}
-                {n.owner ? <View style={{ position: "absolute", inset: 0, borderWidth: 1.5, borderColor: n.owner === myAlliance ? colors.goldBright : "#11151C" } as any} /> : null}
-                {contested.has(n.node_id) ? <View style={{ position: "absolute", inset: 1, borderWidth: 2, borderColor: colors.error } as any} /> : null}
-                {selected === n.node_id ? <View style={{ position: "absolute", inset: 0, borderWidth: 2, borderColor: colors.goldBright } as any} /> : null}
-              </Pressable>
-            );
-          })}
-        </View>
-      </ZoomPan>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, alignItems: "center" }} testID="war-map-legend">
-        {myAlliance ? <Legend color={allianceColor(myAlliance, myAlliance)} label="Tuo territorio" /> : null}
-        {others.map(([id, a]) => <Legend key={id} color={allianceColor(id, myAlliance)} label={`[${a.tag}] ${a.name}`} />)}
-        <Legend color="transparent" border={colors.error} label="Guerra in corso" />
-        <Legend color={NODE_COLOR.home_castle} label="♜ Castello" />
+      <View style={{ borderWidth: 3, borderColor: colors.gold, borderRadius: 8, overflow: "hidden", backgroundColor: "#141a12", alignSelf: "center" }}>
+        <ZoomPan ref={zoom} width={vw} height={vh} contentWidth={size} contentHeight={size} maxScale={3.2} dpad testID="war-zoom">
+          <View style={{ width: size, height: size, backgroundColor: "#2a3a26" }} testID="war-map">
+            {nodes.map((n) => <Tile key={n.node_id} n={n} mine={myAlliance} selected={selected === n.node_id} contested={contested.has(n.node_id)} onSelect={onSelect} tag={n.owner ? alliances?.[n.owner]?.tag : undefined} banner={n.owner === myAlliance ? banner : undefined} />)}
+          </View>
+        </ZoomPan>
+        {myAlliance && centroid ? (
+          <View style={{ position: "absolute", right: 6, bottom: 6 }}>
+            <Btn title="Il mio territorio" small variant="gold" icon="crosshairs-gps" onPress={goMine} testID="war-goto-mine" />
+          </View>
+        ) : null}
       </View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, alignItems: "center" }} testID="war-map-legend">
+        {myAlliance ? <Legend color={OWN} label={`Tuo territorio · ${mine.length} nodi`} /> : null}
+        {rivals.length ? <Legend color={RIVAL} label={`Rivali: ${rivals.map(([, a]) => `[${a.tag}]`).join(" ")}`} /> : null}
+        <Legend color="transparent" border={WAR} label="Guerra in corso" />
+        <Legend color="transparent" border={colors.parchment} label="Libero" />
+      </View>
+      <Txt v="caption" color={colors.muted}>Trascina o usa le frecce per muoverti · pizzica o usa +/− per lo zoom · tocca un nodo per i dettagli</Txt>
     </View>
   );
+}
+
+function Tile({ n, mine, selected, contested, onSelect, tag, banner }: { n: Node; mine: string | null; selected: boolean; contested: boolean; onSelect: (n: any) => void; tag?: string; banner?: number }) {
+  const { colors } = useTheme();
+  const variants = TILE_FOR[n.type] ?? TILE_FOR.wilderness;
+  const tile = n.type === "home_castle" && !n.owner ? "ruins" : variants[hashStr(`${n.node_id}`) % variants.length];
+  const img = ART[`tiles/${tile}`];
+  const own = n.owner ? (n.owner === mine ? OWN : RIVAL) : null;
+  // unowned base sites stay quiet ruins; buildings only where there is something to conquer
+  const castle = n.type === "home_castle" ? (n.owner ? ART["buildings/castle_fortress"] ?? ART["buildings/castle"] : undefined) : n.type === "city" ? ART["buildings/alliance_hall"] : n.type === "fortress" ? ART["buildings/walls"] : n.type === "mine" ? ART["buildings/iron_mine"] : n.type === "town" ? ART["buildings/warehouse"] : undefined;
+  return (
+    <Pressable testID={`war-node-${n.node_id}`} onPress={() => onSelect(n)} style={{ position: "absolute", left: n.x * CELL, top: n.y * CELL, width: CELL, height: CELL, alignItems: "center", justifyContent: "center" }}>
+      {img ? <Image source={img} style={{ position: "absolute", width: CELL, height: CELL }} resizeMode="cover" /> : null}
+      {/* bevel: light top edge + dark bottom edge give the tiles a raised, 3D feel */}
+      <View style={{ position: "absolute", top: 0, left: 0, width: CELL, height: 2, backgroundColor: "rgba(255,255,255,0.28)" }} />
+      <View style={{ position: "absolute", bottom: 0, left: 0, width: CELL, height: 3, backgroundColor: "rgba(0,0,0,0.42)" }} />
+      {own ? <View style={{ position: "absolute", width: CELL, height: CELL, backgroundColor: own, opacity: own === OWN ? 0.42 : 0.32 }} /> : null}
+      <View style={{ position: "absolute", width: CELL, height: CELL, borderWidth: own ? 3 : 0.5, borderColor: own ?? "rgba(0,0,0,0.25)" }} />
+      {own === OWN ? <View style={{ position: "absolute", top: 3, right: 3, width: 9, height: 9, borderRadius: 5, backgroundColor: OWN, borderWidth: 1, borderColor: "#11151C" }} testID={`war-own-${n.node_id}`} /> : null}
+      {castle ? <Image source={castle} style={{ width: CELL * (n.type === "home_castle" ? 0.9 : 0.6), height: CELL * (n.type === "home_castle" ? 0.9 : 0.6), marginTop: -CELL * 0.08 }} resizeMode="contain" /> : null}
+      {n.type === "home_castle" && n.owner ? (
+        banner ? <Image source={banner} style={{ position: "absolute", left: 1, top: -CELL * 0.35, width: CELL * 0.45, height: CELL * 0.8 }} resizeMode="contain" /> : (
+          <View style={{ position: "absolute", left: 2, top: -8, paddingHorizontal: 2, backgroundColor: own ?? colors.iron, borderWidth: 1, borderColor: "#11151C", borderRadius: 2 }}>
+            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 7, color: own === OWN ? "#11151C" : "#FFFFFF" }}>{tag ?? "?"}</Text>
+          </View>
+        )
+      ) : null}
+      {contested ? <WarRing /> : null}
+      {selected ? <View style={{ position: "absolute", width: CELL, height: CELL, borderWidth: 2.5, borderColor: "#FFFFFF" }} /> : null}
+    </Pressable>
+  );
+}
+
+function WarRing() {
+  const p = useSharedValue(0);
+  useEffect(() => { p.value = withRepeat(withSequence(withTiming(1, { duration: 600, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: 600, easing: Easing.inOut(Easing.quad) })), -1, false); }, [p]);
+  const st = useAnimatedStyle(() => ({ opacity: 0.55 + 0.45 * p.value, transform: [{ scale: 1 + 0.06 * p.value }] }));
+  return <Animated.View pointerEvents="none" style={[{ position: "absolute", width: CELL - 4, height: CELL - 4, borderWidth: 2.5, borderColor: WAR, borderRadius: 4 }, st]} testID="war-ring" />;
 }
 
 function Legend({ color, label, border }: { color: string; label: string; border?: string }) {
