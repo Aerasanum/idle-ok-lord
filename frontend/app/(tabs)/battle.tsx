@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
 import { Btn, Icon, IconName, Loading, Panel, RARITY_LABEL, Res, ResourceBar, Row, SLOT_LABEL, Txt, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
+import { TutorialTarget, useTutorial } from "@/src/tutorial/Tutorial";
 
 type Result = any;
 
@@ -31,6 +32,9 @@ export default function BattleTab() {
   const [preview, setPreview] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const starting = useRef(false);
+  const tut = useTutorial();
+  const scrollRef = useRef<ScrollView>(null);
+  const targetY = useRef<Record<string, number>>({});
 
   const highest = profile?.campaign?.highest_cleared ?? 0;
   const curStage = stage ?? Math.max(1, Math.min(highest + 1, profile?.campaign?.current_stage ?? 1));
@@ -89,6 +93,21 @@ export default function BattleTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
+  // first-play tutorial: once per account (settings.tutorial_done), once per app session
+  useEffect(() => {
+    if (!profile || tut.active || tut.autoStarted || profile.settings?.tutorial_done === true) return;
+    tut.markAutoStarted();
+    const t = setTimeout(() => tut.start(), 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, profile?.settings?.tutorial_done]);
+  useEffect(() => {
+    const id = tut.step?.target;
+    if (!tut.active || !id) return;
+    const y = targetY.current[id];
+    if (y !== undefined) scrollRef.current?.scrollTo({ y: Math.max(0, y - 96), animated: true });
+  }, [tut.active, tut.step?.target]);
+
   if (isLoading || !profile) return <Loading label="Il Lord si prepara..." />;
   const equipped: Record<string, any> = {};
   for (const it of profile.equipped_items ?? []) equipped[it.slot] = it;
@@ -101,9 +120,9 @@ export default function BattleTab() {
       <View style={{ paddingTop: insets.top, backgroundColor: colors.surfaceSecondary }}>
         <ResourceBar resources={profile.resources} />
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         {attempt ? (
-          <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.heraldic_color} onFinished={onFinished} skills={skills} />
+          <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.heraldic_color} onFinished={onFinished} skills={skills} firstClear={Number(attempt.stage) > highest} />
         ) : (
           <LinearGradient colors={pal.sky} style={{ height: 220, alignItems: "center", justifyContent: "center", borderBottomWidth: 3, borderColor: colors.gold }} testID="battle-idle-scene">
             <Txt v="h1">{preview?.region?.name ?? "Campagna"}</Txt>
@@ -113,6 +132,7 @@ export default function BattleTab() {
         )}
 
         {/* stage bar */}
+        <TutorialTarget id="stage-panel" onLayout={(y) => (targetY.current["stage-panel"] = y)}>
         <Panel style={{ margin: 12 }} testID="stage-panel">
           <Row style={{ justifyContent: "space-between" }}>
             <Pressable testID="stage-prev-button" onPress={() => setStage(Math.max(1, curStage - 1))} style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }} disabled={!!attempt}>
@@ -139,14 +159,18 @@ export default function BattleTab() {
             </View>
           </Row>
           <Row style={{ marginTop: 10 }}>
-            <Btn title={auto ? "Auto: ON" : "Auto: OFF"} variant={auto ? "gold" : "secondary"} small icon={auto ? "play-circle" : "pause-circle"} onPress={() => setAuto(!auto)} testID="auto-battle-toggle" />
+            <TutorialTarget id="auto-battle-toggle" onLayout={() => (targetY.current["auto-battle-toggle"] = targetY.current["stage-panel"] ?? 0)}>
+              <Btn title={auto ? "Auto: ON" : "Auto: OFF"} variant={auto ? "gold" : "secondary"} small icon={auto ? "play-circle" : "pause-circle"} onPress={() => setAuto(!auto)} testID="auto-battle-toggle" />
+            </TutorialTarget>
             {!attempt ? <Btn title="Combatti" small icon="sword" onPress={() => start(curStage)} loading={busy} testID="battle-fight-button" /> : <Txt v="small" color={colors.muted}>Battaglia in corso (server)</Txt>}
           </Row>
         </Panel>
+        </TutorialTarget>
 
         {result ? <ResultCard result={result} onClose={() => setResult(null)} /> : null}
 
         {/* hero card */}
+        <TutorialTarget id="hero-card" onLayout={(y) => (targetY.current["hero-card"] = y)}>
         <Panel variant="wood" style={{ marginHorizontal: 12, marginBottom: 12 }} testID="hero-card">
           <Row style={{ justifyContent: "space-between" }}>
             <View>
@@ -170,10 +194,11 @@ export default function BattleTab() {
             })}
           </Row>
         </Panel>
+        </TutorialTarget>
 
         {/* quick links */}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 12 }}>
-          <Quick icon="treasure-chest" label="Forziere" badge={offlineReady ? "!" : undefined} onPress={() => router.push("/offline")} testID="quick-offline" />
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 12 }} onLayout={(e) => (targetY.current["quick-offline"] = e.nativeEvent.layout.y)}>
+          <Quick icon="treasure-chest" label="Forziere" badge={offlineReady ? "!" : undefined} onPress={() => router.push("/offline")} testID="quick-offline" tutorialId="quick-offline" />
           <Quick icon="calendar-star" label="Eventi" onPress={() => router.push("/events")} testID="quick-events" />
           <Quick icon="door-closed" label="Dungeon" onPress={() => router.push("/events/dungeons")} testID="quick-dungeons" />
           <Quick icon="clipboard-check" label="Missioni" onPress={() => router.push("/events/quests")} testID="quick-quests" />
@@ -193,15 +218,17 @@ export default function BattleTab() {
   );
 }
 
-function Quick({ icon, label, onPress, badge, testID }: { icon: IconName; label: string; onPress: () => void; badge?: string; testID: string }) {
+function Quick({ icon, label, onPress, badge, testID, tutorialId }: { icon: IconName; label: string; onPress: () => void; badge?: string; testID: string; tutorialId?: string }) {
   const { colors } = useTheme();
-  return (
-    <Pressable onPress={onPress} testID={testID} style={({ pressed }) => ({ width: "31%", flexGrow: 1, minHeight: 64, backgroundColor: colors.surfaceSecondary, borderWidth: 1.5, borderColor: colors.wood, borderRadius: 6, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.8 : 1 })}>
+  const btn = (
+    <Pressable onPress={onPress} testID={testID} style={({ pressed }) => ({ flex: 1, minHeight: 64, backgroundColor: colors.surfaceSecondary, borderWidth: 1.5, borderColor: colors.wood, borderRadius: 6, alignItems: "center", justifyContent: "center", gap: 4, opacity: pressed ? 0.8 : 1 })}>
       <Icon name={icon} size={22} color={colors.goldBright} />
       <Txt v="small">{label}</Txt>
       {badge ? <View style={{ position: "absolute", top: 4, right: 6, backgroundColor: colors.brandPrimary, borderRadius: 8, paddingHorizontal: 5, borderWidth: 1, borderColor: colors.gold }}><Txt v="small" color={colors.onBrandPrimary}>{badge}</Txt></View> : null}
     </Pressable>
   );
+  const box = { width: "31%" as const, flexGrow: 1, minHeight: 64 };
+  return tutorialId ? <TutorialTarget id={tutorialId} style={box}>{btn}</TutorialTarget> : <View style={box}>{btn}</View>;
 }
 
 function ResultCard({ result, onClose }: { result: any; onClose: () => void }) {

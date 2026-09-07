@@ -15,6 +15,7 @@ import { queryClient } from "@/src/query-client";
 import { useTheme } from "@/src/theme";
 import { ToastProvider } from "@/src/ui/Toast";
 import { PushBootstrap } from "@/src/push";
+import { TutorialOverlay, TutorialProvider } from "@/src/tutorial/Tutorial";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -42,14 +43,17 @@ export default function RootLayout() {
               <ToastProvider>
                 <AuthProvider>
                   <BottomSheetModalProvider>
-                    <StatusBar style="light" />
-                    <PushBootstrap />
-                    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface }, animation: "fade" }}>
-                      <Stack.Screen name="index" />
-                      <Stack.Screen name="(auth)" />
-                      <Stack.Screen name="(tabs)" />
-                      <Stack.Screen name="offline" options={{ presentation: "modal" }} />
-                    </Stack>
+                    <TutorialProvider>
+                      <StatusBar style="light" />
+                      <PushBootstrap />
+                      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface }, animation: "fade" }}>
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="(auth)" />
+                        <Stack.Screen name="(tabs)" />
+                        <Stack.Screen name="offline" options={{ presentation: "modal" }} />
+                      </Stack>
+                      <TutorialOverlay />
+                    </TutorialProvider>
                   </BottomSheetModalProvider>
                 </AuthProvider>
               </ToastProvider>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Pressable, View } from "react-native";
 
 import { QK, useAction, useBoss } from "@/src/api/hooks";
-import { MonsterProxy } from "@/src/battle/sprites";
+import { MonsterSprite } from "@/src/battle/monsters";
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, Loading, Panel, Progress, Row, Screen, Txt, fmt, fmtDuration } from "@/src/ui";
 import { useCountdown } from "@/src/ui/useCountdown";
@@ -29,7 +29,7 @@ export default function BossScreen() {
       {r ? (
         <Panel variant="wood" testID="boss-panel">
           <View style={{ alignItems: "center", paddingVertical: 8 }}>
-            <MonsterProxy family={`titan-${r.tier}`} type="boss" palette={["#3B0F0C", "#800020", "#B0361D"]} scale={1.2} />
+            <MonsterSprite family="Ancient Titan" type="boss" palette={["#3B0F0C", "#800020", "#B0361D"]} size={140} />
           </View>
           <Progress value={Math.max(0, r.hp)} max={r.hp_max} color={colors.error} height={16} label={`HP ${fmt(Math.max(0, r.hp))} / ${fmt(r.hp_max)} · ${pct.toFixed(1)}% inflitto`} testID="boss-hp" />
           <Row style={{ justifyContent: "space-between", marginTop: 6 }}>

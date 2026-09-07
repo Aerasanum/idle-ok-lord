@@ -8,6 +8,7 @@ import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
 import { Btn, Divider, Input, Loading, Panel, Row, Screen, Stat, Txt, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
+import { useTutorial } from "@/src/tutorial/Tutorial";
 
 const COLORS = ["#800020", "#1B2A44", "#2E472D", "#B89947", "#5C6470", "#4A6B8C", "#7851A9", "#B0361D"];
 
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const toast = useToast();
+  const tut = useTutorial();
   const { user, logout, logoutAll, refreshMe } = useAuth();
   const { data: p, isLoading } = useProfile();
   const { data: purchases } = usePurchases();
@@ -85,6 +87,7 @@ export default function ProfileScreen() {
           </View>
         ) : null}
         {!user.account.email_verified ? <Btn title="Verifica email" small variant="ghost" onPress={() => router.push("/verify")} testID="profile-verify-button" /> : null}
+        <Btn title="Rivedi il tutorial" small variant="ghost" icon="school" onPress={() => tut.start()} testID="replay-tutorial-button" />
       </Panel>
       <Panel variant="wood" testID="privacy-panel">
         <Txt v="h3">Privacy & Account</Txt>

@@ -69,6 +69,7 @@ class SettingsIn(BaseModel):
     push_nonessential: bool | None = None
     analytics: bool | None = None
     language: str | None = None
+    tutorial_done: bool | None = None
     display_name: str | None = None
     heraldic_color: str | None = None
 
@@ -165,7 +166,7 @@ async def delete(body: DeleteIn, p: Principal = Depends(current_user)):
 @acc_router.patch("/settings")
 async def update_settings(body: SettingsIn, p: Principal = Depends(current_user)):
     sets = {}
-    for k in ("push_nonessential", "analytics", "language"):
+    for k in ("push_nonessential", "analytics", "language", "tutorial_done"):
         v = getattr(body, k)
         if v is not None:
             sets[f"settings.{k}"] = v

@@ -9,6 +9,7 @@ import { useTheme } from "@/src/theme";
 import { Btn, Icon, Loading, Panel, Res, ResourceBar, Row, Txt, fmt, fmtDuration } from "@/src/ui";
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useCountdown } from "@/src/ui/useCountdown";
+import { TutorialTarget } from "@/src/tutorial/Tutorial";
 
 export default function KingdomTab() {
   const { colors } = useTheme();
@@ -30,7 +31,10 @@ export default function KingdomTab() {
         <ResourceBar resources={k.resources} />
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
-        <KingdomScene buildings={k.buildings} castleLevel={k.castle_level} tier={k.visual_tier} heraldicColor={profile.heraldic_color} queued={queued} onSelect={(key) => { setSel(key); sheet.current?.present(); }} />
+        <TutorialTarget id="kingdom-scene">
+          <KingdomScene buildings={k.buildings} castleLevel={k.castle_level} tier={k.visual_tier} heraldicColor={profile.heraldic_color} queued={queued} onSelect={(key) => { setSel(key); sheet.current?.present(); }} />
+        </TutorialTarget>
+        <TutorialTarget id="production-panel">
         <Panel style={{ margin: 12 }} testID="production-panel">
           <Row style={{ justifyContent: "space-between" }}>
             <Txt v="h3">Produzione / ora</Txt>
@@ -40,6 +44,8 @@ export default function KingdomTab() {
             {Object.entries(k.production_per_hour).map(([r, v]) => <Res key={r} kind={r} value={v as number} testID={`prod-${r}`} />)}
           </Row>
         </Panel>
+        </TutorialTarget>
+        <TutorialTarget id="queues-panel">
         <Panel variant="wood" style={{ marginHorizontal: 12, marginBottom: 12 }} testID="queues-panel">
           <Row style={{ justifyContent: "space-between" }}>
             <Txt v="h3">Code</Txt>
@@ -48,6 +54,7 @@ export default function KingdomTab() {
           {(["construction_queue", "recruit_queue", "research_queue"] as const).flatMap((q) => k.queues[q].map((item: any) => <QueueRow key={item.id} queue={q} item={item} serverTime={k.server_time} onSpeed={() => speed.mutate({ queue: q, item_id: item.id })} />))}
           {!k.queues.construction_queue.length && !k.queues.recruit_queue.length && !k.queues.research_queue.length ? <Txt v="small" color={colors.muted}>Nessun lavoro in corso. Tocca un edificio per potenziarlo.</Txt> : null}
         </Panel>
+        </TutorialTarget>
         <Row style={{ paddingHorizontal: 12, gap: 8 }}>
           <Btn title="Ricerca" icon="flask" variant="secondary" onPress={() => router.push("/kingdom/research")} style={{ flex: 1 }} testID="open-research-button" />
           <Btn title="Esercito" icon="account-group" variant="secondary" onPress={() => router.push("/(tabs)/army")} style={{ flex: 1 }} testID="open-army-button" />

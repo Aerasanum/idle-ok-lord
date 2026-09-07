@@ -263,3 +263,5 @@ agent_communication:
     message: "Iteration 1: backend 31/31 live E2E pass (tests/test_live_e2e.py); frontend E2E all flows pass. One MEDIUM bug: /hero/talents 'totale attuale NaN%'."
   - agent: "main"
     message: "Fixed talents NaN (parse numeric suffix of effect_per_rank string). Verified via screenshot: shows 0.0%."
+  - agent: "main"
+    message: "NEW (iteration 2 scope): Battle VFX (screen shake, flashes, floating damage numbers, slash arcs, spark bursts, coin shower + VITTORIA/SCONFITTA banner held 1.5s before claim, boss HP bar, region ambience) in src/battle/BattleScene.tsx + effects.tsx; SVG enemy sprites per archetype (src/battle/monsters.tsx) and SVG Lord (src/battle/lord.tsx, gear-aware, swinging sword); guided tutorial (src/tutorial/Tutorial.tsx, 9 steps, spotlight overlay, auto-starts when profile.settings.tutorial_done !== true, 'Rivedi il tutorial' in Profile, completion stored via PATCH /account/settings {tutorial_done}). Alliance boss screen now uses MonsterSprite."

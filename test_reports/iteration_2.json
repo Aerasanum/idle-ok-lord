@@ -1,0 +1,28 @@
+{
+  "summary": "Frontend-only regression for iteration_2 (Battle VFX + SVG sprites + Tutorial). All targeted flows work on the live preview at 390x844. Login with QA account (qa.lord@example.com) lands on battle-screen; after resetting settings.tutorial_done=false the tutorial-overlay auto-appears within ~2s. All 9 steps advance in order via tutorial-next-button ('Benvenuto, Lord!' -> 'Lo Stage' -> 'Auto-battaglia' -> 'Il tuo Lord' -> 'Il Regno produce' (auto-navigates to Kingdom) -> 'Costruisci e potenzia' -> 'Code e accelerazioni' -> 'Forziere offline' (auto-navigates back to Battle) -> 'Buona conquista!'); the spotlight ring is visible around 'stage-panel' on step 2 (also verified on other steps via screenshots). Final 'Inizia!' closes the overlay; reloading the page does NOT show it again (PATCH /api/account/settings persisted tutorial_done=true). tutorial-skip-button closes the overlay from any step. Profile > replay-tutorial-button re-triggers the tutorial on the battle tab. Battle scene: lord-sprite contains SVG(s) (LordSprite), monster-horde contains multiple SVG monsters, floating damage numbers (both normal and crit '!' variants such as '273', '984!') appear/disappear inside battle-scene, battle-wave-label increments (e.g. 'Ondata 1/10 -> 10/10'), when battle finishes battle-outcome-banner shows 'VITTORIA' or 'STAGE CONQUISTATO' or 'SCONFITTA' for ~1.5s and then battle-result-card appears; auto-battle progresses (stage 25 -> 26 -> 27 -> 28). Boss stage 20 selected via stage-prev-button (auto-battle OFF, no attempt running) -> Combatti -> during the last wave the boss-bar with the region boss name 'Ogre Warlord' and a large boss sprite (Ogre) renders in monster-horde. Alliance boss (Social -> open-alliance-button -> hub-boss / direct /alliance/boss): after starting a hunt (Titan Hunt tier 1) the boss-panel renders a large SVG Ancient Titan sprite with red HP bar and 25/50/75/100% chest thresholds. Kingdom regression: kingdom-scene loads with all buildings (building-castle, building-farm, building-lumberyard, building-clay_pit, building-warehouse), tap opens building-sheet with cost/upgrade panel. Zero console errors during the full session (only ignored deprecation warnings from RN web).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_live_e2e.py (kept from iteration_1)"
+  ],
+  "action_items": [
+    "No new fixes required for iteration_2 scope (battle VFX + SVG sprites + tutorial). The talents NaN% bug from iteration_1 (hero/talents.tsx:43) is still open."
+  ],
+  "critical_code_review_comments": [
+    "BattleScene.tsx: kill-event effect intentionally omits color/pal from deps (kill count is the driver) — that's fine, the `// eslint-disable-line react-hooks/exhaustive-deps` documents it.",
+    "TutorialProvider.finish() fires the settings PATCH but ignores errors; safe since the overlay is dismissed regardless. Reload verifies persistence anyway.",
+    "Alliance boss screen only renders MonsterSprite when a run exists. Officer accounts see 'boss-start-panel'; non-officer members see the muted note. Nothing to change."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "seed_data_creation": "PATCH /api/account/settings to reset settings.tutorial_done=false on qa.lord@example.com (twice, then true after tutorial completes). Started a Titan Hunt (tier 1) on the QA alliance [QAT] QATestf96c to render the alliance boss sprite — hunt will auto-close in 48h.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The QA alliance [QAT] QATestf96c now has an active Titan Hunt (tier 1). To reset it use POST /api/_test/time-shift or wait 48h. QA account is at Castle 9 / stage 29 (record 28 -> 29 during this run because Auto ON progressed through stages while other tabs were open). Tutorial testIDs to remember: tutorial-overlay, tutorial-title, tutorial-text, tutorial-card, tutorial-next-button, tutorial-skip-button. Battle scene testIDs: battle-scene, battle-stage-label, battle-wave-label, battle-kill-gold, battle-kill-xp, battle-outcome-banner, battle-result-card, boss-bar, lord-sprite, monster-horde, formation-proxies, auto-battle-toggle, battle-fight-button, stage-prev-button, stage-next-button. Alliance boss testIDs: boss-screen, boss-panel, boss-hp, boss-attack-button, boss-start-panel, boss-tier-minus/plus, boss-start-button.",
+  "rca_of_issue": "N/A — no issues found for iteration_2 scope."
+}

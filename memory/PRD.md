@@ -24,6 +24,12 @@ Lingua utente: **italiano**.
 - Frontend: auth (login/signup/recover/verify/onboarding), 5 tab (Battaglia con scena animata da timeline server, Regno con scena 2.5D + sheet edificio, Dominio, Esercito, Social), Hero gear/talenti, Ricerca, Alleanza (hub/chat/guerra/Titan), Eventi/Dungeon/Quest/Imprese/Codex, Negozio, Profilo (privacy/export/delete), Forziere offline, Inbox.
 - Integrazioni: Google Auth (session exchange), Resend (codici), RevenueCat (bridge nativo + webhook/restore server), Push (registrazione device + relay server, no-op in Expo Go/web).
 
+### Iterazione 2 (giugno 2026) — Effetti battaglia, sprite, tutorial
+- VFX scena battaglia (`src/battle/BattleScene.tsx`, `effects.tsx`): scosse camera, lampi, numeri di danno fluttuanti (critici dorati), archi di spada, scintille, pioggia di monete, banner VITTORIA/STAGE CONQUISTATO/SCONFITTA (1,5 s prima del claim), barra HP boss, ambiente regionale (astro, nuvole, particelle), haptics su nativo.
+- Sprite vettoriali SVG: nemici per archetipo (`src/battle/monsters.tsx`: goblin, umanoidi, cavalieri/non-morti, incappucciati, canidi, cinghiali, artropodi, bruti, golem, treant, volatili, spiriti, draghi; elite con creste, boss con corona/aura) e Lord equipaggiabile (`src/battle/lord.tsx`: elmo/pennacchio, corazza, scudo araldico, mantello, spada oscillante con bagliore per rarità).
+- Tutorial guidato (`src/tutorial/Tutorial.tsx`): 9 passi con spotlight, navigazione automatica Battaglia→Regno→Battaglia, salta/avanti, completamento salvato server-side (`settings.tutorial_done`, `PATCH /account/settings`), "Rivedi il tutorial" nel Profilo.
+- Testing agent iteration_2: tutto verde, zero errori console.
+
 ### Da fare / backlog
 - Testing agent end-to-end su frontend (in corso in questa sessione).
 - Sign in with Apple: solo UI disabilitata (deployment input).
