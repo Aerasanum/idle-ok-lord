@@ -1,0 +1,31 @@
+{
+  "summary": "Iteration 14 (war roster BOOKING). Backend 16/16 pytest green against preview URL: enlist/withdraw first-come-first-served, 409 already_enlisted/roster_full/roster_locked, 403 not_in_alliance for outsider (lord.tester), 403 officer_required for non-officer declare, under-filled attack locks with 6 'Corsia vuota' NPC entries (war_power 0, empty:true), resolved war produces 10 lanes with the 6 empty lanes all attacker_wins=false, attacker_points<=4, defender (ORS) wins, alliance chat contains '⚔️ … si è prenotato' herald messages, and an EMPTY attack roster cancels the war with result.reason='empty_attack_roster'. Frontend (390x844, qa.bot5): /social → hub-war → war-row-<id> → war-detail → war-enlist mounted with war-roster-slots (all 10 slots), war-lock-countdown, filled slots show name+level (gold border for self), 'Posto libero' for empty; tap war-enlist-button flipped to war-withdraw-button and member appeared in slot 2 with gold border; withdraw flipped it back. Territorio screen renders map+legend+wars list without red screens.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_war_enlist_booking.py",
+    "/app/test_reports/pytest/war_enlist_it14.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "war_detail response uses `result.attacker_won` (bool) and `attacker_points/defender_points`; there is NO `result.winner_id` field. The spec text in the review request said 'winner ORS' — implemented as attacker_won=false. Consider adding `winner_id` for stronger client-side clarity (optional).",
+    "Enlist herald message string 'si è prenotato' is coupled to Italian copy — tests match on this substring; if localized, update the herald pattern accordingly."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_war_enlist_booking.py (new)"
+  ],
+  "success_rate": {"backend": "100% (16/16)", "frontend": "100% (all testIDs & flow verified)"},
+  "seed_data_creation": "None — used seeded qa.lord + qa.bot1..9 + orsi.leader + orsi.bot1..9 + lord.tester accounts. The primary war (war_59a1d8ecf93240558b32bb02ab2a1190) went through prep→locked→resolved (attacker_points=1, defender_points=9, ORS wins). A new node-22 war was declared, withdrawn, then locked → cancelled with reason=empty_attack_roster. Cooldown was cleared at the end so QAT has no open war.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The seed war war_59a1d8ecf93240558b32bb02ab2a1190 has been consumed (resolved) and a follow-up node-22 war was declared+cancelled. If iteration_15 needs another live war, re-run backend/scripts/seed_war_demo.py or declare via POST /wars/declare {node_id:21|22} as qa.lord. Test hooks: POST /api/_test/war-shift {seconds, include_resolved?} + POST /api/_test/tick.",
+  "rca_of_issue": "N/A — no bugs found. Feature works as specified."
+}

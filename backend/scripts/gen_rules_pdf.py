@@ -691,7 +691,8 @@ def sec_alliance():
             "da quel momento nulla (acquisti, potenziamenti) cambia quella guerra.",
             f"<b>Risoluzione</b>: {w['lane_resolution'].replace('10 deterministic lane battles; 1 point per lane', '10 duelli di corsia deterministici, 1 punto ciascuno')}; varianza seminata {w['seeded_variance_range'][0]}–{w['seeded_variance_range'][1]}. "
             "In ogni corsia si applicano i contro-attacchi v1.2 contro il mix di classi dell'avversario. Pareggio 5-5: vince chi ha la somma dei margini di vittoria più alta.",
-            f"Difesa incompleta: il server aggiunge NPC al {w['underfilled_defense_npc_fill']['npc_power_pct_of_alliance_median']}% della potenza mediana dell'alleanza. Attacco incompleto: non consentito.",
+            f"<b>Prenotazioni</b>: quando il leader o un ufficiale dichiara guerra (e si prenota per primo), i membri si prenotano e i <b>primi 10</b> schierano le loro truppe; ci si può ritirare fino al blocco. "
+            f"Difesa incompleta: il server aggiunge NPC al {w['underfilled_defense_npc_fill']['npc_power_pct_of_alliance_median']}% della potenza mediana dell'alleanza. Attacco incompleto: consentito ma svantaggiato, ogni corsia senza attaccante è persa.",
             f"Ricompense: vincitori {w['rewards']['winner_season_points']} punti stagione + {w['rewards']['participant_war_coins'] + w['rewards']['winner_bonus_war_coins']} Monete; sconfitti {w['rewards']['loser_season_points']} punti + {w['rewards']['participant_war_coins']} Monete.",
             "Il castello base cade solo se un nemico è adiacente; l'alleanza sfollata riceve una nuova base neutrale dopo 12 ore.",
         ]),

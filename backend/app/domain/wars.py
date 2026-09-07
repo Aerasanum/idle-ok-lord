@@ -160,17 +160,58 @@ async def declare(p: dict, node_id: int) -> dict:
     resolves = now() + timedelta(hours=aw["prep_hours"])
     war = {"_id": new_id("war_"), "shard_id": a["shard_id"], "node_id": node_id, "node_type": node["type"], "attacker_id": a["_id"], "defender_id": defender_id, "declared_by": p["_id"],
            "declared_at": now(), "resolves_at": resolves, "lock_at": resolves - timedelta(minutes=aw["roster_lock_minutes_before_resolution"]), "status": "prep",
-           "attack_roster": [], "defense_roster": [], "result": None, "archived_at": None}
+           "attack_roster": [p["_id"]], "defense_roster": [], "result": None, "archived_at": None}  # the declarer books the first slot
     await db.alliance_wars.insert_one(war)
     label = NODE_LABEL_IT.get(node["type"], node["type"])
-    await alliance_alert(a["_id"], f"⚔️ {p['display_name']} ha dichiarato guerra al nodo {node_id} ({label}). Serve il roster d'attacco (10) prima del blocco!")
+    await alliance_alert(a["_id"], f"⚔️ {p['display_name']} ha dichiarato guerra al nodo {node_id} ({label}). Prenotatevi: i primi 10 schierano le truppe (1/10 già prenotato).")
     members = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": a["_id"]}).to_list(40)]
     await safe_push(members, {"title": "Alliance War", "message": f"War declared on node {node_id}. Set the roster before lock.", "action_url": "/alliance/war"}, f"war_roster:{war['_id']}")
     if defender_id:
-        await alliance_alert(defender_id, f"🛡️ Il nodo {node_id} ({label}) è sotto attacco da [{a['tag']}] {a['name']}! Impostate il roster di difesa.")
+        await alliance_alert(defender_id, f"🛡️ Il nodo {node_id} ({label}) è sotto attacco da [{a['tag']}] {a['name']}! Prenotatevi in difesa: i primi 10 schierano le truppe.")
         dmembers = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": defender_id}).to_list(40)]
         await safe_push(dmembers, {"title": "Alliance War", "message": f"Node {node_id} is under attack. Set the defense roster.", "action_url": "/alliance/war"}, f"war_defend:{war['_id']}")
     return clean(war)
+
+
+async def _war_side(p: dict, war_id: str) -> tuple[dict, dict, str, int]:
+    """(membership, war, roster field, roster size) for a player of one of the two alliances; war must be open (prep, before lock)."""
+    aw = canon()["alliance_war"]
+    me = await membership(p["_id"])
+    if not me:
+        raise fail(403, "not_in_alliance")
+    w = await db.alliance_wars.find_one({"_id": war_id})
+    if not w or w["status"] != "prep":
+        raise fail(409, "war_not_open")
+    if aware(w["lock_at"]) <= now():
+        raise fail(409, "roster_locked")
+    side = "attack_roster" if w["attacker_id"] == me["alliance_id"] else "defense_roster" if w.get("defender_id") == me["alliance_id"] else None
+    if not side:
+        raise fail(403, "not_in_war")
+    return me, w, side, aw["attack_roster_size"] if side == "attack_roster" else aw["defense_roster_size"]
+
+
+async def enlist(p: dict, war_id: str) -> dict:
+    """First come, first served: a member books one of the 10 slots of their alliance's side. Atomic (size check + $addToSet)."""
+    me, w, side, size = await _war_side(p, war_id)
+    if p["_id"] in w[side]:
+        raise fail(409, "already_enlisted", "Sei già schierato")
+    res = await db.alliance_wars.update_one({"_id": war_id, "status": "prep", side: {"$ne": p["_id"]}, "$expr": {"$lt": [{"$size": f"${side}"}, size]}}, {"$addToSet": {side: p["_id"]}})
+    if res.matched_count == 0:
+        raise fail(409, "roster_full", f"Tutti i {size} posti sono già prenotati")
+    w = await db.alliance_wars.find_one({"_id": war_id})
+    n = len(w[side])
+    await alliance_alert(me["alliance_id"], f"{'⚔️' if side == 'attack_roster' else '🛡️'} {p['display_name']} si è prenotato per il nodo {w['node_id']} ({n}/{size}){' · roster completo!' if n >= size else ''}")
+    return {"war_id": war_id, side: w[side], "enlisted": True}
+
+
+async def withdraw(p: dict, war_id: str) -> dict:
+    me, w, side, size = await _war_side(p, war_id)
+    if p["_id"] not in w[side]:
+        raise fail(409, "not_enlisted")
+    await db.alliance_wars.update_one({"_id": war_id, "status": "prep"}, {"$pull": {side: p["_id"]}})
+    w = await db.alliance_wars.find_one({"_id": war_id})
+    await alliance_alert(me["alliance_id"], f"↩️ {p['display_name']} si è ritirato dal roster del nodo {w['node_id']} ({len(w[side])}/{size}). Posto libero!")
+    return {"war_id": war_id, side: w[side], "enlisted": False}
 
 
 async def set_roster(p: dict, war_id: str, player_ids: list[str]) -> dict:
@@ -235,11 +276,14 @@ async def lock_war(w: dict) -> dict | None:
     if claimed.modified_count == 0:
         return None
     w = await db.alliance_wars.find_one({"_id": w["_id"]})
-    if len(w["attack_roster"]) < aw["attack_roster_size"]:
-        await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"status": "cancelled", "result": {"reason": "underfilled_attack_roster"}, "resolved_at": now(), "archived_at": now() + timedelta(hours=24)}})
-        await alliance_alert(w["attacker_id"], f"❌ Guerra sul nodo {w['node_id']} annullata: roster d'attacco incompleto ({len(w['attack_roster'])}/10).")
+    if len(w["attack_roster"]) == 0:
+        await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"status": "cancelled", "result": {"reason": "empty_attack_roster"}, "resolved_at": now(), "archived_at": now() + timedelta(hours=24)}})
+        await alliance_alert(w["attacker_id"], f"❌ Guerra sul nodo {w['node_id']} annullata: nessun guerriero prenotato per l'attacco.")
         return None
     attackers = [s for s in [await _player_snapshot(pid, w["shard_id"], w["attacker_id"]) for pid in w["attack_roster"]] if s]
+    # an under-filled attack is allowed but disadvantaged: every missing attacker is an empty lane that is lost automatically
+    while len(attackers) < aw["attack_roster_size"]:
+        attackers.append({"player_id": None, "display_name": "Corsia vuota", "npc": True, "empty": True, "war_power": 0, "total_power": 0, "defense_pct": 0})
     defenders = [s for s in [await _player_snapshot(pid, w["shard_id"], w["defender_id"]) for pid in w["defense_roster"]] if s] if w.get("defender_id") else []
     npc_pct = aw["underfilled_defense_npc_fill"]["npc_power_pct_of_alliance_median"]
     median = await _alliance_median(w["defender_id"] or w["attacker_id"], w["shard_id"])

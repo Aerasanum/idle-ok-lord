@@ -161,6 +161,16 @@ async def declare(body: DeclareIn, p: Principal = Depends(verified_user)):
     return await W.declare(await load(p), body.node_id)
 
 
+@router.post("/wars/{war_id}/enlist")
+async def war_enlist(war_id: str, p: Principal = Depends(current_user)):
+    return await W.enlist(await load(p), war_id)
+
+
+@router.post("/wars/{war_id}/withdraw")
+async def war_withdraw(war_id: str, p: Principal = Depends(current_user)):
+    return await W.withdraw(await load(p), war_id)
+
+
 @router.post("/wars/roster")
 async def roster(body: RosterIn, p: Principal = Depends(current_user)):
     return await W.set_roster(await load(p), body.war_id, body.player_ids)

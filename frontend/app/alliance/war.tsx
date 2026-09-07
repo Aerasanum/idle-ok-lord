@@ -7,6 +7,7 @@ import { Btn, Icon, Loading, Panel, Row, Screen, Txt, fmt, fmtDuration } from "@
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useCountdown } from "@/src/ui/useCountdown";
 import { NODE_LABEL, WarMap, allianceColor } from "@/src/war/WarMap";
+import { WarEnlist } from "@/src/war/WarEnlist";
 import { WarReplay } from "@/src/war/WarReplay";
 
 const STATUS_LABEL: Record<string, string> = { prep: "Preparazione", locking: "Blocco roster", locked: "Roster bloccato", resolving: "Risoluzione", resolved: "Risolta", cancelled: "Annullata" };
@@ -47,9 +48,10 @@ export default function WarScreen() {
         <Panel variant="parchment" testID="war-detail">
           <Txt v="h3" color={colors.onSurfaceInverse}>Nodo {detail.war.node_id} · {NODE_LABEL[detail.war.node_type]} · {STATUS_LABEL[detail.war.status] ?? detail.war.status}</Txt>
           <Txt v="small" color={colors.onSurfaceInverse}>Attaccante {detail.alliances[detail.war.attacker_id]?.name} vs {detail.war.defender_id ? detail.alliances[detail.war.defender_id]?.name : "Guarnigione neutrale"}</Txt>
+          {detail.war.status === "prep" ? <WarEnlist detail={detail} myAllianceId={myId} /> : null}
           {detail.war.status === "prep" && officer ? (
-            <View style={{ gap: 6, marginTop: 6 }}>
-              <Txt v="caption" style={{ color: colors.onSurfaceInverse }}>Roster ({picked.length}/10) — tocca i membri</Txt>
+            <View style={{ gap: 6, marginTop: 10, borderTopWidth: 1, borderColor: colors.wood, paddingTop: 8 }}>
+              <Txt v="caption" style={{ color: colors.onSurfaceInverse }}>Gestione ufficiali: sostituisci il roster ({picked.length}/10) — tocca i membri</Txt>
               <Row style={{ flexWrap: "wrap" }}>
                 {(a?.members ?? []).map((mem: any) => {
                   const on = picked.includes(mem.player_id);
@@ -57,7 +59,7 @@ export default function WarScreen() {
                 })}
               </Row>
               <Btn title="Salva roster" small onPress={() => roster.mutate({ war_id: detail.war.id, player_ids: picked })} loading={roster.isPending} testID="save-roster-button" />
-              <Txt v="small" color={colors.onSurfaceInverse}>Attacco attuale: {detail.war.attack_roster.length}/10 · Difesa: {detail.war.defense_roster.length}/10 (NPC al 70% della mediana per i posti vuoti)</Txt>
+              <Txt v="small" color={colors.onSurfaceInverse}>Attacco: {detail.war.attack_roster.length}/10 · Difesa: {detail.war.defense_roster.length}/10 (difesa: NPC al 70% della mediana nei posti vuoti · attacco: corsie vuote perse)</Txt>
             </View>
           ) : null}
           {detail.war.result?.lanes ? (
