@@ -208,12 +208,18 @@ export function Res({ kind, value, size = 14, testID, art: withArt }: { kind: st
 
 export function ResourceBar({ resources, compact }: { resources: Record<string, number>; compact?: boolean }) {
   const s = useBar();
-  const keys = compact ? ["gold", "rubies"] : ["grain", "wood", "clay", "iron", "gold", "rubies"];
+  const router = useRouter();
+  const { colors } = useTheme();
+  const keys = compact ? ["gold"] : ["grain", "wood", "clay", "iron", "gold"];
   return (
     <View style={s.bar} testID="resource-bar">
       {keys.map((k) => (
         <Res key={k} kind={k} value={resources?.[k] ?? 0} size={13} testID={`res-${k}`} />
       ))}
+      <Pressable onPress={() => router.push("/shop")} style={{ flexDirection: "row", alignItems: "center", gap: 4 }} testID="res-rubies-shop" hitSlop={6}>
+        <Res kind="rubies" value={resources?.rubies ?? 0} size={13} testID="res-rubies" />
+        <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: colors.goldBright, alignItems: "center", justifyContent: "center" }}><Icon name="plus" size={12} color={colors.onBrandPrimary} /></View>
+      </Pressable>
       <View style={{ marginLeft: "auto" }}><ZoomPill testID="ui-zoom-bar" /></View>
     </View>
   );

@@ -4,9 +4,11 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { QK, useAction, useAlliances, useMyAlliance, useProfile } from "@/src/api/hooks";
+import { hubArt } from "@/src/art";
 import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, IconName, Input, Loading, Panel, ResourceBar, Row, Txt, fmt } from "@/src/ui";
+import { HubTile } from "@/src/ui/HubTile";
 
 export default function SocialTab() {
   const { colors } = useTheme();
@@ -34,6 +36,11 @@ export default function SocialTab() {
       </View>
       <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 24, gap: 12 }} showsVerticalScrollIndicator={false}>
         <Txt v="h1">Alleanza & Guerra</Txt>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+          <HubTile art={hubArt("chat")} icon="chat" title="Chat" subtitle={a ? "Canali: Globale · Alleanza · Feed di guerra" : "Chat globale aperta a tutti · quella d'alleanza quando ne entri in una"} onPress={() => router.push("/alliance/chat")} testID="hub-chat" wide height={110} />
+          <HubTile art={hubArt("alliance_war")} icon="map-marker-radius" title="Mappa guerra" subtitle={a ? `${a.season_points} punti stagione` : "Guerre 10v10 asincrone"} onPress={() => router.push("/alliance/war")} testID="hub-war" locked={!a} />
+          <HubTile art={hubArt("titan_hunt")} icon="skull-crossbones" title="Titan Hunt" subtitle={a ? "Boss di alleanza · 3 attacchi al giorno" : "Serve un'alleanza"} onPress={() => router.push(a ? "/alliance/boss" : "/social")} testID="hub-boss" locked={!a} />
+        </View>
         {a ? (
           <Panel variant="parchment" testID="my-alliance-card">
             <Row style={{ justifyContent: "space-between" }}>
@@ -61,10 +68,8 @@ export default function SocialTab() {
           </Panel>
         )}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          <Hub icon="chat" label="Chat" onPress={() => router.push("/alliance/chat")} testID="hub-chat" />
-          <Hub icon="map-marker-radius" label="Mappa guerra" onPress={() => router.push("/alliance/war")} testID="hub-war" />
-          <Hub icon="skull-crossbones" label="Titan Hunt" onPress={() => router.push("/alliance/boss")} testID="hub-boss" />
-          <Hub icon="calendar-star" label="Eventi" onPress={() => router.push("/events")} testID="hub-events" />
+          <Hub icon="calendar-star" label="Eventi & Missioni" onPress={() => router.push("/events")} testID="hub-events" />
+          <Hub icon="storefront" label="Negozio" onPress={() => router.push("/shop")} testID="hub-shop-social" />
         </View>
         <Txt v="h2">Alleanze</Txt>
         <Input placeholder="Cerca per nome" value={q} onChangeText={setQ} testID="alliance-search-input" />

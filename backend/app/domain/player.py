@@ -274,6 +274,8 @@ async def public_state(p: dict) -> dict:
     out = clean({k: v for k, v in p.items() if k not in ("recent_ledger_keys", "account_id")})
     out["combat"] = prof
     out["hero"]["name"] = p["hero"].get("name") or "Lord"  # the Lord's own name (distinct from the player's display_name)
+    c = p.get("cosmetics") or {}
+    out["cosmetics"] = {"lord_skin": c.get("lord_skin"), "castle_skin": c.get("castle_skin"), "owned": list(c.get("owned") or [])}
     out["equipped_items"] = [clean(i) for i in items]
     out["production_per_hour"] = {k: rnd(v) for k, v in production_per_hour(p).items()}
     out["warehouse_capacity"] = warehouse_capacity(p)

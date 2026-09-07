@@ -192,6 +192,48 @@ BLACK = "on a pure solid black background (#000000), nothing else in frame, no g
 VFX_STYLE = "realistic cinematic 3D VFX render, volumetric glow, high dynamic range light, particles and sparks, sharp detail, game-ready effect sprite, centered"
 
 
+LORD_SKIN_DESC = {
+    "crimson_paladin": "crimson-and-silver paladin plate armor with a white cross tabard, winged helmet, glowing holy longsword",
+    "frost_warden": "ice-blue enchanted armor with frost crystals on the shoulders, fur-lined cape, frozen glowing greatsword",
+    "dragon_knight": "black-and-red dragon-scale armor with a dragon-skull helmet, small wing ornaments, flaming sword",
+    "shadow_reaper": "dark hooded assassin-knight armor with purple void energy, tattered cloak, twin curved blades",
+    "golden_emperor": "radiant gold imperial armor with a tall crown, white-and-gold cape, jeweled scepter-sword",
+    "forest_ranger": "green-and-brown elven ranger leather armor with leaf motifs, hooded cloak, ornate longbow on the back and a sword in hand",
+}
+CASTLE_SKIN_DESC = {
+    "winter_citadel": "snow-covered white stone citadel with ice-blue rooftops, frozen banners, icicles and glowing lanterns",
+    "dragon_keep": "black volcanic fortress with red-hot lava cracks, dragon statues, spiked towers and a dragon perched on the main tower",
+    "elven_palace": "elegant elven palace of white marble and living trees, golden leaf domes, hanging gardens and glowing runes",
+    "obsidian_fortress": "dark obsidian fortress with purple arcane crystals, floating stones and violet flames on the towers",
+}
+
+
+def skin_prompts():
+    base = "Exactly ONE character (single figure, no turnaround, no multiple views): The Lord, heroic human knight commander, mid-30s, determined face, short dark hair and beard, full body 3/4 view facing RIGHT, holding a sword in the right hand"
+    out = [(f"skins/lord_{k}", f"{base}, wearing {v}, standing battle stance, complete body with feet, centered, {STYLE}, {GREEN}") for k, v in LORD_SKIN_DESC.items()]
+    out += [(f"skins/castle_{k}", f"Isometric 3/4 view of a fantasy castle for a mobile strategy game: {v}. Single building, complete, centered, {STYLE}, {GREEN}") for k, v in CASTLE_SKIN_DESC.items()]
+    return out
+
+
+HUB_DESC = {
+    "daily_quests": "a parchment scroll with a golden wax seal and a quill, checkmarks glowing, on a wooden war table with candles",
+    "weekly_quests": "a large ornate war-room map with seven golden pins and a heraldic banner, morning light",
+    "login_calendar": "a medieval stone calendar wheel with 28 glowing rune slots, a gift chest and coins in front",
+    "weekly_event": "a festive medieval tournament ground with colorful tents, fireworks and a golden trophy at golden hour",
+    "dungeons": "a dark dungeon entrance carved with skulls, torches, glowing treasure inside and a chained gate",
+    "titan_hunt": "a colossal stone titan boss rising from the mountains, tiny knights charging, dramatic storm sky",
+    "achievements": "a wall of golden trophies, medals and laurel wreaths in a royal hall with spotlights",
+    "codex": "a huge ancient open tome with glowing illustrations of monsters and maps, floating magical pages",
+    "shop": "a lavish medieval merchant stall with mannequins wearing ornate knight armors, castle miniature, gems and gold",
+    "chat": "two heraldic banners crossed over a round table with speech-scroll parchments and a messenger falcon",
+    "alliance_war": "two armies with different heraldic colors facing each other over a hex war map on a table, war horns",
+}
+
+
+def hub_prompts():
+    return [(f"hub/{k}", f"Landscape 16:9 illustration for a fantasy mobile game menu tile: {v}. Rich detail, cinematic lighting, no characters' faces close-up, no text, no UI, no watermark, {STYLE}") for k, v in HUB_DESC.items()]
+
+
 def vfx_prompts():
     return [
         ("vfx/slash_gold", f"Single curved crescent blade-of-light slash trail, golden white-hot core with orange glowing edges and trailing sparks, sweeping from upper-left to lower-right, {VFX_STYLE}, {BLACK}"),
@@ -215,10 +257,10 @@ def vfx_prompts():
     ]
 
 
-GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts, "vfx": vfx_prompts}
-TRANSPARENT = {"monsters", "lord", "buildings", "units", "items", "resources"}
+GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts, "vfx": vfx_prompts, "skins": skin_prompts, "hub": hub_prompts}
+TRANSPARENT = {"monsters", "lord", "buildings", "units", "items", "resources", "skins"}
 LUMA_ALPHA = {"vfx"}
-MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192, "vfx": 512}
+MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192, "vfx": 512, "skins": 640, "hub": 768}
 
 
 def luma_to_alpha(img: Image.Image) -> Image.Image:

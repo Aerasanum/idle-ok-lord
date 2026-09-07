@@ -231,7 +231,7 @@ export default function BattleTab() {
         {/* quick links */}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 12 }} onLayout={(e) => (targetY.current["quick-offline"] = e.nativeEvent.layout.y)}>
           <Quick icon="treasure-chest" label="Forziere" badge={offlineReady ? "!" : undefined} onPress={() => router.push("/offline")} testID="quick-offline" tutorialId="quick-offline" />
-          <Quick icon="calendar-star" label="Eventi" onPress={() => router.push("/events")} testID="quick-events" />
+          <Quick icon="calendar-star" label="Eventi" onPress={() => router.push("/events/weekly")} testID="quick-events" />
           <Quick icon="door-closed" label="Dungeon" onPress={() => router.push("/events/dungeons")} testID="quick-dungeons" />
           <Quick icon="clipboard-check" label="Missioni" onPress={() => router.push("/events/quests")} testID="quick-quests" />
           <Quick icon="trophy" label="Imprese" onPress={() => router.push("/events/achievements")} testID="quick-achievements" />

@@ -13,7 +13,17 @@ export function monsterArt(family: string): number | undefined {
   return ART[`monsters/${slug(family)}`];
 }
 
+// Active cosmetic skins (set from the player's profile by the tabs layout); pure appearance, never affects numbers.
+const activeSkins: { lord?: string | null; castle?: string | null } = {};
+export function setActiveSkins(c?: { lord_skin?: string | null; castle_skin?: string | null } | null) {
+  activeSkins.lord = c?.lord_skin ?? null;
+  activeSkins.castle = c?.castle_skin ?? null;
+}
+export const skinArt = (key: string): number | undefined => ART[`skins/${key}`];
+export const hubArt = (key: string): number | undefined => ART[`hub/${key}`];
+
 export function lordArt(equipped: Record<string, any>, tier: number): number | undefined {
+  if (activeSkins.lord && ART[`skins/${activeSkins.lord}`]) return ART[`skins/${activeSkins.lord}`];
   if (tier >= 5 && ART["lord/royal"]) return ART["lord/royal"];
   if (equipped.chest && ART["lord/armored"]) return ART["lord/armored"];
   return ART["lord/base"];
@@ -21,6 +31,7 @@ export function lordArt(equipped: Record<string, any>, tier: number): number | u
 
 export function buildingArt(key: string, tier: number): number | undefined {
   if (key === "castle") {
+    if (activeSkins.castle && ART[`skins/${activeSkins.castle}`]) return ART[`skins/${activeSkins.castle}`];
     if (tier >= 5 && ART["buildings/castle_royal"]) return ART["buildings/castle_royal"];
     if (tier >= 3 && ART["buildings/castle_fortress"]) return ART["buildings/castle_fortress"];
   }

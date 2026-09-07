@@ -85,6 +85,12 @@ Lingua utente: **italiano**.
 - Sola lettura: cifratura AES-256 con password utente vuota (si apre senza password) e owner password casuale; permessi stampa + copia testo, niente modifica.
 - Servito da `GET /api/docs/regolamento.pdf` (inline, cache 1h). Link in Profilo → "Regolamento completo (PDF)" (`rules-pdf-button`). Rigenerare dopo ogni modifica al canon: `cd backend && python scripts/gen_rules_pdf.py`.
 
+### Batch 3 (giugno 2026) — Tab Eventi, Shop skin, chat in evidenza (testing agent iterazione 9: tutto verde)
+- **Nuova tab "Eventi"** (`app/(tabs)/events.tsx`, 6 tab totali): hub di tile illustrate 3D (`src/ui/HubTile.tsx`, art in `assets/art/hub/*.webp`, 11 immagini generate) con dati live e badge: Giornaliere/Settimanali (casse riscattabili), Calendario accessi ("!" se non ritirato), Evento settimanale (archetipo, countdown, energia; il vecchio `/events` è ora `/events/weekly`), Dungeon (ingressi gratis), Titan Hunt (famiglia, PV %, attacchi rimasti), Traguardi (riscattabili), Codex, Negozio.
+- **Social**: tile 3D Chat (Globale sempre · Alleanza/Feed/Guerra quando in alleanza), Mappa guerra, Titan Hunt (lucchetto senza alleanza) + scorciatoie Eventi/Negozio. Il chip Rubini della ResourceBar (`res-rubies-shop`, con "+") apre il Negozio da ogni tab.
+- **Skin cosmetiche** (`backend/app/domain/cosmetics.py`, catalogo in codice: 6 skin Lord 300–900 Rubini, 4 skin Castello 500–900; solo estetica): `GET /store/cosmetics`, `POST /store/cosmetics/buy {key}` (check Rubini atomico, auto-equip), `POST /store/cosmetics/equip {kind, key|null}`; `profile.cosmetics {lord_skin, castle_skin, owned}`. UI `src/shop/SkinShop.tsx` nel Negozio (banner "Sartoria Reale", carosello per tipo, cornice per rarità, Acquista/Indossa/Predefinito). Le skin sovrascrivono `lordArt()` e `buildingArt("castle")` ovunque (battaglia, formazione, Titan, Regno) tramite `setActiveSkins` nel layout delle tab. Art in `assets/art/skins/*.webp` (10 immagini generate).
+- Account QA: possiede Guardiano del Gelo (Lord) e Fortezza del Drago (Castello), entrambe indossate; ~3.9K Rubini.
+
 ### Da fare / backlog
 - Sign in with Apple: solo UI disabilitata (deployment input).
 - Input del proprietario al deploy: chiavi RevenueCat (`EXPO_PUBLIC_RC_IOS_KEY`, `EXPO_PUBLIC_RC_ANDROID_KEY`, `REVENUECAT_SECRET_KEY`, signing secret), `google-services.json`, URL Privacy/Termini, `EMERGENT_PUSH_KEY` (impostato al Publish).

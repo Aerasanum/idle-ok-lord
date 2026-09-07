@@ -4,6 +4,7 @@ import { Platform, View } from "react-native";
 import { QK, useAction, useProfile, useStore } from "@/src/api/hooks";
 import { useAuth } from "@/src/auth/AuthContext";
 import { billingAvailable, configureBilling, fetchStorePrices, purchaseSku, restoreNative } from "@/src/billing";
+import { SkinShop } from "@/src/shop/SkinShop";
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, Loading, Panel, Res, Row, Screen, Txt, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
@@ -48,6 +49,7 @@ export default function ShopScreen() {
         </Row>
         {!configured ? <Txt v="small" color={colors.onSurfaceInverse}>{billingAvailable ? "Chiavi RevenueCat non configurate (input del proprietario)." : "Gli acquisti reali richiedono la build nativa iOS/Android (non Expo Go / web)."} Nessun acquisto viene simulato.</Txt> : null}
       </Panel>
+      <SkinShop />
       <Txt v="h2">Rubini e pacchetti</Txt>
       {s.store_products.map((p: any) => {
         const ent = p.entitlement ? s.entitlements?.[p.entitlement] : null;

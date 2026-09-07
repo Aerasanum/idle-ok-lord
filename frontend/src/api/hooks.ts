@@ -25,6 +25,7 @@ export const QK = {
   wars: ["wars"],
   boss: ["boss"],
   store: ["store"],
+  cosmetics: ["cosmetics"],
   notifications: ["notifications"],
   canon: ["canon"],
   purchases: ["purchases"],
@@ -53,6 +54,7 @@ export const useWars = () => useQuery({ queryKey: QK.wars, queryFn: () => api.ge
 export const useWar = (id: string | undefined) => useQuery({ queryKey: [...QK.wars, id], queryFn: () => api.get(`/wars/${id}`), enabled: !!id, refetchInterval: 30000 });
 export const useBoss = () => useQuery({ queryKey: QK.boss, queryFn: () => api.get("/alliance-boss"), refetchInterval: 8000 });
 export const useStore = () => useQuery({ queryKey: QK.store, queryFn: () => api.get("/store/catalog") });
+export const useCosmetics = () => useQuery({ queryKey: QK.cosmetics, queryFn: () => api.get("/store/cosmetics") });
 export const usePurchases = () => useQuery({ queryKey: QK.purchases, queryFn: () => api.get("/account/purchases") });
 export const useNotifications = () => useQuery({ queryKey: QK.notifications, queryFn: () => api.get("/notifications"), refetchInterval: 30000 });
 export const useChat = (channel: string | null) =>

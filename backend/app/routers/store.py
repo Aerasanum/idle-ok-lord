@@ -5,6 +5,7 @@ from ..core import db
 from ..core.push import register_device
 from ..core.security import Principal, current_user
 from ..core.util import clean, fail, now
+from ..domain import cosmetics as CS
 from ..domain import player as P
 from ..domain import store as S
 
@@ -41,6 +42,30 @@ async def catalog(p: Principal = Depends(current_user)):
 @router.post("/store/crate")
 async def crate(body: CrateIn, p: Principal = Depends(current_user)):
     return await S.buy_crate(await P.load(p.player_id), body.key)
+
+
+class SkinIn(BaseModel):
+    key: str
+
+
+class EquipSkinIn(BaseModel):
+    kind: str
+    key: str | None = None
+
+
+@router.get("/store/cosmetics")
+async def cosmetics(p: Principal = Depends(current_user)):
+    return CS.view(await P.load(p.player_id))
+
+
+@router.post("/store/cosmetics/buy")
+async def cosmetics_buy(body: SkinIn, p: Principal = Depends(current_user)):
+    return await CS.buy(await P.load(p.player_id), body.key)
+
+
+@router.post("/store/cosmetics/equip")
+async def cosmetics_equip(body: EquipSkinIn, p: Principal = Depends(current_user)):
+    return await CS.equip(await P.load(p.player_id), body.kind, body.key)
 
 
 @router.post("/purchases/verify")
