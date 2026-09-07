@@ -149,8 +149,8 @@ class TestWarE2E:
             r = requests.post(f"{BASE}/wars/declare", json={"node_id": 21}, headers=qa["headers"], timeout=15)
             if r.status_code == 200:
                 war_id = r.json()["id"]
-            elif r.status_code == 409:
-                # cooldown / node_contested / attack_cooldown → try to find any war we're in
+            elif r.status_code == 409 or (r.status_code == 400 and "own_node" in r.text):
+                # cooldown / node_contested / attack_cooldown / node already conquered in a previous run → live state, not a bug
                 pytest.skip(f"declare 21 blocked: {r.text[:200]}")
             else:
                 pytest.fail(f"declare failed: {r.status_code} {r.text[:200]}")

@@ -7,6 +7,7 @@ import { buildingArt, kingdomGround } from "@/src/art";
 import { fonts, useTheme } from "@/src/theme";
 import { Icon, IconName } from "@/src/ui";
 import { ConstructionSite, Flag, Peasant, Smoke } from "./life";
+import { ZoomPan } from "@/src/ui/ZoomPan";
 
 const SMOKING = new Set(["castle", "farm", "lumberyard", "workshop", "barracks", "iron_mine", "gold_mine", "temple", "university"]);
 
@@ -38,6 +39,7 @@ export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSe
   const sizeOf = (key: string, level: number) => (key === "castle" ? Math.min(width * 0.34, 92 + t * 8) : key === "walls" ? width * 0.5 : Math.min(width * 0.22, 54 + Math.min(level, 20) * 1.2));
   return (
     <View style={{ height: h, overflow: "hidden", borderBottomWidth: 3, borderColor: colors.gold }} testID="kingdom-scene">
+    <ZoomPan width={width} height={h} testID="kingdom-zoom">
       {ground ? (
         <Image source={ground} style={{ position: "absolute", left: 0, right: 0, top: 0, height: h, width }} resizeMode="cover" />
       ) : (
@@ -102,6 +104,7 @@ export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSe
         <Text style={{ fontFamily: fonts.display, fontSize: 18, color: colors.goldBright }} testID="kingdom-tier-label">{tier.name}</Text>
         <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.onSurface }}>Castello {castleLevel} · Tier {t} · {tier.landmark}</Text>
       </View>
+    </ZoomPan>
     </View>
   );
 }

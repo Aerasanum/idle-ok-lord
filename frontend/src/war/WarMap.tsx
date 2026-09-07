@@ -1,9 +1,10 @@
 // Alliance territory 19x19 map with ownership colors, node types, wars in progress.
 import React from "react";
-import { Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, Text, View, useWindowDimensions } from "react-native";
 
 import { fonts, useTheme } from "@/src/theme";
 import { hashStr } from "@/src/battle/regions";
+import { ZoomPan } from "@/src/ui/ZoomPan";
 
 const NODE_COLOR: Record<string, string> = { wilderness: "#3C5230", village: "#6F8A46", town: "#8A7A50", mine: "#6E5A4A", fortress: "#5C6470", city: "#B89947", home_castle: "#800020" };
 export const NODE_LABEL: Record<string, string> = { wilderness: "Terre selvagge", village: "Villaggio", town: "Borgo", mine: "Miniera", fortress: "Fortezza", city: "Città", home_castle: "Castello" };
@@ -23,7 +24,7 @@ export function WarMap({ nodes, myAlliance, onSelect, selected, contested, allia
   const others = Object.entries(alliances ?? {}).filter(([id]) => id !== myAlliance);
   return (
     <View style={{ gap: 8 }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 0 }}>
+      <ZoomPan width={size} height={size} testID="war-zoom" style={{ alignSelf: "center" }}>
         <View style={{ width: size, height: size, borderWidth: 3, borderColor: colors.gold, backgroundColor: "#2E3A2A", borderRadius: 4, overflow: "hidden" }} testID="war-map">
           {nodes.map((n) => {
             const own = allianceColor(n.owner, myAlliance);
@@ -38,7 +39,7 @@ export function WarMap({ nodes, myAlliance, onSelect, selected, contested, allia
             );
           })}
         </View>
-      </ScrollView>
+      </ZoomPan>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, alignItems: "center" }} testID="war-map-legend">
         {myAlliance ? <Legend color={allianceColor(myAlliance, myAlliance)} label="Tuo territorio" /> : null}
         {others.map(([id, a]) => <Legend key={id} color={allianceColor(id, myAlliance)} label={`[${a.tag}] ${a.name}`} />)}

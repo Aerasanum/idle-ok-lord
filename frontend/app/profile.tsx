@@ -6,7 +6,7 @@ import { api } from "@/src/api/client";
 import { QK, useAction, useProfile, usePurchases } from "@/src/api/hooks";
 import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
-import { Btn, Divider, Input, Loading, Panel, Row, Screen, Stat, Txt, fmt } from "@/src/ui";
+import { Btn, Divider, Input, Loading, Panel, Row, Screen, Stat, Txt, ZoomPill, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
 import { useTutorial } from "@/src/tutorial/Tutorial";
 import { AudioSettings } from "@/src/audio/AudioSettings";
@@ -22,6 +22,7 @@ export default function ProfileScreen() {
   const { data: p, isLoading } = useProfile();
   const { data: purchases } = usePurchases();
   const [name, setName] = useState("");
+  const [lordName, setLordName] = useState("");
   const [pw, setPw] = useState({ current: "", next: "" });
   const [delPw, setDelPw] = useState("");
   const [confirmDel, setConfirmDel] = useState(false);
@@ -59,10 +60,16 @@ export default function ProfileScreen() {
         <Txt v="small" color={colors.onSurfaceInverse} style={{ textAlign: "center" }}>Uccisioni {fmt(p.stats.kills)} · Oggetti trovati {p.stats.items_found} · Leggendari+ {p.stats.legendary_or_higher_items_found} · Truppe reclutate {fmt(p.stats.units_recruited_total)}</Txt>
       </Panel>
       <Panel testID="identity-panel">
-        <Txt v="h3">Identità del Lord</Txt>
+        <Txt v="h3">Identità</Txt>
+        <Txt v="caption" style={{ marginTop: 4 }}>Nome giocatore · visibile in alleanze, chat e guerre</Txt>
         <Row>
           <Input placeholder={p.display_name} value={name} onChangeText={setName} maxLength={16} style={{ flex: 1 }} testID="display-name-input" />
           <Btn title="Rinomina" small disabled={name.trim().length < 3} onPress={() => settings.mutate({ display_name: name.trim() }, { onSuccess: () => { setName(""); refreshMe(); } })} testID="rename-button" />
+        </Row>
+        <Txt v="caption" style={{ marginTop: 8 }}>Nome del Lord · il tuo eroe in battaglia</Txt>
+        <Row>
+          <Input placeholder={p.hero.name ?? "Lord"} value={lordName} onChangeText={setLordName} maxLength={16} style={{ flex: 1 }} testID="lord-name-input" />
+          <Btn title="Rinomina" small disabled={lordName.trim().length < 3} onPress={() => settings.mutate({ lord_name: lordName.trim() }, { onSuccess: () => setLordName("") })} testID="rename-lord-profile-button" />
         </Row>
         <Txt v="caption" style={{ marginTop: 8 }}>Colore araldico</Txt>
         <Row style={{ flexWrap: "wrap" }}>{COLORS.map((c) => <Pressable key={c} onPress={() => settings.mutate({ heraldic_color: c })} style={{ width: 36, height: 36, backgroundColor: c, borderWidth: p.heraldic_color === c ? 3 : 1, borderColor: p.heraldic_color === c ? colors.goldBright : colors.iron, borderRadius: 4 }} testID={`color-${c.slice(1)}`} />)}</Row>
@@ -71,6 +78,11 @@ export default function ProfileScreen() {
       <Panel testID="settings-panel">
         <Txt v="h3">Impostazioni</Txt>
         <AudioSettings />
+        <View style={{ height: 1, backgroundColor: colors.wood, marginVertical: 8, opacity: 0.6 }} />
+        <Row style={{ justifyContent: "space-between" }} testID="ui-zoom-setting">
+          <View style={{ flex: 1 }}><Txt v="body">Zoom interfaccia</Txt><Txt v="small" color={colors.muted}>Ingrandisce testi e pannelli in tutte le pagine (anche con due dita). Le scene si zoomano con pinch o i pulsanti +/−.</Txt></View>
+          <ZoomPill testID="ui-zoom-profile" />
+        </Row>
         <View style={{ height: 1, backgroundColor: colors.wood, marginVertical: 8, opacity: 0.6 }} />
         <Row style={{ justifyContent: "space-between" }}>
           <Txt v="body">Notifiche non essenziali (eventi, forziere pieno)</Txt>

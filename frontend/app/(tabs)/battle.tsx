@@ -5,12 +5,13 @@ import { Image, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api/client";
-import { QK, useCanon, useProfile } from "@/src/api/hooks";
+import { QK, useAction, useCanon, useProfile } from "@/src/api/hooks";
 import { Attempt, BattleScene } from "@/src/battle/BattleScene";
 import { paletteFor } from "@/src/battle/regions";
 import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
-import { Btn, Icon, IconName, Loading, Panel, RARITY_LABEL, Res, ResourceBar, Row, SLOT_LABEL, Txt, fmt } from "@/src/ui";
+import { Btn, Icon, IconName, Input, Loading, Panel, RARITY_LABEL, Res, ResourceBar, Row, SLOT_LABEL, Txt, fmt } from "@/src/ui";
+import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useToast } from "@/src/ui/Toast";
 import { ItemIcon } from "@/src/ui/ItemIcon";
 import { lordArt } from "@/src/art";
@@ -34,6 +35,9 @@ export default function BattleTab() {
   const [stage, setStage] = useState<number | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [preview, setPreview] = useState<any>(null);
+  const [nameDraft, setNameDraft] = useState("");
+  const renameSheet = useRef<SheetRef>(null);
+  const rename = useAction("patch", "/account/settings", [QK.profile], { success: () => "Nome del Lord aggiornato" });
   const [busy, setBusy] = useState(false);
   const starting = useRef(false);
   const tut = useTutorial();
@@ -126,7 +130,7 @@ export default function BattleTab() {
       </View>
       <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         {attempt ? (
-          <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.heraldic_color} onFinished={onFinished} skills={skills} firstClear={Number(attempt.stage) > highest} />
+          <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.heraldic_color} onFinished={onFinished} skills={skills} firstClear={Number(attempt.stage) > highest} lordName={profile.hero.name} lordLevel={profile.hero.level} />
         ) : (
           <LinearGradient colors={pal.sky} style={{ height: 220, alignItems: "center", justifyContent: "center", borderBottomWidth: 3, borderColor: colors.gold }} testID="battle-idle-scene">
             <Txt v="h1">{preview?.region?.name ?? "Campagna"}</Txt>
@@ -145,6 +149,7 @@ export default function BattleTab() {
             <View style={{ alignItems: "center" }}>
               <Txt v="h2" testID="stage-number">Stage {curStage}</Txt>
               <Txt v="caption">Record: {highest} · {preview?.region?.name}</Txt>
+              {attempt && Number(attempt.stage) !== curStage ? <Txt v="caption" color={colors.goldBright} testID="running-stage-badge">In corso: Stage {attempt.stage}</Txt> : null}
             </View>
             <Pressable testID="stage-next-button" onPress={() => setStage(Math.min(highest + 1, curStage + 1))} style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }} disabled={!!attempt || curStage >= highest + 1}>
               <Icon name="chevron-right" size={28} color={curStage >= highest + 1 ? colors.muted : colors.goldBright} />
@@ -189,8 +194,13 @@ export default function BattleTab() {
                 </View>
               ) : null}
               <View style={{ flex: 1 }}>
-                <Txt v="h3">{profile.display_name} · Lv {profile.hero.level}</Txt>
+                <Pressable onPress={() => { setNameDraft(profile.hero.name ?? ""); renameSheet.current?.present(); }} style={{ flexDirection: "row", alignItems: "center", gap: 6 }} testID="rename-lord-button" hitSlop={6}>
+                  <Txt v="h3" testID="lord-name">{profile.hero.name ?? "Lord"}</Txt>
+                  <Icon name="pencil" size={14} color={colors.goldBright} />
+                </Pressable>
+                <Txt v="small" color={colors.goldBright} testID="lord-level-power">Lv {profile.hero.level} · Potenza {fmt(profile.combat.total_power)}</Txt>
                 <Txt v="small" color={colors.muted}>XP {fmt(profile.hero.xp)} / {fmt(profile.xp_to_next)} · Talenti {profile.talent_points_total - profile.talent_points_spent} liberi</Txt>
+                <Txt v="small" color={colors.muted} testID="player-name">Giocatore: {profile.display_name}</Txt>
               </View>
             </Row>
             <Row>
@@ -208,8 +218,14 @@ export default function BattleTab() {
                 </View>
               );
             })}
+            <Btn title="Formazione" small variant="ghost" icon="chess-rook" onPress={() => router.push("/army/formation")} testID="open-formation-button" />
           </Row>
         </Panel>
+        <Sheet ref={renameSheet} title="Nome del Lord" testID="rename-sheet">
+          <Txt v="small" color={colors.muted}>È il nome del tuo eroe in battaglia. Il nome giocatore (alleanze, chat, guerre) si cambia nel Profilo.</Txt>
+          <Input value={nameDraft} onChangeText={setNameDraft} placeholder="Nuovo nome (3-16 caratteri)" maxLength={16} testID="rename-input" />
+          <Btn title="Salva nome" icon="content-save" loading={rename.isPending} disabled={nameDraft.trim().length < 3} onPress={() => rename.mutate({ lord_name: nameDraft.trim() }, { onSuccess: () => renameSheet.current?.dismiss() })} testID="rename-save-button" style={{ marginTop: 8 }} />
+        </Sheet>
         </TutorialTarget>
 
         {/* quick links */}

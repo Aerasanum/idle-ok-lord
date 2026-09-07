@@ -7,6 +7,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepe
 
 import { ART } from "@/src/art/manifest";
 import { fonts, useTheme } from "@/src/theme";
+import { ZoomPan } from "@/src/ui/ZoomPan";
 import { Icon, IconName } from "@/src/ui";
 
 const TERRAIN: Record<string, { color: string; icon?: IconName }> = { plains: { color: "#6F8A46" }, forest: { color: "#3E5B3A", icon: "pine-tree" }, hills: { color: "#7A7050" }, river: { color: "#3F6E9E", icon: "waves" }, mountains: { color: "#5B5B60", icon: "image-filter-hdr" }, village: { color: "#8A7A50", icon: "home-group" }, mine: { color: "#6E5A4A", icon: "pickaxe" }, ruins: { color: "#7B7462", icon: "pillar" }, fort: { color: "#5C6470", icon: "chess-rook" }, city: { color: "#B89947", icon: "city-variant" } };
@@ -72,6 +73,7 @@ export function DomainMap({ tiles, ownedCount, heraldicColor, growth, onSelect, 
     if (seenLoaded.current) AsyncStorage.setItem(SEEN_KEY, String(ownedCount)).catch(() => {});
   }, [ownedCount]);
   return (
+    <ZoomPan width={size} height={size + 14} testID="domain-zoom" style={{ alignSelf: "center" }}>
     <View style={{ alignSelf: "center", width: size, paddingTop: 10 }} testID="domain-map-stage">
       <View style={{ position: "absolute", left: size * 0.05, right: size * 0.05, bottom: -6, height: size * 0.08, borderRadius: size, backgroundColor: "#000", opacity: 0.45 }} />
       <View style={{ width: size, height: size, borderWidth: 3, borderColor: colors.gold, backgroundColor: "#2E3A2A", borderRadius: 6, overflow: "hidden", transform: [{ perspective: 900 }, { rotateX: "26deg" }, { scale: 1.06 }] }} testID="domain-map">
@@ -81,5 +83,6 @@ export function DomainMap({ tiles, ownedCount, heraldicColor, growth, onSelect, 
         <LinearGradient colors={["rgba(0,0,0,0.25)", "transparent", "transparent", "rgba(0,0,0,0.2)"]} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }} pointerEvents="none" />
       </View>
     </View>
+    </ZoomPan>
   );
 }

@@ -200,6 +200,36 @@ async def recruit(p: dict, unit: str, quantity: int) -> dict:
     return {"unit": unit, "quantity": quantity, "queued": item, "cost": cost}
 
 
+def suggest_formation(p: dict, affix_army_pct: float, enemy_mix: dict, territory_pct: float = 0.0) -> dict:
+    """Best formation vs an enemy class mix (v1.2): pick the top unit types by power-per-command (counters applied), then fill the
+    command capacity greedily. Deterministic; respects owned quantities, formation slots and command capacity."""
+    units = units_by_key()
+    slots = support_formation_slots(p["kingdom"]["castle_level"])
+    cap = F.command_capacity(p["hero"]["level"], p["kingdom"]["castle_level"])
+    cands = []
+    for k, owned in p["army"]["units"].items():
+        if k not in units or owned <= 0:
+            continue
+        u = units[k]
+        mult = F.unit_power_multiplier(k, p["research"], p["hero"]["talents"], affix_army_pct, territory_pct)
+        cpct = F.unit_counter_pct(k, enemy_mix)
+        per_unit = u["base_power"] * mult * (1 + cpct / 100)
+        cands.append({"key": k, "name": u["name"], "owned": owned, "cost": u["command_cost"], "per_unit": per_unit, "per_command": per_unit / u["command_cost"], "counter_pct": round(cpct, 1)})
+    cands.sort(key=lambda c: -c["per_command"])
+    chosen = cands[:slots] if slots > 0 else []
+    formation: dict = {}
+    left = cap
+    for c in chosen:
+        q = min(c["owned"], left // c["cost"])
+        if q > 0:
+            formation[c["key"]] = int(q)
+            left -= q * c["cost"]
+    power = sum(formation[k] * next(c["per_unit"] for c in chosen if c["key"] == k) for k in formation)
+    return {"formation": formation, "army_power": rnd(power), "command_used": cap - left, "command_capacity": cap, "formation_slots": slots,
+            "picks": [{**{kk: vv for kk, vv in c.items() if kk != "per_unit"}, "per_command": round(c["per_command"], 2), "quantity": formation.get(c["key"], 0)} for c in cands]}
+
+
+
 async def set_formation(p: dict, formation: dict) -> dict:
     units = units_by_key()
     slots = support_formation_slots(p["kingdom"]["castle_level"])

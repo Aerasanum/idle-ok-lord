@@ -12,9 +12,9 @@ type Item = { slot: string; rarity: string; item_level: number } | null | undefi
 const SKIN = "#D9B48F", CLOTH = "#6B5A44", LEATHER = "#5A4632", STEEL = "#9AA1A9", STEEL_D = "#6E7580", HAIR = "#3A2A1E", INK = "#111111";
 const RARITY_RANK: Record<string, number> = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, mythic: 5, ancient: 6 };
 
-// ---- Lord move set (v1.2): 1 slash · 2 heavy · 3 spin · 4 dash · 5 leap · 6 super charge · 7 super release ----
-export type LordMove = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
-export const LORD_MOVE_MS: Record<LordMove, number> = { 0: 0, 1: 760, 2: 820, 3: 640, 4: 760, 5: 820, 6: 1700, 7: 620 };
+// ---- Lord move set (v1.2): 1 slash · 2 heavy · 3 rising slash · 4 dash · 5 leap · 6 super charge · 7 super release · 8 dodge (back-dash) ----
+export type LordMove = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export const LORD_MOVE_MS: Record<LordMove, number> = { 0: 0, 1: 760, 2: 820, 3: 700, 4: 760, 5: 820, 6: 1700, 7: 620, 8: 640 };
 
 export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier = 0, heraldicColor = "#800020", swinging = true, move, hurtTick = 0, superMode = false }: { equipped: Record<string, Item>; size?: number; tier?: number; heraldicColor?: string; swinging?: boolean; move?: { kind: SharedValue<number>; t: SharedValue<number>; dist: SharedValue<number> }; hurtTick?: number; superMode?: boolean }) {
   const { colors } = useTheme();
@@ -56,11 +56,12 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
     let tx = -8 * hv, ty = 0, rot = 5 * hv, sx = 1, sy = 1;
     if (k === 1) { tx += 24 * s; rot += -11 * s; sx = 1 + 0.05 * s; sy = 1 - 0.03 * s; }
     else if (k === 2) { tx += 54 * s; rot += -17 * s; sx = 1 + 0.1 * s; sy = 1 - 0.05 * s; }
-    else if (k === 3) { tx += 30 * s; rot += 360 * t; }
+    else if (k === 3) { tx += 36 * s; ty = -26 * Math.sin(Math.PI * Math.min(1, t * 1.3)); rot += -14 * s; sx = 1 + 0.06 * s; }
     else if (k === 4) { const p = t < 0.5 ? 1 - (1 - t * 2) * (1 - t * 2) : 1 - (t - 0.5) * 2; tx += d * p; sx = 1 + 0.15 * s; rot += -8 * s; }
     else if (k === 5) { const up = Math.min(1, t / 0.7); tx += 44 * Math.sin((Math.PI / 2) * up); ty = -78 * Math.sin(Math.PI * up); rot += -12 * Math.sin(Math.PI * up); sy = t > 0.7 ? 1 - 0.18 * Math.sin(Math.PI * ((t - 0.7) / 0.3)) : 1 + 0.06 * Math.sin(Math.PI * up); sx = t > 0.7 ? 1 + 0.12 * Math.sin(Math.PI * ((t - 0.7) / 0.3)) : 1; }
     else if (k === 6) { ty = -14 * Math.min(1, t * 1.4); tx += Math.sin(t * 90) * 2.2 * Math.min(1, t * 2); sx = sy = 1 + 0.08 * Math.min(1, t * 1.2); }
     else if (k === 7) { tx += 70 * s; sx = 1.12; sy = 1.12; rot += -6 * s; }
+    else if (k === 8) { const p = t < 0.35 ? 1 - Math.pow(1 - t / 0.35, 2) : 1 - (t - 0.35) / 0.65; tx += -d * p; ty = -18 * Math.sin(Math.PI * Math.min(1, t / 0.5)); rot += 10 * p; sx = 1 - 0.08 * p; }
     return { transform: [{ translateX: tx }, { translateY: ty }, { rotate: `${rot}deg` }, { scaleX: sx }, { scaleY: sy }] };
   });
   const hurtStyle = useAnimatedStyle(() => ({ opacity: 0.55 * hurt.value }));

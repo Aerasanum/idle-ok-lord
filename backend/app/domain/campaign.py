@@ -26,6 +26,10 @@ def build_timeline(stage: int, kind: str, win: bool, duration: int, kill_rewards
     gold_each = kill_rewards["gold"] / max(total_monsters, 1)
     soft_each = kill_rewards["soft"] / max(total_monsters, 1)
     reached = waves if win else max(1, rnd(waves * 0.6))
+    # boss stages: the final (boss) wave takes 35% of the timeline so the boss has room for its special moves
+    boss_share = 0.35 if kind == "boss" else 1 / waves
+    normal_share = (1 - boss_share) / (waves - 1) if kind == "boss" else 1 / waves
+    t = 0.0
     for w in range(1, waves + 1):
         is_boss_wave = kind == "boss" and w == waves
         n = (1 + F.boss_minions(stage)) if is_boss_wave else per_wave
@@ -33,11 +37,13 @@ def build_timeline(stage: int, kind: str, win: bool, duration: int, kill_rewards
         for i in range(n):
             mtype = "boss" if (is_boss_wave and i == 0) else ("elite" if kind == "elite" else "normal")
             monsters.append({"family": region["region_boss"] if mtype == "boss" else fams[rng.randrange(len(fams))], "type": mtype})
+        share = boss_share if is_boss_wave else normal_share
         out.append({
             "wave": w, "monsters": monsters, "cleared": win or w < reached,
             "kill_xp": rnd(xp_each * n), "kill_gold": rnd(gold_each * n), "kill_soft": rnd(soft_each * n),
-            "t_start": round(duration * (w - 1) / waves, 2), "t_end": round(duration * w / waves, 2),
+            "t_start": round(duration * t, 2), "t_end": round(duration * min(1.0, t + share), 2),
         })
+        t += share
     return {"waves": out, "total_monsters": total_monsters, "duration": duration, "region": {"name": region["name"], "region": region["region"], "visual": region["visual"], "boss": region["region_boss"]}}
 
 

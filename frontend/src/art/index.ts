@@ -41,3 +41,9 @@ export function itemArt(slot: string, rarity: string): number | undefined {
 export function resourceArt(kind: string): number | undefined {
   return ART[`resources/${kind}`];
 }
+
+/** Light-on-black VFX sprites (alpha from luminance): slash_gold, slash_white, impact_burst, fire_burst, shockwave_ring, energy_aura,
+ * lightning, dust_cloud, energy_orb, soul_wisp, fire_breath, ice_shards, sand_vortex, rock_slam, holy_beam, water_wave, void_burst, arrow_volley. */
+export function vfxArt(key: string): number | undefined {
+  return ART[`vfx/${key}`];
+}

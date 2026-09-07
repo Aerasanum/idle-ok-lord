@@ -7,6 +7,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSeq
 import { lordArt, monsterArt, regionBackground } from "@/src/art";
 import { Burst, DamageNumber, Flare, Fx, Shockwave, Slash, SpeedLines } from "@/src/battle/effects";
 import { fonts, useTheme } from "@/src/theme";
+import { ZoomPan } from "@/src/ui/ZoomPan";
 
 export function TitanStage({ family, tier, hpPct, strikeTick, lastDamage, killed, equipped }: { family: string; tier: number; hpPct: number; strikeTick: number; lastDamage?: number; killed?: boolean; equipped?: Record<string, any> }) {
   const { colors } = useTheme();
@@ -65,7 +66,8 @@ export function TitanStage({ family, tier, hpPct, strikeTick, lastDamage, killed
   const lord = lordArt(equipped ?? {}, 0);
 
   return (
-    <Animated.View style={[{ width: W, height: H, borderRadius: 8, overflow: "hidden", borderWidth: 2, borderColor: colors.gold, backgroundColor: "#1B1410" }, camStyle]} testID="titan-stage">
+    <ZoomPan width={W} height={H} testID="titan-zoom" style={{ borderRadius: 8, borderWidth: 2, borderColor: colors.gold, backgroundColor: "#1B1410" }} controlsStyle={{ top: 6, right: 6 }}>
+    <Animated.View style={[{ width: W, height: H, overflow: "hidden" }, camStyle]} testID="titan-stage">
       {bg ? <Image source={bg} style={{ position: "absolute", left: -10, top: -10, width: W + 20, height: H + 20 }} resizeMode="cover" /> : null}
       <View style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: "rgba(40,0,0,0.35)" }} />
       <View style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: H * 0.3, backgroundColor: "rgba(0,0,0,0.45)" }} />
@@ -99,5 +101,6 @@ export function TitanStage({ family, tier, hpPct, strikeTick, lastDamage, killed
         <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.onSurface }}>Titano tier {tier} · {killed ? "ABBATTUTO" : `${hpPct.toFixed(1)}% HP`}</Text>
       </View>
     </Animated.View>
+    </ZoomPan>
   );
 }

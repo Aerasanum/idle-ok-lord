@@ -6,12 +6,14 @@ import { useProfile } from "@/src/api/hooks";
 import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, Row, Txt } from "@/src/ui";
+import { loadUiScale } from "@/src/ui/uiScale";
 import { getVolumes, initAudio, setVolumes, stopMusic, subscribeAudio } from "./index";
 
 export function AudioBootstrap() {
   const { user } = useAuth();
   useEffect(() => {
     initAudio();
+    loadUiScale();
   }, []);
   useEffect(() => {
     if (!user) stopMusic();

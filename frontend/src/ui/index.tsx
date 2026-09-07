@@ -3,10 +3,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, TextProps, View, ViewProps } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { resourceArt } from "@/src/art";
 import { fonts, makeStyles, radius, rarityColor, resourceColor, spacing, useTheme } from "@/src/theme";
+import { UI_SCALE_MAX, UI_SCALE_MIN, getUiScale, setUiScale, stepUiScale, useUiScale } from "./uiScale";
 
 export type IconName = React.ComponentProps<typeof MaterialDesignIcons>["name"];
 
@@ -19,10 +22,48 @@ export function Icon({ name, size = 18, color }: { name: IconName; size?: number
 type TxtVariant = "title" | "h1" | "h2" | "h3" | "body" | "bodyBold" | "small" | "caption" | "num";
 export function Txt({ v = "body", style, color, children, ...rest }: TextProps & { v?: TxtVariant; color?: string }) {
   const s = useTxt();
+  const k = useUiScale();
+  const base = s[v] as { fontSize: number; lineHeight?: number };
+  const scaled = k !== 1 ? { fontSize: base.fontSize * k, lineHeight: base.lineHeight ? base.lineHeight * k : undefined } : null;
   return (
-    <Text {...rest} style={[s[v], color ? { color } : null, style]}>
+    <Text {...rest} style={[s[v], scaled, color ? { color } : null, style]}>
       {children}
     </Text>
+  );
+}
+
+/** Compact UI zoom control (−/+): scales every Txt on text pages. */
+export function ZoomPill({ testID = "ui-zoom" }: { testID?: string }) {
+  const { colors } = useTheme();
+  const k = useUiScale();
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: colors.wood, borderRadius: 6, backgroundColor: colors.overlay }} testID={testID}>
+      <Pressable onPress={() => stepUiScale(-1)} disabled={k <= UI_SCALE_MIN + 0.001} style={{ width: 30, height: 30, alignItems: "center", justifyContent: "center", opacity: k <= UI_SCALE_MIN + 0.001 ? 0.4 : 1 }} testID={`${testID}-out`} hitSlop={4}>
+        <Icon name="magnify-minus-outline" size={16} color={colors.goldBright} />
+      </Pressable>
+      <Text style={{ fontFamily: fonts.bodyMedium, fontSize: 10, color: colors.onSurface, minWidth: 30, textAlign: "center" }} testID={`${testID}-value`}>{Math.round(k * 100)}%</Text>
+      <Pressable onPress={() => stepUiScale(1)} disabled={k >= UI_SCALE_MAX - 0.001} style={{ width: 30, height: 30, alignItems: "center", justifyContent: "center", opacity: k >= UI_SCALE_MAX - 0.001 ? 0.4 : 1 }} testID={`${testID}-in`} hitSlop={4}>
+        <Icon name="magnify-plus-outline" size={16} color={colors.goldBright} />
+      </Pressable>
+    </View>
+  );
+}
+
+/** Pinch anywhere on a text page to change the UI zoom (mobile); the ZoomPill covers web/mouse. */
+export function UiPinch({ children }: { children: React.ReactNode }) {
+  const start = useSharedValue(1);
+  const apply = (v: number) => setUiScale(v);
+  const pinch = Gesture.Pinch()
+    .onStart(() => {
+      start.value = getUiScale();
+    })
+    .onUpdate((e) => {
+      runOnJS(apply)(start.value * e.scale);
+    });
+  return (
+    <GestureDetector gesture={pinch}>
+      <View style={{ flex: 1 }} collapsable={false}>{children}</View>
+    </GestureDetector>
   );
 }
 const useTxt = makeStyles((c) => ({
@@ -173,10 +214,11 @@ export function ResourceBar({ resources, compact }: { resources: Record<string, 
       {keys.map((k) => (
         <Res key={k} kind={k} value={resources?.[k] ?? 0} size={13} testID={`res-${k}`} />
       ))}
+      <View style={{ marginLeft: "auto" }}><ZoomPill testID="ui-zoom-bar" /></View>
     </View>
   );
 }
-const useBar = makeStyles((c) => ({ bar: { flexDirection: "row", flexWrap: "wrap", gap: 10, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: c.overlay, borderBottomWidth: 2, borderColor: c.gold } }));
+const useBar = makeStyles((c) => ({ bar: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10, paddingHorizontal: 12, paddingVertical: 4, backgroundColor: c.overlay, borderBottomWidth: 2, borderColor: c.gold } }));
 
 export function fmt(n: number): string {
   if (n === undefined || n === null || isNaN(n)) return "0";
@@ -229,14 +271,17 @@ export function Screen({ title, subtitle, children, right, scroll = true, back =
           {subtitle ? <Txt v="caption">{subtitle}</Txt> : null}
         </View>
         {right}
+        <ZoomPill />
       </View>
-      {scroll ? (
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: insets.bottom + 24, gap: spacing.md }} showsVerticalScrollIndicator={false}>
-          {children}
-        </ScrollView>
-      ) : (
-        <View style={{ flex: 1 }}>{children}</View>
-      )}
+      <UiPinch>
+        {scroll ? (
+          <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: insets.bottom + 24, gap: spacing.md }} showsVerticalScrollIndicator={false}>
+            {children}
+          </ScrollView>
+        ) : (
+          <View style={{ flex: 1 }}>{children}</View>
+        )}
+      </UiPinch>
     </View>
   );
 }

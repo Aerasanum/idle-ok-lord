@@ -359,7 +359,7 @@ function Dragon({ body, dark, light, eye, f }: P) {
 const RENDER: Record<Arch, (p: P) => React.ReactElement> = { goblin: Goblin, humanoid: Humanoid, knight: Knight, robed: Robed, canine: Canine, boar: Boar, arthropod: Arthropod, brute: Brute, golem: Golem, treant: Treant, flyer: Flyer, spirit: Spirit, dragon: Dragon };
 const FLOATERS: Arch[] = ["flyer", "spirit"];
 
-// ---- enemy move set (v1.2): 0 lunge · 1 leap · 2 spin charge · 3 roar · 4 dodge · 5 spit (ranged) · 6 swoop (fliers) ----
+// ---- enemy move set (v1.2): 0 lunge · 1 leap · 2 charge (straight rush) · 3 roar · 4 dodge · 5 spit (ranged) · 6 swoop (fliers) ----
 export type EnemyMove = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export const MOVE_MS: Record<EnemyMove, number> = { 0: 810, 1: 760, 2: 620, 3: 640, 4: 460, 5: 820, 6: 900 };
 /** Moment (ms after the move starts) when the move "connects" — used by the scene for impact FX. */
@@ -373,7 +373,7 @@ export function pickMove(arch: Arch, seed: number): EnemyMove {
   return pool[seed % pool.length];
 }
 
-export const MonsterSprite = memo(function MonsterSprite({ family, type, palette, size, hurtTick = 0, fighting = true, index = 0, onMove }: { family: string; type: MonsterType; palette: string[]; size: number; hurtTick?: number; fighting?: boolean; index?: number; onMove?: (move: EnemyMove, index: number) => void }) {
+export const MonsterSprite = memo(function MonsterSprite({ family, type, palette, size, hurtTick = 0, fighting = true, index = 0, onMove, charging = false }: { family: string; type: MonsterType; palette: string[]; size: number; hurtTick?: number; fighting?: boolean; index?: number; onMove?: (move: EnemyMove, index: number) => void; charging?: boolean }) {
   const h = hashStr(family);
   const arch = archetypeFor(family);
   const f = family.toLowerCase();
@@ -420,6 +420,12 @@ export const MonsterSprite = memo(function MonsterSprite({ family, type, palette
     hurt.value = 1;
     hurt.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.quad) });
   }, [hurtTick, hurt]);
+  const charge = useSharedValue(0);
+  useEffect(() => {
+    if (charging) charge.value = withRepeat(withSequence(withTiming(1, { duration: 130 }), withTiming(0.35, { duration: 130 })), -1, true);
+    else charge.value = withTiming(0, { duration: 200 });
+  }, [charging, charge]);
+  const chargeStyle = useAnimatedStyle(() => ({ opacity: 0.7 * charge.value, transform: [{ scale: 1.04 + 0.04 * charge.value }] }));
   const bodyStyle = useAnimatedStyle(() => {
     const v = a.value, k = kind.value, hv = hurt.value;
     let tx = 10 * hv, ty = 0, rot = -5 * hv, sx = 1, sy = 1;
@@ -427,8 +433,8 @@ export const MonsterSprite = memo(function MonsterSprite({ family, type, palette
       tx += -Math.max(0, v) * size * 0.3 + Math.min(0, v) * size * 0.12; sy = 1 - 0.06 * Math.max(0, v) + 0.05 * Math.max(0, -v); sx = 1 + 0.08 * Math.max(0, v); rot += -9 * Math.max(0, v) + 3 * Math.max(0, -v);
     } else if (k === 1) { // leap: arc forward, slam, hop back
       const fwd = Math.sin((Math.PI / 2) * v); tx += -fwd * size * 0.36; ty = -Math.sin(Math.PI * v) * size * 0.5; rot += -14 * v; sy = 1 + 0.1 * Math.sin(Math.PI * v);
-    } else if (k === 2) { // spin charge
-      tx += -Math.sin(Math.PI * v) * size * 0.32; rot += 360 * v; sx = 1 + 0.05 * Math.sin(Math.PI * v);
+    } else if (k === 2) { // straight charge: lean in, rush toward the Lord, skid back
+      const s = Math.sin(Math.PI * v); tx += -s * size * 0.4; rot += -12 * s; sx = 1 + 0.14 * s; sy = 1 - 0.08 * s; ty = -4 * Math.abs(Math.sin(v * Math.PI * 4)) * s;
     } else if (k === 3) { // roar / stomp
       sx = 1 + 0.16 * v; sy = 1 + 0.2 * v; ty = -8 * v; rot += 2 * v;
     } else if (k === 4) { // dodge: hop back-right and up
@@ -450,6 +456,9 @@ export const MonsterSprite = memo(function MonsterSprite({ family, type, palette
       <Animated.View style={[{ width: size, height: size, justifyContent: "flex-end", alignItems: "center", transformOrigin: "50% 85%" }, bodyStyle]} testID="monster-art">
         <View style={{ position: "absolute", bottom: size * 0.02, width: size * 0.7, height: size * 0.14, borderRadius: size, backgroundColor: "#000", opacity: floater ? 0.18 : 0.35 }} />
         {type === "boss" ? <View style={{ position: "absolute", bottom: -size * 0.02, width: size * 0.9, height: size * 0.22, borderRadius: size, borderWidth: 3, borderColor: GOLD, opacity: 0.6 }} /> : null}
+        <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, alignItems: "center", justifyContent: "flex-end" }, chargeStyle]}>
+          <Image source={img} style={{ width: size, height: size, tintColor: "#FF3B3B" }} resizeMode="contain" />
+        </Animated.View>
         <Image source={img} style={{ width: size, height: size }} resizeMode="contain" />
         <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, alignItems: "center", justifyContent: "flex-end" }, flashStyle]}>
           <Image source={img} style={{ width: size, height: size, tintColor: "#FFFFFF" }} resizeMode="contain" />

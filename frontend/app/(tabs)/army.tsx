@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -54,7 +55,9 @@ export default function ArmyTab() {
               <Btn title="Salva formazione" small icon="content-save" loading={setForm.isPending} disabled={cmdUsed > a.command_capacity || types > a.formation_slots} onPress={() => setForm.mutate({ formation: f }, { onSuccess: () => setFormation(null) })} testID="save-formation-button" />
               <Btn title="Annulla" small variant="ghost" onPress={() => setFormation(null)} testID="cancel-formation-button" />
             </Row>
-          ) : null}
+          ) : (
+            <Btn title="Area Formazione · schiera e suggerimenti" small icon="chess-rook" variant="gold" onPress={() => router.push("/army/formation")} testID="open-formation-button" style={{ marginTop: 8 }} />
+          )}
         </Panel>
         {a.queue.length ? (
           <Panel variant="wood" testID="recruit-queue">

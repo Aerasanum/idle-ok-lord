@@ -73,6 +73,7 @@ class SettingsIn(BaseModel):
     music_volume: float | None = Field(default=None, ge=0, le=1)
     sfx_volume: float | None = Field(default=None, ge=0, le=1)
     display_name: str | None = None
+    lord_name: str | None = None
     heraldic_color: str | None = None
 
 
@@ -174,6 +175,8 @@ async def update_settings(body: SettingsIn, p: Principal = Depends(current_user)
             sets[f"settings.{k}"] = v
     if body.display_name is not None:
         sets["display_name"] = A.check_name(body.display_name)
+    if body.lord_name is not None:
+        sets["hero.name"] = A.check_name(body.lord_name)
     if body.heraldic_color is not None and __import__("re").match(r"^#[0-9A-Fa-f]{6}$", body.heraldic_color):
         sets["heraldic_color"] = body.heraldic_color
     if sets:

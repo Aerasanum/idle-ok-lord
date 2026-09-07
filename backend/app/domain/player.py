@@ -23,7 +23,7 @@ def initial_state(account_id: str, display_name: str) -> dict:
         "updated_at": now(),
         "last_seen_at": now(),
         "resources": dict(c["resources"]["initial"], war_coins=0, event_tokens=0),
-        "hero": {"level": 1, "xp": 0, "talents": {"warrior": 0, "guardian": 0, "commander": 0, "fortune": 0}, "skill_slots": [None, None, None]},
+        "hero": {"name": "Lord", "level": 1, "xp": 0, "talents": {"warrior": 0, "guardian": 0, "commander": 0, "fortune": 0}, "skill_slots": [None, None, None]},
         "forge": {s: 0 for s in slots},
         "equipped": {s: None for s in slots},
         "inventory_capacity": c["gear"]["inventory"]["base_slots"],
@@ -273,6 +273,7 @@ async def public_state(p: dict) -> dict:
     items = await equipped_items(p)
     out = clean({k: v for k, v in p.items() if k not in ("recent_ledger_keys", "account_id")})
     out["combat"] = prof
+    out["hero"]["name"] = p["hero"].get("name") or "Lord"  # the Lord's own name (distinct from the player's display_name)
     out["equipped_items"] = [clean(i) for i in items]
     out["production_per_hour"] = {k: rnd(v) for k, v in production_per_hour(p).items()}
     out["warehouse_capacity"] = warehouse_capacity(p)

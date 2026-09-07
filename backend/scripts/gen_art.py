@@ -188,9 +188,56 @@ def ground_prompts():
              "small flowers, subtle grass texture, soft shadows, no buildings, no characters, no text, 16:9, " + STYLE)]
 
 
-GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts}
+BLACK = "on a pure solid black background (#000000), nothing else in frame, no ground, no characters, no text"
+VFX_STYLE = "realistic cinematic 3D VFX render, volumetric glow, high dynamic range light, particles and sparks, sharp detail, game-ready effect sprite, centered"
+
+
+def vfx_prompts():
+    return [
+        ("vfx/slash_gold", f"Single curved crescent blade-of-light slash trail, golden white-hot core with orange glowing edges and trailing sparks, sweeping from upper-left to lower-right, {VFX_STYLE}, {BLACK}"),
+        ("vfx/slash_white", f"Single thin curved sword slash arc of pure white-blue light with motion blur and tiny sparks, sweeping diagonally, {VFX_STYLE}, {BLACK}"),
+        ("vfx/impact_burst", f"Radial impact explosion of golden white light: hot bright core, star-shaped rays, flying embers and sparks, {VFX_STYLE}, {BLACK}"),
+        ("vfx/fire_burst", f"Fireball explosion: bright yellow-white core, orange and red flames, black smoke wisps at the edges, embers flying, {VFX_STYLE}, {BLACK}"),
+        ("vfx/shockwave_ring", f"Glowing energy shockwave ring seen at a slight top-down angle (wide flattened ellipse), golden-white bright ring with dust and sparks along the edge, hollow center, {VFX_STYLE}, {BLACK}"),
+        ("vfx/energy_aura", f"Tall vertical rising energy aura of golden flames and lightning-like sparks, like a fighter's power-up aura, symmetric, widest at the bottom, transparent hollow center where a character would stand, {VFX_STYLE}, {BLACK}"),
+        ("vfx/lightning", f"Vertical bolt of blue-white lightning striking downward with branching forks and a bright flash at the impact point at the bottom, {VFX_STYLE}, {BLACK}"),
+        ("vfx/dust_cloud", f"Puff of ground dust and small rock debris kicked up by a heavy landing, warm beige-brown dust lit from the left, spreading sideways, {VFX_STYLE}, {BLACK}"),
+        ("vfx/energy_orb", f"Glowing magic energy orb projectile flying to the left with a long comet-like tail of fire and violet sparks, {VFX_STYLE}, {BLACK}"),
+        ("vfx/soul_wisp", f"Ghostly soul wisps rising upward, pale cyan-white translucent spirit flames with sparkles, several small tongues, {VFX_STYLE}, {BLACK}"),
+        ("vfx/fire_breath", f"Horizontal cone of dragon fire breath blasting from right to left, white-yellow core, orange flames, smoke and embers, {VFX_STYLE}, {BLACK}"),
+        ("vfx/ice_shards", f"Cluster of sharp glowing ice crystal shards and frost mist bursting outward, icy blue-white, {VFX_STYLE}, {BLACK}"),
+        ("vfx/sand_vortex", f"Swirling sand tornado vortex with glowing golden dust and small stones, tall spiral, {VFX_STYLE}, {BLACK}"),
+        ("vfx/rock_slam", f"Ground slam cracks: glowing molten orange fissures radiating from a center point on the ground with flying rock chunks and dust, seen at a slight top-down angle, {VFX_STYLE}, {BLACK}"),
+        ("vfx/holy_beam", f"Vertical pillar of holy golden-white light descending from above with floating light particles and lens flare at the base, {VFX_STYLE}, {BLACK}"),
+        ("vfx/water_wave", f"Large crashing sea wave with glowing cyan foam and spray moving to the left, {VFX_STYLE}, {BLACK}"),
+        ("vfx/void_burst", f"Dark violet-black void explosion with purple lightning cracks and a bright magenta core, {VFX_STYLE}, {BLACK}"),
+        ("vfx/arrow_volley", f"A volley of five flying arrows with faint motion trails, medieval wooden arrows with steel tips flying to the right, slightly fanned out, {VFX_STYLE}, {BLACK}"),
+    ]
+
+
+GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts, "vfx": vfx_prompts}
 TRANSPARENT = {"monsters", "lord", "buildings", "units", "items", "resources"}
-MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192}
+LUMA_ALPHA = {"vfx"}
+MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192, "vfx": 512}
+
+
+def luma_to_alpha(img: Image.Image) -> Image.Image:
+    """Light-on-black VFX -> RGBA: alpha = max channel (additive look), colour un-premultiplied so glows stay saturated."""
+    img = img.convert("RGB")
+    px = img.load()
+    w, h = img.size
+    out = Image.new("RGBA", (w, h))
+    op = out.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            a = max(r, g, b)
+            if a < 14:
+                op[x, y] = (0, 0, 0, 0)
+            else:
+                k = 255 / a
+                op[x, y] = (min(255, int(r * k)), min(255, int(g * k)), min(255, int(b * k)), a)
+    return out
 
 
 def chroma_key(img: Image.Image) -> Image.Image:
@@ -238,6 +285,8 @@ def postprocess(group: str, raw_path: Path, out_path: Path):
     img = Image.open(raw_path)
     if group in TRANSPARENT:
         img = trim(chroma_key(img))
+    elif group in LUMA_ALPHA:
+        img = trim(luma_to_alpha(img))
     else:
         img = img.convert("RGB")
     m = MAX_SIDE[group]

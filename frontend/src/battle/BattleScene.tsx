@@ -5,30 +5,78 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, PixelRatio, Platform, Text, View, useWindowDimensions } from "react-native";
-import Animated, { Easing, FadeIn, ZoomOut, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
+import Animated, { Easing, FadeIn, FadeInDown, ZoomOut, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
 import { lordArt, regionBackground } from "@/src/art";
 import { playRegionMusic } from "@/src/audio";
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
-import { Ambient, BannerRise, BossBar, Burst, Clouds, CoinShower, ComboText, DamageNumber, DeathDissolve, DustPuff, Flare, Fx, Ghost, LightningBolt, OutcomeBanner, Projectile, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SpeedLines, SteelRain, SuperAura, UltimateWave } from "./effects";
+import { Ambient, BannerRise, BossFxKind, BossMoveFx, Burst, Clouds, CoinShower, ComboText, DamageNumber, DeathDissolve, DustPuff, Flare, FloatText, Fx, Ghost, HP_COLORS, HpBar, hpColors, LightningBolt, OutcomeBanner, Projectile, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SpeedLines, SpriteFx, SteelRain, SuperAura, UltimateWave, WarningBanner } from "./effects";
 import { LORD_MOVE_MS, LordMove, LordSprite } from "./lord";
 import { EnemyMove, MOVE_HIT_MS, MonsterSprite } from "./monsters";
 import { hashStr, paletteFor } from "./regions";
 import { CohortSilhouette, UnitProxy } from "./sprites";
+import { ZoomPan } from "@/src/ui/ZoomPan";
 
 export type Attempt = { id: string; stage: string | number; kind: string; win: boolean; duration: number; created_at: string; resolves_at: string; required_power: number; total_power: number; hero_power: number; army_power: number; timeline: { waves: { wave: number; monsters: { family: string; type: any }[]; cleared: boolean; kill_xp: number; kill_gold: number; t_start: number; t_end: number }[]; total_monsters: number; duration: number; region: { name: string; region: number; boss: string } } };
 
 const isHighTier = Platform.OS === "ios" || Platform.OS === "web" || PixelRatio.get() >= 2.5;
 const ORDER = ["dragon", "angel", "demon", "war_elephant", "conquest_wagon", "catapult", "bear", "lion", "cavalry", "wolf", "infantry", "archer", "falcon"];
-const CATEGORY: Record<string, string> = { infantry: "regular", archer: "regular", cavalry: "regular", catapult: "siege", conquest_wagon: "siege", wolf: "beast", bear: "beast", lion: "beast", falcon: "beast", war_elephant: "beast", dragon: "mythic", angel: "mythic", demon: "mythic" };
+export const CATEGORY: Record<string, string> = { infantry: "regular", archer: "regular", cavalry: "regular", catapult: "siege", conquest_wagon: "siege", wolf: "beast", bear: "beast", lion: "beast", falcon: "beast", war_elephant: "beast", dragon: "mythic", angel: "mythic", demon: "mythic" };
 const SUPER_COLOR = "#FFC93C";
 const LORD_PATTERN: LordMove[] = [1, 1, 2, 1, 3, 1, 5, 1, 2, 4];
 const STRIKE_MS = 1300;
 const SUPER_FIRST_S = 6, SUPER_EVERY_S = 20;
+const BOSS_FIRST_S = 1.5, BOSS_EVERY_S = 7;
 const MAX_VISIBLE = 4;
+/** Unique special move per regional boss (presentational; the server timeline stays authoritative). */
+const BOSS_MOVES: Record<string, { name: string; fx: BossFxKind; color: string }> = {
+  "Ogre Warlord": { name: "Schianto della Mazza", fx: "slam", color: "#FF8A3D" },
+  "Ancient Treant": { name: "Radici Divoranti", fx: "roots", color: "#6FBF4A" },
+  "Mountain Tyrant": { name: "Frana", fx: "quake", color: "#C9A46B" },
+  "Bone Colossus": { name: "Urlo delle Ossa", fx: "quake", color: "#D9D2C2" },
+  "Ice Giant King": { name: "Tempesta di Ghiaccio", fx: "shards", color: "#7FE3FF" },
+  "Sand Wyrm": { name: "Vortice di Sabbia", fx: "vortex", color: "#E3C16F" },
+  "Leviathan": { name: "Maremoto", fx: "wave", color: "#38C8D8" },
+  "Elder Dragon": { name: "Soffio di Fuoco", fx: "breath", color: "#FF6A2F" },
+  "Fallen Seraph": { name: "Giudizio Celeste", fx: "beam", color: "#FFF1B8" },
+  "World Devourer": { name: "Abisso", fx: "void", color: "#B45CFF" },
+};
+const VOLLEY_UNITS: Record<string, "arrow" | "orb" | "fire"> = { archer: "arrow", catapult: "orb", conquest_wagon: "orb", dragon: "fire", falcon: "arrow" };
 
-function allocateProxies(formation: Record<string, number>, cap: number): { unit: string; count: number }[] {
+/** Army proxies fight too: foot/mounts step in and strike, beasts pounce, siege recoils, fliers swoop. Desynced per unit. */
+function FightingProxy({ unit, scale, banner, index, fighting }: { unit: string; scale: number; banner?: string; index: number; fighting: boolean }) {
+  const a = useSharedValue(0);
+  const kind = CATEGORY[unit] === "siege" ? 2 : CATEGORY[unit] === "beast" && unit !== "falcon" ? 1 : unit === "falcon" || CATEGORY[unit] === "mythic" ? 3 : 0;
+  useEffect(() => {
+    if (!fighting) {
+      a.value = withTiming(0, { duration: 200 });
+      return;
+    }
+    const pause = 500 + ((index * 137) % 900);
+    a.value = withDelay((index * 211) % 1400, withRepeat(withSequence(
+      withTiming(-0.3, { duration: 220 + (index % 3) * 40, easing: Easing.inOut(Easing.quad) }),
+      withTiming(1, { duration: kind === 2 ? 90 : 180, easing: Easing.out(Easing.cubic) }),
+      withTiming(0.6, { duration: 120 }),
+      withTiming(0, { duration: 360, easing: Easing.inOut(Easing.quad) }),
+      withTiming(0, { duration: pause }),
+    ), -1, false));
+  }, [fighting, a, index, kind]);
+  const style = useAnimatedStyle(() => {
+    const v = a.value, f = Math.max(0, v), b = Math.max(0, -v);
+    if (kind === 1) return { transform: [{ translateX: f * 16 - b * 4 }, { translateY: -Math.sin(Math.PI * f) * 14 }, { rotate: `${-8 * f}deg` }, { scaleX: 1 + 0.08 * f }] };
+    if (kind === 2) return { transform: [{ translateX: -f * 6 }, { rotate: `${-4 * f + 2 * b}deg` }, { scaleY: 1 - 0.05 * f }] };
+    if (kind === 3) return { transform: [{ translateX: f * 14 }, { translateY: -6 - 8 * Math.sin(Math.PI * f) - 3 * b }, { rotate: `${-10 * f}deg` }] };
+    return { transform: [{ translateX: f * 10 - b * 3 }, { rotate: `${-9 * f + 3 * b}deg` }, { scaleY: 1 - 0.04 * f + 0.03 * b }, { scaleX: 1 + 0.05 * f }] };
+  });
+  return (
+    <Animated.View style={[{ transformOrigin: "50% 100%" }, style]}>
+      <UnitProxy unit={unit} scale={scale} banner={banner} />
+    </Animated.View>
+  );
+}
+
+export function allocateProxies(formation: Record<string, number>, cap: number): { unit: string; count: number }[] {
   const entries = Object.entries(formation).filter(([, q]) => q > 0);
   const total = entries.reduce((a, [, q]) => a + q, 0);
   if (!total) return [];
@@ -50,10 +98,10 @@ const haptic = (kind: "light" | "heavy" | "success" | "error") => {
   else if (kind === "heavy") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
   else Haptics.notificationAsync(kind === "success" ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error).catch(() => {});
 };
-const monsterSize = (type: string, width: number) => (type === "boss" ? Math.min(200, width * 0.48) : type === "elite" ? 92 : 72);
+const monsterSize = (type: string, width: number, k = 1) => (type === "boss" ? Math.min(200, width * 0.48) : type === "elite" ? 92 : 72) * (type === "boss" ? Math.max(0.9, k) : k);
 
-export function BattleScene({ attempt, serverTime, formation, equipped, armyTier, heraldicColor, onFinished, skills, firstClear }: {
-  attempt: Attempt; serverTime: string; formation: Record<string, number>; equipped: Record<string, any>; armyTier: { tier: number; foreground_proxy_cap: number; background_cohorts: number; name?: string } | undefined; heraldicColor: string; onFinished: (id: string) => void; skills: { key: string; name: string; cooldown_seconds: number }[]; firstClear?: boolean;
+export function BattleScene({ attempt, serverTime, formation, equipped, armyTier, heraldicColor, onFinished, skills, firstClear, lordName, lordLevel }: {
+  attempt: Attempt; serverTime: string; formation: Record<string, number>; equipped: Record<string, any>; armyTier: { tier: number; foreground_proxy_cap: number; background_cohorts: number; name?: string } | undefined; heraldicColor: string; onFinished: (id: string) => void; skills: { key: string; name: string; cooldown_seconds: number }[]; firstClear?: boolean; lordName?: string; lordLevel?: number;
 }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
@@ -132,16 +180,28 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
   const earnedGold = Math.round(waves.slice(0, waveIdx).reduce((a, w) => a + (w.cleared ? w.kill_gold : 0), 0) + wave.kill_gold * (1 - alive / wave.monsters.length));
   const isBossWave = attempt.kind === "boss" && waveIdx === waves.length - 1;
   const bossHp = wave.cleared ? 1 - waveProgress : Math.max(0.35, 1 - waveProgress * 0.4);
+  // Lord vitality (presentational, derived from the authoritative result): a clear win keeps most HP, a narrow one ends
+  // low, a loss drains to zero exactly when the timeline ends (faster in the last stretch / boss wave).
+  const powerRatio = attempt.total_power / Math.max(1, attempt.required_power);
+  const lordEndHp = attempt.win ? Math.min(0.92, Math.max(0.22, 0.22 + 0.7 * (powerRatio - 1))) : 0;
+  const lordHp = Math.max(0, 1 - (1 - lordEndHp) * Math.pow(progress, attempt.win ? 1 : 1.4));
   const visible = Math.min(alive, MAX_VISIBLE);
 
+  const cap = Math.min(armyTier?.foreground_proxy_cap ?? 0, isHighTier ? 12 : 8);
+  const proxies = useMemo(() => allocateProxies(formation, cap), [formation, cap]);
+  const proxyCount = proxies.reduce((a, p) => a + p.count, 0);
+  // bigger armies -> Lord and enemies shrink a little (1.0 → 0.82) so the battlefield stays readable
+  const k = Math.max(0.82, 1 - proxyCount * 0.016);
+  const lordSize = 104 * k;
+
   // scene geometry (approximate anchors for FX): Lord on the left, horde on the right (row-reverse, wrap-reverse)
-  const lordPos = useCallback(() => ({ x: width * 0.22 + 60, y: sceneH - 34 - 66, frontX: width * 0.22 + 118, groundY: sceneH - 36 }), [width, sceneH]);
+  const lordPos = useCallback(() => ({ x: width * 0.22 + 60 * k, y: sceneH - 34 - 66 * k, frontX: width * 0.22 + 118 * k, groundY: sceneH - 36 }), [width, sceneH, k]);
   const enemyPos = useCallback((i: number, type: string) => {
-    const size = monsterSize(type, width);
+    const size = monsterSize(type, width, k);
     const perRow = Math.max(1, Math.floor((width * 0.56) / size));
     const col = i % perRow, row = Math.floor(i / perRow);
     return { x: Math.max(width * 0.42, width - 6 - (col + 0.5) * size), y: sceneH - 38 - size * 0.55 - row * size * 0.8, size };
-  }, [width, sceneH]);
+  }, [width, sceneH, k]);
   const live = useRef({ wave, visible, finished, alive, isBossWave });
   live.current = { wave, visible, finished, alive, isBossWave };
 
@@ -197,11 +257,11 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
         doShake(6); doFlash("#FFFFFF", 0.16, 160); haptic("light");
       }, 240);
     } else if (kind === 3) {
-      [0, 110, 220].forEach((d, i) => setTimeout(() => {
-        spawn([{ kind: "slash", x: hitX - 70 + i * 14, y: hitY - 40 + (i % 2) * 16, color: i === 1 ? "#FFFFFF" : colors.goldBright, size: 96 }, dmg(0.6, i === 2, hitX - 10 + i * 16, hitY - i * 10)], 900);
-        if (i === 1) setHurtAll((t) => t + 1);
-      }, 150 + d));
-      setTimeout(() => doShake(4), 300);
+      setTimeout(() => {
+        setHurtTick((t) => t + 1); setHurtAll((t) => t + 1);
+        spawn([{ kind: "slash", x: hitX - 76, y: hitY - 70, color: colors.goldBright, size: 120 }, { kind: "slash", x: hitX - 40, y: hitY - 20, color: "#FFFFFF", size: 80 }, { kind: "flare", x: hitX, y: hitY - 10, size: 60 }, dmg(0.7, false, hitX - 10, hitY - 6), dmg(0.9, true, hitX + 20, hitY - 40)], 1000);
+        doShake(4);
+      }, 260);
     } else if (kind === 4) {
       const d = lordDist.value;
       if (lordImg) spawn([0.2, 0.45, 0.7].map((f, i) => ({ kind: "ghost" as const, x: lp.x - 60 + d * f, y: lp.y - 66, w: 120, h: 130, source: lordImg, color: colors.goldBright, delay: 60 + i * 70 })), 900);
@@ -273,6 +333,33 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
     }
   }, [Math.floor(elapsed)]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ---- army volleys: archers/falcons loose arrows, siege lobs shots, dragons breathe fire toward the horde --------------
+  const volleyCount = useRef(0);
+  useEffect(() => {
+    if (finished || proxies.length === 0) return;
+    const shooters = proxies.filter((p) => VOLLEY_UNITS[p.unit]);
+    if (!shooters.length) return;
+    const id = setInterval(() => {
+      const st = live.current;
+      if (st.finished || superRef.current) return;
+      volleyCount.current += 1;
+      const sh = shooters[volleyCount.current % shooters.length];
+      const type = VOLLEY_UNITS[sh.unit];
+      const h = hashStr(`${attempt.id}:volley:${volleyCount.current}`);
+      const frontIdx = Math.max(0, st.visible - 1);
+      const target = enemyPos(Math.min(frontIdx, h % Math.max(1, st.visible)), st.wave.monsters[Math.min(frontIdx, h % Math.max(1, st.visible))]?.type ?? "normal");
+      const from = { x: 30 + (h % 60), y: sceneH - 60 - (h % 40) };
+      if (type === "fire") {
+        spawn([{ kind: "sprite", x: from.x + 120, y: from.y - 10, sprite: "fire_breath", size: Math.max(160, target.x - from.x), opts: { aspect: 0.4, flipX: true, from: 0.5, to: 1.1, duration: 800, hold: 0.3 } }], 900);
+        setTimeout(() => { setHurtAll((t) => t + 1); spawn([{ kind: "burst", x: target.x, y: target.y, color: "#FF6A2F", size: 6 }, { kind: "dmg", x: target.x - 20, y: target.y - 30, value: Math.round(attempt.army_power * 0.12), color: "#FF9A5A" }], 900); }, 420);
+      } else {
+        spawn([{ kind: "proj", x: from.x, y: from.y, tx: target.x, ty: target.y - 10, color: type === "orb" ? "#FF9A3D" : colors.parchment, sprite: type === "arrow" ? "arrow_volley" : "energy_orb", size: type === "arrow" ? 90 : 60 }], 700);
+        setTimeout(() => { setHurtTick((t) => t + 1); spawn([{ kind: "burst", x: target.x, y: target.y, color: type === "orb" ? "#FF9A3D" : colors.parchment, size: type === "orb" ? 7 : 4 }, { kind: "dmg", x: target.x - 16, y: target.y - 26, value: Math.round(attempt.army_power * (type === "orb" ? 0.1 : 0.05)), color: colors.parchment }], 900); }, 600);
+      }
+    }, 2400);
+    return () => clearInterval(id);
+  }, [finished, proxies, attempt.id, attempt.army_power, colors.parchment, enemyPos, sceneH, spawn]);
+
   // ---- enemy moves -> impact FX on the scene (roar shockwave, leap dust, spit projectile, melee hits on the Lord) ------
   const lordHit = useCallback((mult: number) => {
     const st = live.current;
@@ -307,6 +394,53 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
       setTimeout(() => lordHit(mv === 2 ? 0.2 : 0.12), MOVE_HIT_MS[mv]);
     }
   }, [colors.goldBright, enemyPos, lordHit, lordPos, pal.accent, spawn, doShake, doFlash]);
+
+  // ---- boss special move: warning + telegraph glow, then the unique move; the Lord dodges (win) or takes the hit (loss) ------
+  const [bossWarn, setBossWarn] = useState<string | null>(null);
+  const [bossFx, setBossFx] = useState<{ id: number; fx: BossFxKind } | null>(null);
+  const lastBossMove = useRef(-1);
+  const bossMove = useCallback(() => {
+    const st = live.current;
+    const move = BOSS_MOVES[attempt.timeline.region.boss] ?? { name: "Furia", fx: "slam" as BossFxKind, color: colors.error };
+    if (st.finished || superRef.current) return;
+    setBossWarn(move.name);
+    doShake(2);
+    haptic("light");
+    setTimeout(() => {
+      const st2 = live.current;
+      if (st2.finished) { setBossWarn(null); return; }
+      setBossWarn(null);
+      const lp = lordPos();
+      const bossIdx = st2.wave.monsters.findIndex((m) => m.type === "boss");
+      const bp = enemyPos(Math.max(0, bossIdx), "boss");
+      const id = ++fxId.current;
+      setBossFx({ id, fx: move.fx });
+      setTimeout(() => setBossFx((b) => (b?.id === id ? null : b)), 1400);
+      doShake(attempt.win ? 8 : 14);
+      doFlash(move.color, attempt.win ? 0.25 : 0.5, 380);
+      haptic("heavy");
+      if (attempt.win) {
+        // dodge: back-dash with afterimages + SCHIVATA!
+        lordDist.value = 70;
+        playLordMove(8);
+        if (lordImg) spawn([0.3, 0.6].map((f, i) => ({ kind: "ghost" as const, x: lp.x - 60 * k - 70 * f, y: lp.y - 66 * k, w: 120 * k, h: 130 * k, source: lordImg, color: "#FFFFFF", delay: 40 + i * 70 })), 700);
+        setTimeout(() => spawn([{ kind: "text", x: lp.x - 60, y: lp.y - 70, text: "SCHIVATA!", color: colors.goldBright }], 1000), 260);
+      } else {
+        setTimeout(() => lordHit(0.6), 300);
+      }
+    }, 1250);
+  }, [attempt.timeline.region.boss, colors.error, colors.goldBright, attempt.win, doShake, doFlash, lordPos, enemyPos, lordDist, playLordMove, lordImg, spawn, k, lordHit]);
+
+  useEffect(() => {
+    if (finished || !isBossWave) return;
+    const since = elapsed - wave.t_start;
+    if (since < BOSS_FIRST_S) return;
+    const cycle = Math.floor((since - BOSS_FIRST_S) / BOSS_EVERY_S);
+    if (cycle > lastBossMove.current && elapsed < attempt.duration - 3) {
+      lastBossMove.current = cycle;
+      bossMove();
+    }
+  }, [Math.floor(elapsed), isBossWave]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // auto-skill activations: each cooldown cycle fires the skill's signature effect + flashing name (presentational)
   useEffect(() => {
@@ -365,8 +499,6 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
     return () => clearTimeout(t);
   }, [finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const cap = Math.min(armyTier?.foreground_proxy_cap ?? 0, isHighTier ? 12 : 8);
-  const proxies = useMemo(() => allocateProxies(formation, cap), [formation, cap]);
   const bgCohorts = armyTier?.background_cohorts ?? 0;
 
   useEffect(() => {
@@ -382,6 +514,7 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
 
   return (
     <View style={{ height: sceneH, overflow: "hidden", borderBottomWidth: 3, borderColor: colors.gold, backgroundColor: pal.ground }} testID="battle-scene">
+      <ZoomPan width={width} height={sceneH} testID="battle-zoom" style={{ position: "absolute", left: 0, top: 0 }} controlsStyle={{ top: 112, right: 6 }}>
       <Animated.View style={[{ position: "absolute", left: -12, right: -12, top: -8, bottom: -8 }, cameraStyle]}>
         {bg ? (
           <Image source={bg} style={{ position: "absolute", left: 0, top: -8, width: width + 24, height: sceneH + 16 }} resizeMode="cover" />
@@ -410,13 +543,13 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
         </View>
         {/* foreground formation */}
         <Animated.View style={[{ position: "absolute", left: 4, bottom: 44, width: width * 0.4, flexDirection: "row", flexWrap: "wrap-reverse", alignItems: "flex-end", gap: 0, opacity: 0.95 }, bobStyle]} testID="formation-proxies">
-          {proxies.flatMap((p) => Array.from({ length: p.count }).map((_, i) => <UnitProxy key={`${p.unit}${i}`} unit={p.unit} scale={CATEGORY[p.unit] === "mythic" ? 1.3 : 1.05} banner={i === 0 ? heraldicColor : undefined} />))}
+          {proxies.flatMap((p, pi) => Array.from({ length: p.count }).map((_, i) => <FightingProxy key={`${p.unit}${i}`} unit={p.unit} index={pi * 7 + i} scale={(CATEGORY[p.unit] === "mythic" ? 1.3 : 1.05) * k} banner={i === 0 ? heraldicColor : undefined} fighting={!outcome} />))}
         </Animated.View>
         {/* SUPER aura behind the Lord */}
         {superMode ? <SuperAura x={lp.x} y={lp.groundY + 6} width={175} height={185} color={SUPER_COLOR} /> : null}
         {/* Lord */}
         <View style={{ position: "absolute", left: width * 0.22, bottom: 34 }} testID="lord-sprite">
-          <LordSprite equipped={equipped} size={104} tier={armyTier?.tier ?? 0} heraldicColor={heraldicColor} swinging={!outcome} move={lordMove} hurtTick={outcome ? 0 : lordHurtTick} superMode={superMode} />
+          <LordSprite equipped={equipped} size={lordSize} tier={armyTier?.tier ?? 0} heraldicColor={heraldicColor} swinging={!outcome} move={lordMove} hurtTick={outcome ? 0 : lordHurtTick} superMode={superMode} />
           <View style={{ position: "absolute", top: -14, alignSelf: "center", paddingHorizontal: 6, backgroundColor: colors.overlay, borderRadius: 3, borderWidth: 1, borderColor: superMode ? SUPER_COLOR : colors.gold }}>
             <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: superMode ? SUPER_COLOR : colors.goldBright }}>{superMode ? "SUPER" : "LORD"}</Text>
           </View>
@@ -426,10 +559,12 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
           {alive > MAX_VISIBLE ? <View style={{ position: "absolute", left: 4, top: -18, paddingHorizontal: 6, borderRadius: 3, backgroundColor: colors.overlay, borderWidth: 1, borderColor: colors.gold }}><Text style={{ fontFamily: fonts.bodyBold, fontSize: 10, color: colors.onSurface }}>+{alive - MAX_VISIBLE} nemici</Text></View> : null}
           {wave.monsters.slice(0, visible).map((m, i) => (
             <Animated.View key={`${waveIdx}-${i}`} entering={FadeIn.duration(250)} exiting={ZoomOut.duration(260)}>
-              <MonsterSprite family={m.family} type={m.type} palette={pal.monster} size={monsterSize(m.type, width)} index={i} onMove={onEnemyMove} hurtTick={outcome ? 0 : (i === visible - 1 ? hurtTick : 0) + hurtAll} fighting={!outcome} />
+              <MonsterSprite family={m.family} type={m.type} palette={pal.monster} size={monsterSize(m.type, width, k)} index={i} onMove={onEnemyMove} hurtTick={outcome ? 0 : (i === visible - 1 ? hurtTick : 0) + hurtAll} fighting={!outcome} charging={!!bossWarn && m.type === "boss"} />
             </Animated.View>
           ))}
         </Animated.View>
+        {/* boss special move */}
+        {bossFx ? (() => { const bi = Math.max(0, wave.monsters.findIndex((m) => m.type === "boss")); const bp = enemyPos(bi, "boss"); return <BossMoveFx key={bossFx.id} kind={bossFx.fx} x={lp.x} y={lp.groundY} bx={bp.x} by={bp.y} width={width} height={sceneH} />; })() : null}
         {/* ultimate wave sweeping the horde */}
         {ultWave ? <UltimateWave key={ultWave} x={lp.frontX - 20} y={lp.groundY + 4} width={width - lp.frontX + 40} height={sceneH * 0.62} color={SUPER_COLOR} /> : null}
         {/* VFX layer */}
@@ -441,9 +576,11 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
             case "flare": return <Flare key={f.id} x={f.x} y={f.y} size={f.size} color={f.color} />;
             case "dust": return <DustPuff key={f.id} x={f.x} y={f.y} />;
             case "shock": return <Shockwave key={f.id} x={f.x} y={f.y} color={f.color ?? colors.goldBright} />;
-            case "proj": return <Projectile key={f.id} x={f.x} y={f.y} tx={f.tx ?? f.x} ty={f.ty ?? f.y} color={f.color ?? pal.accent} />;
+            case "proj": return <Projectile key={f.id} x={f.x} y={f.y} tx={f.tx ?? f.x} ty={f.ty ?? f.y} color={f.color ?? pal.accent} sprite={(f.sprite as any) ?? "energy_orb"} size={f.size ?? 70} duration={f.sprite === "arrow_volley" ? 560 : 460} />;
             case "ghost": return f.source ? <Ghost key={f.id} x={f.x} y={f.y} w={f.w ?? 100} h={f.h ?? 110} source={f.source} tint={f.color ?? colors.goldBright} delay={f.delay} /> : null;
             case "death": return <DeathDissolve key={f.id} x={f.x} y={f.y} color={f.color ?? pal.accent} />;
+            case "sprite": return f.sprite ? <SpriteFx key={f.id} x={f.x} y={f.y} sprite={f.sprite} size={f.size ?? 100} {...(f.opts ?? {})} /> : null;
+            case "text": return <FloatText key={f.id} x={f.x} y={f.y} text={f.text ?? ""} color={f.color ?? colors.goldBright} />;
             default: return <Burst key={f.id} x={f.x} y={f.y} color={f.color ?? colors.goldBright} seed={f.id} count={f.size ?? 8} />;
           }
         })}
@@ -459,8 +596,10 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
           return <Slash key={f.id} x={f.x - 20} y={f.y - 30} color={color} />;
         })}
       </Animated.View>
+      </ZoomPan>
+      {bossWarn ? <WarningBanner text={bossWarn} sceneH={sceneH} /> : null}
       {banner ? <SkillBanner key={banner.id} name={banner.label ?? SKILL_FX[banner.key].label} color={banner.color ?? SKILL_FX[banner.key].color} sceneH={sceneH} /> : null}
-      {combo >= 3 && !outcome ? <ComboText n={combo} x={width * 0.5 - 40} y={56} color={combo >= 10 ? SUPER_COLOR : colors.goldBright} /> : null}
+      {combo >= 3 && !outcome ? <ComboText n={combo} x={14} y={140} color={combo >= 10 ? SUPER_COLOR : colors.goldBright} /> : null}
       <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: flashColor }, flashStyle]} />
       {/* HUD */}
       <View style={{ position: "absolute", top: 8, left: 10, right: 10, flexDirection: "row", justifyContent: "space-between" }} pointerEvents="none">
@@ -473,7 +612,16 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
           <Text style={{ fontFamily: fonts.displaySemi, fontSize: 12, color: colors.res_event_tokens }} testID="battle-kill-xp">+{fmt(earnedXp)} XP</Text>
         </View>
       </View>
-      {isBossWave ? <BossBar name={regionBoss} hp={bossHp} width={width} /> : null}
+      {isBossWave ? <LinearGradient colors={["rgba(120,0,0,0.45)", "transparent", "rgba(120,0,0,0.45)"]} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }} /> : null}
+      {/* duel HUD: Lord bar (name · level · power · vitality, always) vs Boss bar (boss wave) */}
+      <View style={{ position: "absolute", top: 60, left: 10, right: 10, flexDirection: "row", gap: 10, alignItems: "flex-start" }} pointerEvents="none" testID="duel-hud">
+        <HpBar hp={lordHp} name={lordName?.trim() || "Lord"} sub={`${lordLevel ? `Lv ${lordLevel} · ` : ""}Potenza ${fmt(attempt.total_power)}`} tag={superMode ? "SUPER" : "LORD"} icon="shield-sword" palette={superMode ? [SUPER_COLOR, "#FFF3B0"] : hpColors(lordHp)} hitTick={outcome ? 0 : lordHurtTick} testID="lord-hp-bar" style={isBossWave ? undefined : { maxWidth: Math.min(230, width * 0.6) }} />
+        {isBossWave ? (
+          <Animated.View entering={FadeInDown.duration(420)} style={{ flex: 1 }}>
+            <HpBar hp={bossHp} name={regionBoss} sub={`Stage ${attempt.stage} · Potenza ${fmt(attempt.required_power)}`} tag="BOSS" icon="skull" palette={HP_COLORS.boss} align="right" hitTick={outcome ? 0 : hurtTick + hurtAll} testID="boss-bar" />
+          </Animated.View>
+        ) : null}
+      </View>
       {/* progress + skills */}
       <View style={{ position: "absolute", bottom: 4, left: 10, right: 10 }} pointerEvents="none">
         <View style={{ height: 6, backgroundColor: colors.scrim, borderRadius: 3, overflow: "hidden", borderWidth: 1, borderColor: colors.gold }}>
@@ -493,7 +641,7 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
         </View>
       </View>
       {!attempt.win && !outcome ? (
-        <View style={{ position: "absolute", top: sceneH * 0.3, alignSelf: "center", backgroundColor: colors.overlay, borderColor: colors.error, borderWidth: 2, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4 }}>
+        <View style={{ position: "absolute", top: 104, alignSelf: "center", backgroundColor: colors.overlay, borderColor: colors.error, borderWidth: 2, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4 }} pointerEvents="none">
           <Text style={{ fontFamily: fonts.display, fontSize: 16, color: colors.onSurface }}>Potenza {fmt(attempt.total_power)} / {fmt(attempt.required_power)} richiesta</Text>
         </View>
       ) : null}

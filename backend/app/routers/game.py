@@ -299,6 +299,21 @@ async def formation(body: FormationIn, p: Principal = Depends(current_user)):
     return await K.set_formation(await load(p), body.formation)
 
 
+@router.get("/army/suggest")
+async def suggest(stage: int | None = None, p: Principal = Depends(current_user)):
+    """Suggested formation vs the enemy class mix of `stage` (default: next stage). Nothing is applied — use PUT /army/formation."""
+    pl = await load(p)
+    st = stage or max(pl["campaign"]["highest_cleared"] + 1, pl["campaign"]["current_stage"])
+    mix = F.stage_enemy_mix(st)
+    prof = await P.combat_profile(pl, enemy_mix=mix)
+    sug = K.suggest_formation(pl, prof["hero"]["affixes"].get("army_power_pct", 0), mix)
+    cc = canon()["units"]["counters"]
+    return {**sug, "stage": st, "region": F.region_for_stage(min(st, canon()["battle"]["campaign_stages"]))["name"], "kind": F.stage_kind(st), "enemy_mix": mix,
+            "class_labels": cc["class_labels"], "current_army_power": prof["army_power"], "current_formation": pl["army"]["formation"], "hero_power": prof["hero"]["power"],
+            "required_power": F.enemy_required_power(st)}
+
+
+
 # ---- domain / offline -----------------------------------------------------------------------------------
 @router.get("/domain")
 async def domain(p: Principal = Depends(current_user)):
