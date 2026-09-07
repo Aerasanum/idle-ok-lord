@@ -1,8 +1,10 @@
 // Enemy sprites: vector silhouettes per archetype (Art Direction v1.1 monster regions). Colors are fixed art identity, not theme tokens.
 import React, { memo, useEffect } from "react";
+import { Image, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Ellipse, G, Path, Rect } from "react-native-svg";
 
+import { monsterArt } from "@/src/art";
 import { hashStr } from "./regions";
 
 export type MonsterType = "normal" | "elite" | "boss";
@@ -382,6 +384,25 @@ export const MonsterSprite = memo(function MonsterSprite({ family, type, palette
       : [{ scaleY: 1 + 0.035 * breath.value }, { translateX: 6 * hurt.value }, { rotate: `${-4 * hurt.value}deg` }],
   }));
   const flashStyle = useAnimatedStyle(() => ({ opacity: 0.7 * hurt.value }));
+  const img = monsterArt(family);
+
+  if (img) {
+    return (
+      <Animated.View style={[{ width: size, height: size, justifyContent: "flex-end", alignItems: "center" }, bodyStyle]} testID="monster-art">
+        <View style={{ position: "absolute", bottom: size * 0.02, width: size * 0.7, height: size * 0.14, borderRadius: size, backgroundColor: "#000", opacity: floater ? 0.18 : 0.35 }} />
+        {type === "boss" ? <View style={{ position: "absolute", bottom: -size * 0.02, width: size * 0.9, height: size * 0.22, borderRadius: size, borderWidth: 3, borderColor: GOLD, opacity: 0.6 }} /> : null}
+        <Image source={img} style={{ width: size, height: size }} resizeMode="contain" />
+        <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, alignItems: "center", justifyContent: "flex-end" }, flashStyle]}>
+          <Image source={img} style={{ width: size, height: size, tintColor: "#FFFFFF" }} resizeMode="contain" />
+        </Animated.View>
+        {type !== "normal" ? (
+          <View style={{ position: "absolute", top: 0, right: size * 0.04, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: "rgba(17,21,28,0.8)", borderWidth: 1, borderColor: type === "boss" ? GOLD : "#C9CED6" }}>
+            <Svg width={12} height={12} viewBox="0 0 100 100">{type === "boss" ? <Path d="M14 80 L22 22 L44 52 L50 10 L56 52 L78 22 L86 80Z" fill={GOLD} /> : <Path d="M50 6 L30 60 L70 60Z M22 70 L78 70 L78 90 L22 90Z" fill="#C9CED6" />}</Svg>
+          </View>
+        ) : null}
+      </Animated.View>
+    );
+  }
 
   return (
     <Animated.View style={[{ width: size, height: size, justifyContent: "flex-end" }, bodyStyle]}>

@@ -1,9 +1,10 @@
 // The Lord: vector knight whose armor, colors and glow follow the equipped gear rarity (Art Direction v1.1). Sword is a separate layer so it can swing.
 import React, { memo, useEffect } from "react";
-import { View } from "react-native";
+import { Image, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 
+import { lordArt } from "@/src/art";
 import { rarityColor, useTheme } from "@/src/theme";
 
 type Item = { slot: string; rarity: string; item_level: number } | null | undefined;
@@ -33,6 +34,22 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
     swing.value = withRepeat(withSequence(withTiming(-80, { duration: 170, easing: Easing.out(Easing.cubic) }), withTiming(-70, { duration: 130 }), withTiming(20, { duration: 480, easing: Easing.inOut(Easing.quad) }), withTiming(20, { duration: 420 })), -1, false);
   }, [swing, swinging]);
   const swordStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${swing.value}deg` }] }));
+  // rendered variant: the whole figure leans into the strike instead of a separate sword layer
+  const artStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${(swing.value - 20) * 0.12}deg` }, { scaleX: 1 + Math.max(0, -(swing.value - 20)) * 0.0012 }] }));
+  const img = lordArt(equipped, tier);
+
+  if (img) {
+    const w = size * 1.15, h = size * 1.25;
+    return (
+      <View style={{ width: w, height: h, alignItems: "center", justifyContent: "flex-end" }} testID="lord-art">
+        {aura ? <View style={{ position: "absolute", bottom: -4, width: w * 0.9, height: h * 0.2, borderRadius: w, backgroundColor: weaponGlow ?? colors.goldBright, opacity: 0.35 }} /> : null}
+        <View style={{ position: "absolute", bottom: 2, width: w * 0.7, height: h * 0.1, borderRadius: w, backgroundColor: "#000", opacity: 0.35 }} />
+        <Animated.View style={[{ width: w, height: h, transformOrigin: "50% 100%" }, artStyle]}>
+          <Image source={img} style={{ width: w, height: h }} resizeMode="contain" />
+        </Animated.View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ width: size, height: size * 1.25 }}>

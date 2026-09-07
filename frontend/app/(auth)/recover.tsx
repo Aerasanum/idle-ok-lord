@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { View } from "react-native";
@@ -6,12 +5,11 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api/client";
-import { useTheme } from "@/src/theme";
 import { Btn, Input, Panel, Txt } from "@/src/ui";
+import { HeroBackdrop } from "@/src/ui/HeroBackdrop";
 import { useToast } from "@/src/ui/Toast";
 
 export default function Recover() {
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const toast = useToast();
@@ -45,7 +43,7 @@ export default function Recover() {
     }
   };
   return (
-    <LinearGradient colors={[colors.navy, colors.surface]} style={{ flex: 1 }}>
+    <HeroBackdrop>
       <KeyboardAwareScrollView contentContainerStyle={{ padding: 24, paddingTop: insets.top + 32, gap: 16 }} bottomOffset={24} testID="recover-screen">
         <Txt v="title">Recupero password</Txt>
         <Panel variant="wood">
@@ -62,6 +60,6 @@ export default function Recover() {
         </Panel>
         <Btn title="Torna al login" variant="ghost" onPress={() => router.replace("/(auth)/login")} testID="recover-back-button" />
       </KeyboardAwareScrollView>
-    </LinearGradient>
+    </HeroBackdrop>
   );
 }

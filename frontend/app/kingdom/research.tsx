@@ -3,10 +3,11 @@ import { View } from "react-native";
 
 import { QK, useAction, useProfile, useResearch } from "@/src/api/hooks";
 import { useTheme } from "@/src/theme";
-import { Btn, Chip, ChipRow, Icon, Loading, Panel, Res, Row, Screen, Txt, fmtDuration } from "@/src/ui";
+import { Btn, Chip, ChipRow, Icon, Loading, Panel, Res, Row, Screen, Txt, fmt, fmtDuration } from "@/src/ui";
 import { useCountdown } from "@/src/ui/useCountdown";
 
-const BRANCH_LABEL: Record<string, string> = { economy: "Economia", military: "Militare", siege: "Assedio", beasts: "Bestie", mythic: "Mitico", defense: "Difesa", alliance: "Alleanza", idle: "Idle" };
+const RES_LABEL: Record<string, string> = { gold: "oro", grain: "grano", wood: "legno", clay: "argilla", iron: "ferro", rubies: "rubini" };
+const BRANCH_LABEL: Record<string, string> = { economy: "Economia", construction: "Costruzione", military: "Militare", siege: "Assedio", beasts: "Bestie", mythic: "Mitico", domain: "Dominio", defense: "Difesa", alliance: "Alleanza", idle: "Idle" };
 
 export default function ResearchScreen() {
   const { colors } = useTheme();
@@ -43,6 +44,11 @@ export default function ResearchScreen() {
               <Btn title={n.in_queue ? "In corso" : "Avvia"} small disabled={!n.unlocked || busy || !canAfford(n.next.cost)} loading={start.isPending} onPress={() => start.mutate({ node: n.key })} testID={`research-start-${n.key}`} />
             </Row>
           ) : <Txt v="small" color={colors.goldBright}>Massimo</Txt>}
+          {n.next && n.unlocked && !n.in_queue ? (
+            busy ? <Txt v="small" color={colors.warning} testID={`research-reason-${n.key}`}>Una ricerca è già in corso: attendi o accelerala con Rubini.</Txt>
+            : !canAfford(n.next.cost) ? <Txt v="small" color={colors.burgundy} testID={`research-reason-${n.key}`}>Risorse insufficienti: mancano {Object.entries(n.next.cost).filter(([k, v]) => (profile.resources[k] ?? 0) < (v as number)).map(([k, v]) => `${fmt((v as number) - (profile.resources[k] ?? 0))} ${RES_LABEL[k] ?? k}`).join(", ")}.</Txt>
+            : null
+          ) : null}
         </Panel>
       ))}
     </Screen>

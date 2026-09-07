@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Image, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api/client";
@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
 import { Btn, Icon, IconName, Loading, Panel, RARITY_LABEL, Res, ResourceBar, Row, SLOT_LABEL, Txt, fmt } from "@/src/ui";
 import { useToast } from "@/src/ui/Toast";
+import { lordArt } from "@/src/art";
 import { TutorialTarget, useTutorial } from "@/src/tutorial/Tutorial";
 
 type Result = any;
@@ -173,10 +174,17 @@ export default function BattleTab() {
         <TutorialTarget id="hero-card" onLayout={(y) => (targetY.current["hero-card"] = y)}>
         <Panel variant="wood" style={{ marginHorizontal: 12, marginBottom: 12 }} testID="hero-card">
           <Row style={{ justifyContent: "space-between" }}>
-            <View>
-              <Txt v="h3">{profile.display_name} · Lv {profile.hero.level}</Txt>
-              <Txt v="small" color={colors.muted}>XP {fmt(profile.hero.xp)} / {fmt(profile.xp_to_next)} · Talenti {profile.talent_points_total - profile.talent_points_spent} liberi</Txt>
-            </View>
+            <Row style={{ flex: 1 }}>
+              {lordArt(equipped, profile.army_visual_tier?.tier ?? 0) ? (
+                <View style={{ width: 52, height: 60, borderRadius: 6, overflow: "hidden", backgroundColor: colors.surfaceTertiary, borderWidth: 1.5, borderColor: colors.gold, alignItems: "center", justifyContent: "flex-end" }} testID="hero-portrait">
+                  <Image source={lordArt(equipped, profile.army_visual_tier?.tier ?? 0)!} style={{ width: 80, height: 96, marginBottom: -30 }} resizeMode="contain" />
+                </View>
+              ) : null}
+              <View style={{ flex: 1 }}>
+                <Txt v="h3">{profile.display_name} · Lv {profile.hero.level}</Txt>
+                <Txt v="small" color={colors.muted}>XP {fmt(profile.hero.xp)} / {fmt(profile.xp_to_next)} · Talenti {profile.talent_points_total - profile.talent_points_spent} liberi</Txt>
+              </View>
+            </Row>
             <Row>
               <Btn title="Equip" small variant="ghost" icon="sword" onPress={() => router.push("/hero/gear")} testID="open-gear-button" />
               <Btn title="Talenti" small variant="ghost" icon="star" onPress={() => router.push("/hero/talents")} testID="open-talents-button" />

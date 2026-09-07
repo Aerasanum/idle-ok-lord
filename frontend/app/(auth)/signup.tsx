@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -8,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, Input, Panel, Txt } from "@/src/ui";
+import { HeroBackdrop } from "@/src/ui/HeroBackdrop";
 import { useToast } from "@/src/ui/Toast";
 
 function Check({ value, onChange, label, testID }: { value: boolean; onChange: (v: boolean) => void; label: string; testID: string }) {
@@ -22,7 +22,6 @@ function Check({ value, onChange, label, testID }: { value: boolean; onChange: (
 
 export default function Signup() {
   const { register } = useAuth();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const toast = useToast();
@@ -45,7 +44,7 @@ export default function Signup() {
     }
   };
   return (
-    <LinearGradient colors={[colors.navy, colors.surface]} style={{ flex: 1 }}>
+    <HeroBackdrop>
       <KeyboardAwareScrollView contentContainerStyle={{ padding: 24, paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24, gap: 16 }} bottomOffset={24} testID="signup-screen">
         <Txt v="title">Nuovo Lord</Txt>
         <Panel variant="wood">
@@ -62,6 +61,6 @@ export default function Signup() {
           <Btn title="Ho già un account" variant="ghost" testID="signup-login-link" />
         </Link>
       </KeyboardAwareScrollView>
-    </LinearGradient>
+    </HeroBackdrop>
   );
 }

@@ -34,6 +34,10 @@ export default function KingdomTab() {
         <TutorialTarget id="kingdom-scene">
           <KingdomScene buildings={k.buildings} castleLevel={k.castle_level} tier={k.visual_tier} heraldicColor={profile.heraldic_color} queued={queued} serverTime={k.server_time} onSelect={(key) => { setSel(key); sheet.current?.present(); }} />
         </TutorialTarget>
+        <Row style={{ paddingHorizontal: 12, paddingTop: 12, gap: 8 }}>
+          <Btn title="Ricerca" icon="flask" variant="gold" onPress={() => router.push("/kingdom/research")} style={{ flex: 1 }} testID="open-research-button" />
+          <Btn title="Esercito" icon="account-group" variant="secondary" onPress={() => router.push("/(tabs)/army")} style={{ flex: 1 }} testID="open-army-button" />
+        </Row>
         <TutorialTarget id="production-panel">
         <Panel style={{ margin: 12 }} testID="production-panel">
           <Row style={{ justifyContent: "space-between" }}>
@@ -55,10 +59,6 @@ export default function KingdomTab() {
           {!k.queues.construction_queue.length && !k.queues.recruit_queue.length && !k.queues.research_queue.length ? <Txt v="small" color={colors.muted}>Nessun lavoro in corso. Tocca un edificio per potenziarlo.</Txt> : null}
         </Panel>
         </TutorialTarget>
-        <Row style={{ paddingHorizontal: 12, gap: 8 }}>
-          <Btn title="Ricerca" icon="flask" variant="secondary" onPress={() => router.push("/kingdom/research")} style={{ flex: 1 }} testID="open-research-button" />
-          <Btn title="Esercito" icon="account-group" variant="secondary" onPress={() => router.push("/(tabs)/army")} style={{ flex: 1 }} testID="open-army-button" />
-        </Row>
       </ScrollView>
       <Sheet ref={sheet} title={b?.name} testID="building-sheet">
         {b ? (
@@ -70,6 +70,13 @@ export default function KingdomTab() {
             {b.current?.production_per_hour ? <Row style={{ flexWrap: "wrap" }}>{Object.entries(b.current.production_per_hour).map(([r, v]) => <Res key={r} kind={r} value={`${fmt(v as number)}/h`} />)}</Row> : null}
             {b.current?.capacity_each_resource ? <Txt v="small">Capacità: {fmt(b.current.capacity_each_resource)} per risorsa</Txt> : null}
             {b.key === "castle" ? <Txt v="small" color={colors.muted}>Il Castello sblocca edifici, ricerche, unità, slot formazione e code aggiuntive. Livello {b.level}: {k.visual_tier.name}.</Txt> : null}
+            {b.key === "university" ? (
+              <View style={{ gap: 6 }}>
+                <Txt v="small" color={colors.muted}>L&apos;Università ospita le 48 ricerche (8 rami × 5 livelli). Le ricerche sono sbloccate dal livello del Castello; una ricerca alla volta.</Txt>
+                <Btn title="Apri Ricerca" icon="flask" variant="gold" onPress={() => { sheet.current?.dismiss(); router.push("/kingdom/research"); }} testID="sheet-open-research-button" />
+              </View>
+            ) : null}
+            {b.key === "barracks" || b.key === "stable" || b.key === "bestiary" || b.key === "mythic_sanctuary" ? <Btn title="Recluta unità" icon="account-group" variant="secondary" onPress={() => { sheet.current?.dismiss(); router.push("/(tabs)/army"); }} testID="sheet-open-army-button" /> : null}
             {b.next ? (
               <Panel variant="parchment">
                 <Txt v="h3" color={colors.onSurfaceInverse}>Prossimo livello {b.next.level}</Txt>

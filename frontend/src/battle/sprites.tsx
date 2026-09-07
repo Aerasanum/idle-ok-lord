@@ -1,6 +1,8 @@
 // Representative proxies (Army Visual Progression): stylized silhouettes built from Views. No per-soldier assets.
 import React, { memo } from "react";
-import { View } from "react-native";
+import { Image, View } from "react-native";
+
+import { unitArt } from "@/src/art";
 
 const UNIT_STYLE: Record<string, { body: string; accent: string; w: number; h: number; kind: "foot" | "mount" | "siege" | "beast" | "flyer" | "mythic" }> = {
   infantry: { body: "#5C6470", accent: "#B89947", w: 12, h: 22, kind: "foot" },
@@ -21,6 +23,17 @@ const UNIT_STYLE: Record<string, { body: string; accent: string; w: number; h: n
 export const UnitProxy = memo(function UnitProxy({ unit, scale = 1, banner }: { unit: string; scale?: number; banner?: string }) {
   const st = UNIT_STYLE[unit] ?? UNIT_STYLE.infantry;
   const w = st.w * scale, h = st.h * scale;
+  const img = unitArt(unit);
+  if (img) {
+    const side = Math.max(w, h) * 1.35;
+    return (
+      <View style={{ width: side, height: side, alignItems: "center", justifyContent: "flex-end" }}>
+        <View style={{ position: "absolute", bottom: 0, width: side * 0.7, height: side * 0.14, borderRadius: side, backgroundColor: "#000", opacity: 0.3 }} />
+        <Image source={img} style={{ width: side, height: side }} resizeMode="contain" />
+        {banner ? <View style={{ position: "absolute", left: 0, top: -4 * scale, width: 6 * scale, height: 8 * scale, backgroundColor: banner, borderRightWidth: 1, borderColor: "#E3C16F" }} /> : null}
+      </View>
+    );
+  }
   if (st.kind === "foot") {
     return (
       <View style={{ width: w, height: h, alignItems: "center", justifyContent: "flex-end" }}>

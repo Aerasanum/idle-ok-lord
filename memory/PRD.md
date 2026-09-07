@@ -35,6 +35,12 @@ Lingua utente: **italiano**.
 - Abilità visive: effetto distinto per ogni auto-skill (Colpo Potente, Grido di Guerra, Muro di Scudi, Pioggia d'Acciaio, Colpo Reale, Vessillo del Drago) + nome lampeggiante (`effects.tsx`, `BattleScene.tsx`).
 - Regno animato (`src/kingdom/life.tsx`): contadini che camminano sulle strade, fumo dai camini degli edifici attivi, cantieri con impalcature/martello/polvere e barra di avanzamento su tempo server, bandiera araldica che ondeggia sul Castello.
 
+### Iterazione 4 (giugno 2026) — Grafica "render 3D stilizzato" generata con IA
+- Pipeline `backend/scripts/gen_art.py` (Gemini `gemini-3.1-flash-image-preview` via Emergent key): 96 asset WebP in `frontend/assets/art/` (10 sfondi regione, 50 nemici/boss, Lord ×3, 18 edifici incl. castello ×3 tier, 13 unità, terreno regno, key art splash), chroma-key automatico su verde, manifest `frontend/src/art/manifest.ts` generato. Resumable (`--only`, `--keys`, `--force`).
+- Integrazione: `src/art/index.ts` (lookup con fallback vettoriale), BattleScene (sfondo regione, Lord/nemici/unità renderizzati, max 4 nemici visibili + contatore), KingdomScene (terreno + edifici renderizzati, ombre, badge costruisci/lock), Army tab (unità), Hero card (ritratto Lord), Login/Signup/Recover/Splash (key art `HeroBackdrop`).
+- Fix UX ricerca: pulsanti Ricerca/Esercito subito sotto la scena del Regno; scheda Università con "Apri Ricerca"; schermata Ricerca mostra il motivo se "Avvia" è disabilitato (coda occupata / risorse mancanti con quantità).
+- Costo: ~100 generazioni immagine sulla Universal Key.
+
 ### Da fare / backlog
 - Testing agent end-to-end su frontend (in corso in questa sessione).
 - Sign in with Apple: solo UI disabilitata (deployment input).

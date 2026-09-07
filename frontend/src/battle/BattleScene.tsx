@@ -2,9 +2,10 @@
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PixelRatio, Platform, Text, View, useWindowDimensions } from "react-native";
+import { Image, PixelRatio, Platform, Text, View, useWindowDimensions } from "react-native";
 import Animated, { Easing, FadeIn, ZoomOut, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
+import { regionBackground } from "@/src/art";
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
 import { Ambient, BannerRise, BossBar, Burst, Clouds, CoinShower, DamageNumber, Fx, LightningBolt, OutcomeBanner, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SteelRain } from "./effects";
@@ -191,7 +192,7 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
     return () => clearTimeout(t);
   }, [finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const cap = Math.min(armyTier?.foreground_proxy_cap ?? 0, isHighTier ? 120 : 60);
+  const cap = Math.min(armyTier?.foreground_proxy_cap ?? 0, isHighTier ? 12 : 8);
   const proxies = useMemo(() => allocateProxies(formation, cap), [formation, cap]);
   const bgCohorts = armyTier?.background_cohorts ?? 0;
 
@@ -207,44 +208,52 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
   const bobStyle2 = useAnimatedStyle(() => ({ transform: [{ translateY: -bob.value }] }));
 
   const skillCycle = skills.map((s) => ({ ...s, frac: ((elapsed % s.cooldown_seconds) / s.cooldown_seconds) }));
-  const monsterSize = (type: string) => (type === "boss" ? Math.min(170, width * 0.42) : type === "elite" ? 78 : 56);
+  const monsterSize = (type: string) => (type === "boss" ? Math.min(200, width * 0.48) : type === "elite" ? 92 : 72);
+  const MAX_VISIBLE = 4;
   const regionBoss = attempt.timeline.region.boss;
+  const bg = regionBackground(attempt.timeline.region.region);
 
   return (
     <View style={{ height: sceneH, overflow: "hidden", borderBottomWidth: 3, borderColor: colors.gold, backgroundColor: pal.ground }} testID="battle-scene">
       <Animated.View style={[{ position: "absolute", left: -12, right: -12, top: -8, bottom: -8 }, shakeStyle]}>
-        <LinearGradient colors={pal.sky} style={{ position: "absolute", left: 0, right: 0, top: 0, height: sceneH * 0.64 }} />
-        {/* celestial body + halo, clouds, ambience */}
-        <View style={{ position: "absolute", left: width * (0.62 + (attempt.timeline.region.region % 3) * 0.08), top: sceneH * 0.1, width: 64, height: 64, borderRadius: 32, backgroundColor: pal.accent, opacity: 0.18 }} />
-        <View style={{ position: "absolute", left: width * (0.62 + (attempt.timeline.region.region % 3) * 0.08) + 12, top: sceneH * 0.1 + 12, width: 40, height: 40, borderRadius: 20, backgroundColor: pal.accent, opacity: 0.6 }} />
-        <Clouds width={width} top={sceneH * 0.16} color={pal.fog.replace(/[\d.]+\)$/, "1)")} />
+        {bg ? (
+          <Image source={bg} style={{ position: "absolute", left: 0, top: -8, width: width + 24, height: sceneH + 16 }} resizeMode="cover" />
+        ) : (
+          <>
+            <LinearGradient colors={pal.sky} style={{ position: "absolute", left: 0, right: 0, top: 0, height: sceneH * 0.64 }} />
+            <View style={{ position: "absolute", left: width * (0.62 + (attempt.timeline.region.region % 3) * 0.08), top: sceneH * 0.1, width: 64, height: 64, borderRadius: 32, backgroundColor: pal.accent, opacity: 0.18 }} />
+            <View style={{ position: "absolute", left: width * (0.62 + (attempt.timeline.region.region % 3) * 0.08) + 12, top: sceneH * 0.1 + 12, width: 40, height: 40, borderRadius: 20, backgroundColor: pal.accent, opacity: 0.6 }} />
+            <Clouds width={width} top={sceneH * 0.16} color={pal.fog.replace(/[\d.]+\)$/, "1)")} />
+            <View style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.38, height: sceneH * 0.26, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", opacity: 0.55 }}>
+              {Array.from({ length: 9 }).map((_, i) => <Prop key={i} kind={pal.props} i={i} color={pal.groundAlt} accent={pal.accent} />)}
+            </View>
+            <View style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.54, height: sceneH * 0.14, backgroundColor: pal.fog }} />
+            <LinearGradient colors={[pal.ground, pal.groundAlt]} style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.62, bottom: 0 }} />
+          </>
+        )}
+        {/* ground contact shadow + ambience */}
+        <LinearGradient colors={["transparent", "rgba(0,0,0,0.45)"]} style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: sceneH * 0.3 }} />
         <Ambient width={width + 24} height={sceneH} color={pal.accent} rise={attempt.timeline.region.region >= 7} />
-        {/* far props */}
-        <View style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.38, height: sceneH * 0.26, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", opacity: 0.55 }}>
-          {Array.from({ length: 9 }).map((_, i) => <Prop key={i} kind={pal.props} i={i} color={pal.groundAlt} accent={pal.accent} />)}
-        </View>
-        <View style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.54, height: sceneH * 0.14, backgroundColor: pal.fog }} />
-        {/* ground */}
-        <LinearGradient colors={[pal.ground, pal.groundAlt]} style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.62, bottom: 0 }} />
         {isBossWave ? <LinearGradient colors={["rgba(120,0,0,0.45)", "transparent", "rgba(120,0,0,0.45)"]} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }} /> : null}
         {/* background cohorts with banners */}
         <View style={{ position: "absolute", left: 20, top: sceneH * 0.58, flexDirection: "row", gap: 10, flexWrap: "wrap", width: width * 0.55 }}>
           {Array.from({ length: Math.min(bgCohorts, 24) }).map((_, i) => <CohortSilhouette key={i} width={34 + (i % 3) * 8} color={i % 4 === 0 ? colors.iron : colors.forest} banner={i % 2 === 0 ? heraldicColor : undefined} />)}
         </View>
         {/* foreground formation */}
-        <Animated.View style={[{ position: "absolute", left: 18, bottom: 42, width: width * 0.5, flexDirection: "row", flexWrap: "wrap-reverse", alignItems: "flex-end", gap: 3 }, bobStyle]} testID="formation-proxies">
-          {proxies.flatMap((p) => Array.from({ length: p.count }).map((_, i) => <UnitProxy key={`${p.unit}${i}`} unit={p.unit} scale={CATEGORY[p.unit] === "mythic" ? 1.2 : 0.9} banner={i === 0 ? heraldicColor : undefined} />))}
+        <Animated.View style={[{ position: "absolute", left: 4, bottom: 44, width: width * 0.4, flexDirection: "row", flexWrap: "wrap-reverse", alignItems: "flex-end", gap: 0, opacity: 0.95 }, bobStyle]} testID="formation-proxies">
+          {proxies.flatMap((p) => Array.from({ length: p.count }).map((_, i) => <UnitProxy key={`${p.unit}${i}`} unit={p.unit} scale={CATEGORY[p.unit] === "mythic" ? 1.3 : 1.05} banner={i === 0 ? heraldicColor : undefined} />))}
         </Animated.View>
         {/* Lord */}
-        <Animated.View style={[{ position: "absolute", left: width * 0.28, bottom: 34 }, lungeStyle]} testID="lord-sprite">
-          <LordSprite equipped={equipped} size={78} tier={armyTier?.tier ?? 0} heraldicColor={heraldicColor} swinging={!outcome} />
+        <Animated.View style={[{ position: "absolute", left: width * 0.22, bottom: 34 }, lungeStyle]} testID="lord-sprite">
+          <LordSprite equipped={equipped} size={104} tier={armyTier?.tier ?? 0} heraldicColor={heraldicColor} swinging={!outcome} />
           <View style={{ position: "absolute", top: -14, alignSelf: "center", paddingHorizontal: 6, backgroundColor: colors.overlay, borderRadius: 3, borderWidth: 1, borderColor: colors.gold }}>
             <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: colors.goldBright }}>LORD</Text>
           </View>
         </Animated.View>
         {/* monsters */}
-        <Animated.View style={[{ position: "absolute", right: 16, bottom: 38, width: width * 0.46, flexDirection: "row-reverse", flexWrap: "wrap-reverse", alignItems: "flex-end", gap: 4, justifyContent: "flex-start" }, bobStyle2]} testID="monster-horde">
-          {wave.monsters.slice(0, alive).map((m, i) => (
+        <Animated.View style={[{ position: "absolute", right: 6, bottom: 38, width: width * 0.56, flexDirection: "row-reverse", flexWrap: "wrap-reverse", alignItems: "flex-end", gap: 0, justifyContent: "flex-start" }, bobStyle2]} testID="monster-horde">
+          {alive > MAX_VISIBLE ? <View style={{ position: "absolute", left: 4, top: -18, paddingHorizontal: 6, borderRadius: 3, backgroundColor: colors.overlay, borderWidth: 1, borderColor: colors.gold }}><Text style={{ fontFamily: fonts.bodyBold, fontSize: 10, color: colors.onSurface }}>+{alive - MAX_VISIBLE} nemici</Text></View> : null}
+          {wave.monsters.slice(0, Math.min(alive, MAX_VISIBLE)).map((m, i) => (
             <Animated.View key={`${waveIdx}-${i}`} entering={FadeIn.duration(250)} exiting={ZoomOut.duration(220)}>
               <MonsterSprite family={m.family} type={m.type} palette={pal.monster} size={monsterSize(m.type)} hurtTick={i === alive - 1 && !outcome ? hurtTick : 0} />
             </Animated.View>

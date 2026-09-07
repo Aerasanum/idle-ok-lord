@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Platform, View } from "react-native";
@@ -6,13 +5,12 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/src/auth/AuthContext";
-import { useTheme } from "@/src/theme";
 import { Btn, Input, Panel, Txt } from "@/src/ui";
+import { HeroBackdrop } from "@/src/ui/HeroBackdrop";
 import { useToast } from "@/src/ui/Toast";
 
 export default function Login() {
   const { login, googleLogin } = useAuth();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const toast = useToast();
@@ -31,7 +29,7 @@ export default function Login() {
     }
   };
   return (
-    <LinearGradient colors={[colors.navy, colors.surface]} style={{ flex: 1 }}>
+    <HeroBackdrop>
       <KeyboardAwareScrollView contentContainerStyle={{ padding: 24, paddingTop: insets.top + 48, paddingBottom: insets.bottom + 24, gap: 16 }} bottomOffset={24} testID="login-screen">
         <View style={{ alignItems: "center", gap: 6, marginBottom: 12 }}>
           <Txt v="title">IDLE 1</Txt>
@@ -53,6 +51,6 @@ export default function Login() {
           <Btn title="Crea un nuovo account" variant="gold" testID="login-signup-link" />
         </Link>
       </KeyboardAwareScrollView>
-    </LinearGradient>
+    </HeroBackdrop>
   );
 }
