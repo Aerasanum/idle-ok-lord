@@ -4,6 +4,7 @@ from datetime import timedelta
 from ..core import db
 from ..core.canon import buildings_by_key, canon, research_by_key, support_formation_slots, units_by_key
 from ..core.util import aware, clean, fail, new_id, now, rnd
+from . import cosmetics as CS
 from . import formulas as F
 
 ONLINE_GAP_SECONDS = 300  # implementation parameter: gaps longer than this accrue to the offline chest (not a gameplay value)
@@ -274,8 +275,7 @@ async def public_state(p: dict) -> dict:
     out = clean({k: v for k, v in p.items() if k not in ("recent_ledger_keys", "account_id")})
     out["combat"] = prof
     out["hero"]["name"] = p["hero"].get("name") or "Lord"  # the Lord's own name (distinct from the player's display_name)
-    c = p.get("cosmetics") or {}
-    out["cosmetics"] = {"lord_skin": c.get("lord_skin"), "castle_skin": c.get("castle_skin"), "owned": list(c.get("owned") or [])}
+    out["cosmetics"] = CS.resolved(p)
     out["equipped_items"] = [clean(i) for i in items]
     out["production_per_hour"] = {k: rnd(v) for k, v in production_per_hour(p).items()}
     out["warehouse_capacity"] = warehouse_capacity(p)

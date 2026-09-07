@@ -725,3 +725,25 @@ function Wisp({ t, i, color }: { t: SharedValue<number>; i: number; color: strin
   }));
   return <Animated.View style={[{ position: "absolute", width: 7, height: 7, borderRadius: 4, backgroundColor: color }, style]} />;
 }
+
+/** Army-skin war banner planted behind the formation: gentle sway + heraldic glow pool under the troops. */
+export function WarBanner({ x, y, h, source, glow, width }: { x: number; y: number; h: number; source?: number; glow: string; width: number }) {
+  const sway = useSharedValue(0);
+  const pulse = useSharedValue(0);
+  useEffect(() => {
+    sway.value = withRepeat(withSequence(withTiming(1, { duration: 1400, easing: Easing.inOut(Easing.sin) }), withTiming(0, { duration: 1400, easing: Easing.inOut(Easing.sin) })), -1, false);
+    pulse.value = withRepeat(withSequence(withTiming(1, { duration: 1100 }), withTiming(0, { duration: 1100 })), -1, false);
+  }, [sway, pulse]);
+  const swayStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${-3 + 6 * sway.value}deg` }] }));
+  const glowStyle = useAnimatedStyle(() => ({ opacity: 0.22 + 0.16 * pulse.value }));
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: 0, top: 0, right: 0, bottom: 0 }} testID="army-banner">
+      <Animated.View style={[{ position: "absolute", left: x, bottom: 40, width, height: 22, borderRadius: 999, backgroundColor: glow }, glowStyle]} />
+      {source ? (
+        <Animated.View style={[{ position: "absolute", left: x + 4, top: y - h * 0.15, width: h * 0.42, height: h, transformOrigin: "bottom" }, swayStyle]}>
+          <Image source={source} style={{ width: "100%", height: "100%" }} resizeMode="contain" />
+        </Animated.View>
+      ) : null}
+    </View>
+  );
+}

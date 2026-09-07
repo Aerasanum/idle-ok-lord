@@ -7,11 +7,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Image, PixelRatio, Platform, Text, View, useWindowDimensions } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown, ZoomOut, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
-import { lordArt, regionBackground } from "@/src/art";
+import { lordArt, regionBackground, skinArt } from "@/src/art";
 import { playRegionMusic } from "@/src/audio";
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
-import { Ambient, BannerRise, BossFxKind, BossMoveFx, Burst, Clouds, CoinShower, ComboText, DamageNumber, DeathDissolve, DustPuff, Flare, FloatText, Fx, Ghost, HP_COLORS, HpBar, hpColors, LightningBolt, OutcomeBanner, Projectile, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SpeedLines, SpriteFx, SteelRain, SuperAura, UltimateWave, WarningBanner } from "./effects";
+import { Ambient, BannerRise, BossFxKind, BossMoveFx, Burst, Clouds, CoinShower, ComboText, DamageNumber, DeathDissolve, DustPuff, Flare, FloatText, Fx, Ghost, HP_COLORS, HpBar, hpColors, LightningBolt, OutcomeBanner, Projectile, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SpeedLines, SpriteFx, SteelRain, SuperAura, UltimateWave, WarBanner, WarningBanner } from "./effects";
 import { LORD_MOVE_MS, LordMove, LordSprite } from "./lord";
 import { EnemyMove, MOVE_HIT_MS, MonsterSprite } from "./monsters";
 import { hashStr, paletteFor } from "./regions";
@@ -100,8 +100,8 @@ const haptic = (kind: "light" | "heavy" | "success" | "error") => {
 };
 const monsterSize = (type: string, width: number, k = 1) => (type === "boss" ? Math.min(200, width * 0.48) : type === "elite" ? 92 : 72) * (type === "boss" ? Math.max(0.9, k) : k);
 
-export function BattleScene({ attempt, serverTime, formation, equipped, armyTier, heraldicColor, onFinished, skills, firstClear, lordName, lordLevel }: {
-  attempt: Attempt; serverTime: string; formation: Record<string, number>; equipped: Record<string, any>; armyTier: { tier: number; foreground_proxy_cap: number; background_cohorts: number; name?: string } | undefined; heraldicColor: string; onFinished: (id: string) => void; skills: { key: string; name: string; cooldown_seconds: number }[]; firstClear?: boolean; lordName?: string; lordLevel?: number;
+export function BattleScene({ attempt, serverTime, formation, equipped, armyTier, heraldicColor, onFinished, skills, firstClear, lordName, lordLevel, armyBanner }: {
+  attempt: Attempt; serverTime: string; formation: Record<string, number>; equipped: Record<string, any>; armyTier: { tier: number; foreground_proxy_cap: number; background_cohorts: number; name?: string } | undefined; heraldicColor: string; onFinished: (id: string) => void; skills: { key: string; name: string; cooldown_seconds: number }[]; firstClear?: boolean; lordName?: string; lordLevel?: number; armyBanner?: { key: string; color: string; glow: string } | null;
 }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
@@ -541,6 +541,8 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
         <View style={{ position: "absolute", left: 20, top: sceneH * 0.58, flexDirection: "row", gap: 10, flexWrap: "wrap", width: width * 0.55 }}>
           {Array.from({ length: Math.min(bgCohorts, 24) }).map((_, i) => <CohortSilhouette key={i} width={34 + (i % 3) * 8} color={i % 4 === 0 ? colors.iron : colors.forest} banner={i % 2 === 0 ? heraldicColor : undefined} />)}
         </View>
+        {/* army skin: war banner planted behind the troops + heraldic glow under the formation */}
+        {armyBanner ? <WarBanner x={12} y={sceneH * 0.5} h={Math.min(130, sceneH * 0.36)} source={skinArt(armyBanner.key)} glow={armyBanner.glow} width={width * 0.42} /> : null}
         {/* foreground formation */}
         <Animated.View style={[{ position: "absolute", left: 4, bottom: 44, width: width * 0.4, flexDirection: "row", flexWrap: "wrap-reverse", alignItems: "flex-end", gap: 0, opacity: 0.95 }, bobStyle]} testID="formation-proxies">
           {proxies.flatMap((p, pi) => Array.from({ length: p.count }).map((_, i) => <FightingProxy key={`${p.unit}${i}`} unit={p.unit} index={pi * 7 + i} scale={(CATEGORY[p.unit] === "mythic" ? 1.3 : 1.05) * k} banner={i === 0 ? heraldicColor : undefined} fighting={!outcome} />))}

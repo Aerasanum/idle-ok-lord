@@ -130,7 +130,7 @@ export default function BattleTab() {
       </View>
       <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         {attempt ? (
-          <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.heraldic_color} onFinished={onFinished} skills={skills} firstClear={Number(attempt.stage) > highest} lordName={profile.hero.name} lordLevel={profile.hero.level} />
+          <BattleScene attempt={attempt} serverTime={serverTime} formation={profile.army.formation} equipped={equipped} armyTier={profile.army_visual_tier} heraldicColor={profile.cosmetics?.army?.color ?? profile.heraldic_color} armyBanner={profile.cosmetics?.army ?? null} onFinished={onFinished} skills={skills} firstClear={Number(attempt.stage) > highest} lordName={profile.hero.name} lordLevel={profile.hero.level} />
         ) : (
           <LinearGradient colors={pal.sky} style={{ height: 220, alignItems: "center", justifyContent: "center", borderBottomWidth: 3, borderColor: colors.gold }} testID="battle-idle-scene">
             <Txt v="h1">{preview?.region?.name ?? "Campagna"}</Txt>

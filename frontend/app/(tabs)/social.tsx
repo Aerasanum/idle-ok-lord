@@ -9,6 +9,7 @@ import { useAuth } from "@/src/auth/AuthContext";
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, IconName, Input, Loading, Panel, ResourceBar, Row, Txt, fmt } from "@/src/ui";
 import { HubTile } from "@/src/ui/HubTile";
+import { QuickChat } from "@/src/social/QuickChat";
 
 export default function SocialTab() {
   const { colors } = useTheme();
@@ -41,6 +42,7 @@ export default function SocialTab() {
           <HubTile art={hubArt("alliance_war")} icon="map-marker-radius" title="Mappa guerra" subtitle={a ? `${a.season_points} punti stagione` : "Guerre 10v10 asincrone"} onPress={() => router.push("/alliance/war")} testID="hub-war" locked={!a} />
           <HubTile art={hubArt("titan_hunt")} icon="skull-crossbones" title="Titan Hunt" subtitle={a ? "Boss di alleanza · 3 attacchi al giorno" : "Serve un'alleanza"} onPress={() => router.push(a ? "/alliance/boss" : "/social")} testID="hub-boss" locked={!a} />
         </View>
+        <QuickChat />
         {a ? (
           <Panel variant="parchment" testID="my-alliance-card">
             <Row style={{ justifyContent: "space-between" }}>

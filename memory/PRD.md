@@ -91,6 +91,13 @@ Lingua utente: **italiano**.
 - **Skin cosmetiche** (`backend/app/domain/cosmetics.py`, catalogo in codice: 6 skin Lord 300–900 Rubini, 4 skin Castello 500–900; solo estetica): `GET /store/cosmetics`, `POST /store/cosmetics/buy {key}` (check Rubini atomico, auto-equip), `POST /store/cosmetics/equip {kind, key|null}`; `profile.cosmetics {lord_skin, castle_skin, owned}`. UI `src/shop/SkinShop.tsx` nel Negozio (banner "Sartoria Reale", carosello per tipo, cornice per rarità, Acquista/Indossa/Predefinito). Le skin sovrascrivono `lordArt()` e `buildingArt("castle")` ovunque (battaglia, formazione, Titan, Regno) tramite `setActiveSkins` nel layout delle tab. Art in `assets/art/skins/*.webp` (10 immagini generate).
 - Account QA: possiede Guardiano del Gelo (Lord) e Fortezza del Drago (Castello), entrambe indossate; ~3.9K Rubini.
 
+### Batch 4 (giugno 2026) — Anteprima skin, stendardi esercito, chat rapida, offerta del giorno (testing agent iterazione 10: tutto verde)
+- **Anteprima skin** `app/skin-preview.tsx` (`/skin-preview?key=`): schermo intero con sfondo di regione; Lord → loop mossa speciale (aura SUPER + scie → scatto + slash/burst/onda d'urto/flare + banner "MOSSA SPECIALE" → onda finale "COLPO REALE!"); Castello → fuochi d'artificio; Stendardo → banner ondeggiante + fila di truppe in marcia nel colore araldico. Pulsanti Acquista/Indossa/Chiudi. Aperta dal tasto ▶ di ogni card del Negozio e dall'offerta del giorno.
+- **Stendardi esercito** (kind `army`, 4: Legione Cremisi 400, Ordine Azzurro 400, Guardiani di Smeraldo 550, Patto d'Ossidiana 750; campi `color`/`glow`; art `skins/army_*.webp`): `profile.cosmetics.army` risolto {key,name,color,glow}; in battaglia `WarBanner` (stendardo piantato dietro la formazione, ondeggia, pozza di luce) e colore araldico delle bandierine/vessilli = colore della skin.
+- **Chat rapida** `src/social/QuickChat.tsx` nella tab Social: ultimi 4 messaggi del canale globale, invio inline, "Apri chat".
+- **Offerta del giorno**: `cosmetics.daily_deal()` deterministica dalla data UTC (sha1 → indice catalogo), −30%, scade alla mezzanotte UTC; `GET /store/cosmetics` → `deal` + `catalog[].rubies_now`; `buy` applica il prezzo scontato (`deal:true`). Card in Negozio con countdown.
+- QA: possiede anche army_crimson_legion (indossato), lord_forest_ranger, lord_crimson_paladin, castle_elven_palace; ~2.9K Rubini.
+
 ### Da fare / backlog
 - Sign in with Apple: solo UI disabilitata (deployment input).
 - Input del proprietario al deploy: chiavi RevenueCat (`EXPO_PUBLIC_RC_IOS_KEY`, `EXPO_PUBLIC_RC_ANDROID_KEY`, `REVENUECAT_SECRET_KEY`, signing secret), `google-services.json`, URL Privacy/Termini, `EMERGENT_PUSH_KEY` (impostato al Publish).

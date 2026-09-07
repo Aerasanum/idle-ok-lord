@@ -208,10 +208,19 @@ CASTLE_SKIN_DESC = {
 }
 
 
+ARMY_SKIN_DESC = {
+    "crimson_legion": "crimson war banner with a golden roaring lion emblem, gold fringe, on a dark wooden pole with a golden spearhead finial",
+    "azure_order": "royal blue war banner with a silver griffin emblem, silver fringe, on a steel pole with a winged finial",
+    "emerald_wardens": "deep green war banner with a golden stag antler emblem and leaf border, on an ancient oak pole",
+    "obsidian_pact": "black war banner with a glowing violet skull emblem and purple runes, tattered edges, on a black iron pole",
+}
+
+
 def skin_prompts():
     base = "Exactly ONE character (single figure, no turnaround, no multiple views): The Lord, heroic human knight commander, mid-30s, determined face, short dark hair and beard, full body 3/4 view facing RIGHT, holding a sword in the right hand"
     out = [(f"skins/lord_{k}", f"{base}, wearing {v}, standing battle stance, complete body with feet, centered, {STYLE}, {GREEN}") for k, v in LORD_SKIN_DESC.items()]
     out += [(f"skins/castle_{k}", f"Isometric 3/4 view of a fantasy castle for a mobile strategy game: {v}. Single building, complete, centered, {STYLE}, {GREEN}") for k, v in CASTLE_SKIN_DESC.items()]
+    out += [(f"skins/army_{k}", f"Exactly ONE object: a tall standing medieval war banner, {v}, fabric gently waving, vertical composition, complete pole visible top to bottom, centered, {STYLE}, {GREEN}") for k, v in ARMY_SKIN_DESC.items()]
     return out
 
 
