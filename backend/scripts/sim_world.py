@@ -49,16 +49,20 @@ async def call(c: httpx.AsyncClient, p: Player, method: str, path: str, body=Non
         try:
             r = await c.request(method, path, json=body, headers=p.h, timeout=60)
             break
-        except (httpx.ReadTimeout, httpx.ConnectError, httpx.RemoteProtocolError):
+        except httpx.HTTPError:
             if attempt == 2:
                 ERRORS.append({"player": p.email, "path": path, "status": "timeout"})
                 return None
             await asyncio.sleep(1)
     if r.status_code == 401 and path != "/auth/login":  # access tokens live 15 minutes: re-login and retry once
-        lr = await c.post("/auth/login", json={"email": p.email, "password": PW}, timeout=60)
-        if lr.status_code == 200:
-            p.h = {"Authorization": f"Bearer {lr.json()['access_token']}"}
-            r = await c.request(method, path, json=body, headers=p.h, timeout=60)
+        try:
+            lr = await c.post("/auth/login", json={"email": p.email, "password": PW}, timeout=60)
+            if lr.status_code == 200:
+                p.h = {"Authorization": f"Bearer {lr.json()['access_token']}"}
+                r = await c.request(method, path, json=body, headers=p.h, timeout=60)
+        except httpx.HTTPError as e:
+            ERRORS.append({"player": p.email, "path": path, "status": "relogin_error", "body": str(e)[:100]})
+            return None
     if r.status_code >= 500:
         STATS["unexpected"] += 1
         ERRORS.append({"player": p.email, "path": path, "status": r.status_code, "body": r.text[:200]})
@@ -77,12 +81,14 @@ async def call(c: httpx.AsyncClient, p: Player, method: str, path: str, body=Non
 
 async def register(c, p: Player, start: dict):
     r = await c.post("/auth/register", json={"email": p.email, "password": PW, "display_name": p.name, "age_confirmed": True, "consent": True}, timeout=60)
-    if r.status_code != 201:
+    fresh = r.status_code == 201
+    if not fresh:
         r = await c.post("/auth/login", json={"email": p.email, "password": PW}, timeout=60)
     d = r.json()
     p.h = {"Authorization": f"Bearer {d['access_token']}"}
     p.pid = d["player_id"]
-    await call(c, p, "POST", "/_test/grant", {"email_verified": True, **start})
+    if fresh:  # resuming a run never resets an existing player's progress
+        await call(c, p, "POST", "/_test/grant", {"email_verified": True, **start})
 
 
 async def shift(c, p: Player, seconds: int):
@@ -215,6 +221,7 @@ async def main():
     ap.add_argument("--days", type=int, default=20)
     ap.add_argument("--concurrency", type=int, default=25)
     ap.add_argument("--prefix", default="sim")
+    ap.add_argument("--start-day", type=int, default=1)
     args = ap.parse_args()
     global PREFIX
     PREFIX = args.prefix
@@ -272,7 +279,9 @@ async def main():
         print(f"alliances: {len(leaders)} ({time.time()-t0:.0f}s)")
         # ---- days ----
         report = {"players": len(players), "alliances": len(leaders), "days": []}
-        for day in range(1, args.days + 1):
+        if args.start_day > 1 and os.path.exists("/app/test_reports/sim_world.json"):
+            report["days"] = [d for d in json.load(open("/app/test_reports/sim_world.json"))["days"] if d["day"] < args.start_day]
+        for day in range(args.start_day, args.days + 1):
             await asyncio.gather(*(guarded(play_day(c, p, day, rng)) for p in players))
             w = await wars_day(c, leaders, groups, day)
             snaps = [p.snap for p in players if p.snap]

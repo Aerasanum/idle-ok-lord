@@ -15,11 +15,11 @@
     },
     "leaders": 0
    },
-   "requests": 17072,
+   "requests": 17127,
    "errors": 0,
    "stage": {
-    "min": 29,
-    "avg": 38.7,
+    "min": 32,
+    "avg": 38.8,
     "max": 49
    },
    "castle": {
@@ -28,17 +28,17 @@
     "max": 9
    },
    "hero": {
-    "min": 18,
+    "min": 19,
     "avg": 22.4,
     "max": 27
    },
    "units_total": 50000,
-   "power_avg": 8166,
+   "power_avg": 8167,
    "domain_avg": 19.0
   },
   {
    "day": 2,
-   "wars_declared": 19,
+   "wars_declared": 18,
    "tick": {
     "timers": 0,
     "offline_full": 0,
@@ -49,11 +49,11 @@
     },
     "leaders": 0
    },
-   "requests": 34678,
-   "errors": 3,
+   "requests": 34725,
+   "errors": 0,
    "stage": {
-    "min": 41,
-    "avg": 50.7,
+    "min": 44,
+    "avg": 50.8,
     "max": 61
    },
    "castle": {
@@ -62,118 +62,16 @@
     "max": 9
    },
    "hero": {
-    "min": 25,
+    "min": 26,
     "avg": 29.5,
     "max": 34
    },
-   "units_total": 92775,
-   "power_avg": 16195,
+   "units_total": 92280,
+   "power_avg": 16242,
    "domain_avg": 25.0
   },
   {
    "day": 3,
-   "wars_declared": 16,
-   "tick": {
-    "timers": 0,
-    "offline_full": 0,
-    "event_ending": 0,
-    "wars": {
-     "locked": 0,
-     "resolved": 0
-    },
-    "leaders": 0
-   },
-   "requests": 51169,
-   "errors": 17,
-   "stage": {
-    "min": 53,
-    "avg": 62.7,
-    "max": 73
-   },
-   "castle": {
-    "min": 9,
-    "avg": 9.28,
-    "max": 10
-   },
-   "hero": {
-    "min": 32,
-    "avg": 36.4,
-    "max": 41
-   },
-   "units_total": 120600,
-   "power_avg": 23165,
-   "domain_avg": 31.0
-  },
-  {
-   "day": 4,
-   "wars_declared": 17,
-   "tick": {
-    "timers": 0,
-    "offline_full": 0,
-    "event_ending": 0,
-    "wars": {
-     "locked": 0,
-     "resolved": 0
-    },
-    "leaders": 0
-   },
-   "requests": 67587,
-   "errors": 37,
-   "stage": {
-    "min": 65,
-    "avg": 74.7,
-    "max": 85
-   },
-   "castle": {
-    "min": 9,
-    "avg": 9.88,
-    "max": 10
-   },
-   "hero": {
-    "min": 38,
-    "avg": 43.2,
-    "max": 48
-   },
-   "units_total": 144148,
-   "power_avg": 29574,
-   "domain_avg": 37.0
-  },
-  {
-   "day": 5,
-   "wars_declared": 15,
-   "tick": {
-    "timers": 0,
-    "offline_full": 0,
-    "event_ending": 0,
-    "wars": {
-     "locked": 0,
-     "resolved": 0
-    },
-    "leaders": 0
-   },
-   "requests": 84259,
-   "errors": 59,
-   "stage": {
-    "min": 77,
-    "avg": 86.7,
-    "max": 97
-   },
-   "castle": {
-    "min": 9,
-    "avg": 9.9,
-    "max": 10
-   },
-   "hero": {
-    "min": 45,
-    "avg": 50.0,
-    "max": 55
-   },
-   "units_total": 167508,
-   "power_avg": 36883,
-   "domain_avg": 43.0
-  },
-  {
-   "day": 6,
    "wars_declared": 14,
    "tick": {
     "timers": 0,
@@ -185,30 +83,30 @@
     },
     "leaders": 0
    },
-   "requests": 100907,
-   "errors": 83,
+   "requests": 16709,
+   "errors": 0,
    "stage": {
-    "min": 89,
-    "avg": 98.7,
-    "max": 109
+    "min": 56,
+    "avg": 71.2,
+    "max": 85
    },
    "castle": {
     "min": 9,
-    "avg": 9.9,
+    "avg": 9.7,
     "max": 10
    },
    "hero": {
-    "min": 52,
-    "avg": 56.6,
-    "max": 62
+    "min": 33,
+    "avg": 41.3,
+    "max": 48
    },
-   "units_total": 184090,
-   "power_avg": 43500,
-   "domain_avg": 49.0
+   "units_total": 141698,
+   "power_avg": 29100,
+   "domain_avg": 35.2
   },
   {
-   "day": 7,
-   "wars_declared": 9,
+   "day": 4,
+   "wars_declared": 14,
    "tick": {
     "timers": 0,
     "offline_full": 0,
@@ -219,29 +117,29 @@
     },
     "leaders": 0
    },
-   "requests": 117708,
-   "errors": 123,
+   "requests": 33275,
+   "errors": 0,
    "stage": {
-    "min": 101,
-    "avg": 110.7,
-    "max": 121
+    "min": 68,
+    "avg": 83.2,
+    "max": 97
    },
    "castle": {
     "min": 9,
-    "avg": 9.9,
+    "avg": 9.88,
     "max": 10
    },
    "hero": {
-    "min": 58,
-    "avg": 63.3,
-    "max": 69
+    "min": 40,
+    "avg": 48.0,
+    "max": 55
    },
-   "units_total": 204526,
-   "power_avg": 55096,
-   "domain_avg": 55.0
+   "units_total": 166827,
+   "power_avg": 36061,
+   "domain_avg": 41.2
   },
   {
-   "day": 8,
+   "day": 5,
    "wars_declared": 11,
    "tick": {
     "timers": 0,
@@ -253,29 +151,165 @@
     },
     "leaders": 0
    },
-   "requests": 133758,
-   "errors": 154,
+   "requests": 49885,
+   "errors": 0,
    "stage": {
-    "min": 113,
-    "avg": 122.4,
+    "min": 80,
+    "avg": 95.2,
+    "max": 109
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.88,
+    "max": 10
+   },
+   "hero": {
+    "min": 47,
+    "avg": 54.7,
+    "max": 62
+   },
+   "units_total": 186902,
+   "power_avg": 43112,
+   "domain_avg": 47.2
+  },
+  {
+   "day": 6,
+   "wars_declared": 13,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 66654,
+   "errors": 0,
+   "stage": {
+    "min": 92,
+    "avg": 107.2,
+    "max": 121
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.88,
+    "max": 10
+   },
+   "hero": {
+    "min": 53,
+    "avg": 61.3,
+    "max": 69
+   },
+   "units_total": 203364,
+   "power_avg": 51914,
+   "domain_avg": 53.2
+  },
+  {
+   "day": 7,
+   "wars_declared": 11,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 83021,
+   "errors": 0,
+   "stage": {
+    "min": 104,
+    "avg": 119.1,
     "max": 133
    },
    "castle": {
     "min": 9,
-    "avg": 9.9,
+    "avg": 9.88,
     "max": 10
    },
    "hero": {
-    "min": 65,
-    "avg": 69.8,
+    "min": 60,
+    "avg": 67.9,
     "max": 75
    },
-   "units_total": 229098,
-   "power_avg": 69551,
-   "domain_avg": 60.8
+   "units_total": 222934,
+   "power_avg": 64442,
+   "domain_avg": 59.2
+  },
+  {
+   "day": 8,
+   "wars_declared": 12,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 98907,
+   "errors": 0,
+   "stage": {
+    "min": 116,
+    "avg": 130.3,
+    "max": 145
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.92,
+    "max": 11
+   },
+   "hero": {
+    "min": 66,
+    "avg": 74.2,
+    "max": 82
+   },
+   "units_total": 240966,
+   "power_avg": 77669,
+   "domain_avg": 64.8
   },
   {
    "day": 9,
+   "wars_declared": 12,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 113510,
+   "errors": 0,
+   "stage": {
+    "min": 119,
+    "avg": 139.7,
+    "max": 157
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.02,
+    "max": 11
+   },
+   "hero": {
+    "min": 71,
+    "avg": 80.0,
+    "max": 88
+   },
+   "units_total": 252302,
+   "power_avg": 89230,
+   "domain_avg": 69.5
+  },
+  {
+   "day": 10,
    "wars_declared": 9,
    "tick": {
     "timers": 0,
@@ -287,29 +321,97 @@
     },
     "leaders": 0
    },
-   "requests": 149456,
-   "errors": 192,
+   "requests": 127057,
+   "errors": 0,
    "stage": {
     "min": 119,
-    "avg": 133.3,
-    "max": 145
+    "avg": 147.4,
+    "max": 169
    },
    "castle": {
     "min": 9,
-    "avg": 9.96,
+    "avg": 10.09,
     "max": 11
    },
    "hero": {
-    "min": 71,
-    "avg": 75.9,
-    "max": 82
+    "min": 77,
+    "avg": 85.3,
+    "max": 94
    },
-   "units_total": 244224,
-   "power_avg": 80948,
-   "domain_avg": 66.3
+   "units_total": 260327,
+   "power_avg": 101505,
+   "domain_avg": 73.3
   },
   {
-   "day": 10,
+   "day": 11,
+   "wars_declared": 9,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 139571,
+   "errors": 0,
+   "stage": {
+    "min": 119,
+    "avg": 153.4,
+    "max": 171
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.1,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 90.0,
+    "max": 98
+   },
+   "units_total": 277411,
+   "power_avg": 116178,
+   "domain_avg": 76.2
+  },
+  {
+   "day": 12,
+   "wars_declared": 9,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 150464,
+   "errors": 0,
+   "stage": {
+    "min": 119,
+    "avg": 157.2,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.11,
+    "max": 11
+   },
+   "hero": {
+    "min": 83,
+    "avg": 94.1,
+    "max": 100
+   },
+   "units_total": 289199,
+   "power_avg": 123794,
+   "domain_avg": 78.1
+  },
+  {
+   "day": 13,
    "wars_declared": 10,
    "tick": {
     "timers": 0,
@@ -321,1632 +423,3113 @@
     },
     "leaders": 0
    },
-   "requests": 164149,
-   "errors": 226,
-   "stage": {
-    "min": 119,
-    "avg": 142.9,
-    "max": 157
-   },
-   "castle": {
-    "min": 9,
-    "avg": 10.07,
-    "max": 11
-   },
-   "hero": {
-    "min": 75,
-    "avg": 81.8,
-    "max": 88
-   },
-   "units_total": 262828,
-   "power_avg": 96096,
-   "domain_avg": 71.1
-  },
-  {
-   "day": 11,
-   "wars_declared": 1,
-   "tick": null,
-   "requests": 178105,
-   "errors": 265,
+   "requests": 159614,
+   "errors": 0,
    "stage": {
     "min": 129,
-    "avg": 151.0,
-    "max": 169
-   },
-   "castle": {
-    "min": 9,
-    "avg": 10.09,
-    "max": 11
-   },
-   "hero": {
-    "min": 80,
-    "avg": 87.1,
-    "max": 94
-   },
-   "units_total": 281144,
-   "power_avg": 113121,
-   "domain_avg": 75.1
-  },
-  {
-   "day": 12,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 185223,
-   "errors": 1203,
-   "stage": {
-    "min": 129,
-    "avg": 153.8,
-    "max": 177
-   },
-   "castle": {
-    "min": 9,
-    "avg": 10.09,
-    "max": 11
-   },
-   "hero": {
-    "min": 80,
-    "avg": 89.1,
-    "max": 99
-   },
-   "units_total": 293498,
-   "power_avg": 119832,
-   "domain_avg": 76.5
-  },
-  {
-   "day": 13,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 188111,
-   "errors": 2101,
-   "stage": {
-    "min": 129,
-    "avg": 154.2,
+    "avg": 158.5,
     "max": 179
    },
    "castle": {
     "min": 9,
-    "avg": 10.09,
+    "avg": 10.11,
     "max": 11
    },
    "hero": {
-    "min": 80,
-    "avg": 89.8,
+    "min": 86,
+    "avg": 96.8,
     "max": 100
    },
-   "units_total": 298290,
-   "power_avg": 122377,
-   "domain_avg": 76.6
+   "units_total": 296783,
+   "power_avg": 128779,
+   "domain_avg": 78.8
   },
   {
    "day": 14,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 190019,
-   "errors": 3112,
+   "wars_declared": 7,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 168719,
+   "errors": 0,
    "stage": {
     "min": 129,
-    "avg": 154.3,
+    "avg": 159.9,
     "max": 179
    },
    "castle": {
     "min": 9,
-    "avg": 10.09,
+    "avg": 10.11,
     "max": 11
    },
    "hero": {
-    "min": 80,
-    "avg": 89.9,
+    "min": 89,
+    "avg": 98.4,
     "max": 100
    },
-   "units_total": 299251,
-   "power_avg": 123091,
-   "domain_avg": 76.7
+   "units_total": 297676,
+   "power_avg": 129024,
+   "domain_avg": 79.5
   },
   {
    "day": 15,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 191441,
-   "errors": 4096,
+   "wars_declared": 8,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 177286,
+   "errors": 1,
    "stage": {
     "min": 129,
-    "avg": 154.4,
+    "avg": 160.6,
     "max": 179
    },
    "castle": {
     "min": 9,
-    "avg": 10.09,
+    "avg": 10.11,
     "max": 11
    },
    "hero": {
-    "min": 80,
-    "avg": 89.9,
+    "min": 91,
+    "avg": 99.2,
     "max": 100
    },
-   "units_total": 299962,
-   "power_avg": 122996,
-   "domain_avg": 76.7
+   "units_total": 302204,
+   "power_avg": 131541,
+   "domain_avg": 79.8
   },
   {
    "day": 16,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 192729,
-   "errors": 5100,
+   "wars_declared": 8,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 185864,
+   "errors": 1,
    "stage": {
     "min": 129,
-    "avg": 154.4,
+    "avg": 161.2,
     "max": 179
    },
    "castle": {
     "min": 9,
-    "avg": 10.09,
+    "avg": 10.11,
     "max": 11
    },
    "hero": {
-    "min": 80,
-    "avg": 89.9,
+    "min": 94,
+    "avg": 99.6,
     "max": 100
    },
-   "units_total": 300565,
-   "power_avg": 123142,
-   "domain_avg": 76.8
+   "units_total": 302574,
+   "power_avg": 133068,
+   "domain_avg": 80.1
   },
   {
    "day": 17,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 193896,
-   "errors": 6123,
+   "wars_declared": 8,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 194245,
+   "errors": 3,
    "stage": {
     "min": 129,
-    "avg": 154.4,
+    "avg": 161.7,
     "max": 179
    },
    "castle": {
     "min": 9,
-    "avg": 10.09,
+    "avg": 10.11,
     "max": 11
    },
    "hero": {
-    "min": 80,
-    "avg": 89.9,
+    "min": 96,
+    "avg": 99.9,
     "max": 100
    },
-   "units_total": 300784,
-   "power_avg": 123268,
-   "domain_avg": 76.8
+   "units_total": 303371,
+   "power_avg": 133513,
+   "domain_avg": 80.3
   },
   {
    "day": 18,
-   "wars_declared": 0,
-   "tick": null,
-   "requests": 195014,
-   "errors": 7148,
+   "wars_declared": 8,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 202423,
+   "errors": 5,
    "stage": {
     "min": 129,
-    "avg": 154.4,
+    "avg": 161.9,
     "max": 179
    },
    "castle": {
     "min": 9,
-    "avg": 10.09,
+    "avg": 10.11,
     "max": 11
    },
    "hero": {
-    "min": 80,
-    "avg": 89.9,
+    "min": 98,
+    "avg": 100.0,
     "max": 100
    },
-   "units_total": 300915,
-   "power_avg": 123273,
-   "domain_avg": 76.8
+   "units_total": 304665,
+   "power_avg": 134222,
+   "domain_avg": 80.4
+  },
+  {
+   "day": 19,
+   "wars_declared": 7,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 210698,
+   "errors": 9,
+   "stage": {
+    "min": 129,
+    "avg": 162.2,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.11,
+    "max": 11
+   },
+   "hero": {
+    "min": 100,
+    "avg": 100.0,
+    "max": 100
+   },
+   "units_total": 305318,
+   "power_avg": 134249,
+   "domain_avg": 80.6
+  },
+  {
+   "day": 20,
+   "wars_declared": 8,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 218809,
+   "errors": 13,
+   "stage": {
+    "min": 129,
+    "avg": 162.5,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.11,
+    "max": 11
+   },
+   "hero": {
+    "min": 100,
+    "avg": 100.0,
+    "max": 100
+   },
+   "units_total": 306382,
+   "power_avg": 134536,
+   "domain_avg": 80.8
   }
  ],
  "errors": [
   {
-   "player": "w20021@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21078@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20021@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21066@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20021@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21139@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+   "player": "w21066@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20081@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+   "player": "w21078@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+   "player": "w21066@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21080@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21139@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21159@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+   "player": "w21066@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+   "player": "w21139@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21159@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   },
   {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20021@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20121@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20041@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20171@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20081@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20081@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20081@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20121@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20121@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20121@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20081@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20101@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20111@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20131@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20141@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20151@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20161@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20171@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20181@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20191@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20201@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20031@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "displaced",
-   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
-  },
-  {
-   "player": "w20061@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "defender_busy",
-   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20071@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
-  },
-  {
-   "player": "w20091@idle1.app",
-   "path": "/wars/declare",
-   "status": 409,
-   "code": "war_active",
-   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+   "player": "w21230@idle1.app",
+   "path": "/hero/talents",
+   "status": 400,
+   "code": "branch_max",
+   "body": "{\"detail\":{\"code\":\"branch_max\",\"message\":\"branch_max\"}}"
   }
  ],
  "stats": {
-  "requests": 195014,
-  "unexpected": 7148
- }
+  "requests": 218809,
+  "unexpected": 13
+ },
+ "final_players": [
+  {
+   "email": "w21001@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 57831,
+   "units": 198,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21002@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 72759,
+   "units": 427,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21003@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 90068,
+   "units": 347,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21004@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 105407,
+   "units": 411,
+   "domain": 79,
+   "rubies": 263
+  },
+  {
+   "email": "w21005@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 34537,
+   "units": 255,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21006@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 9,
+   "hero": 100,
+   "power": 20818,
+   "units": 51,
+   "domain": 74,
+   "rubies": 236
+  },
+  {
+   "email": "w21007@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 9878,
+   "units": 20,
+   "domain": 64,
+   "rubies": 243
+  },
+  {
+   "email": "w21008@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 37686,
+   "units": 230,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21009@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 6041,
+   "units": 3,
+   "domain": 64,
+   "rubies": 231
+  },
+  {
+   "email": "w21010@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 9428,
+   "units": 73,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21011@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 25687,
+   "units": 152,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21012@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 12096,
+   "units": 83,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21013@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 81966,
+   "units": 269,
+   "domain": 84,
+   "rubies": 280
+  },
+  {
+   "email": "w21014@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 28389,
+   "units": 146,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21015@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 31760,
+   "units": 527,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21016@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 29424,
+   "units": 151,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21017@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 29958,
+   "units": 113,
+   "domain": 74,
+   "rubies": 243
+  },
+  {
+   "email": "w21018@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 30528,
+   "units": 213,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21019@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 12203,
+   "units": 160,
+   "domain": 64,
+   "rubies": 243
+  },
+  {
+   "email": "w21020@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 32486,
+   "units": 137,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21021@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 11057,
+   "units": 29,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21022@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 5877,
+   "units": 20,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21023@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 11051,
+   "units": 44,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21024@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 50089,
+   "units": 283,
+   "domain": 84,
+   "rubies": 263
+  },
+  {
+   "email": "w21025@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 13112,
+   "units": 49,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21026@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 40815,
+   "units": 114,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21027@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 10215,
+   "units": 48,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21028@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 7887,
+   "units": 5,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21029@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 18095,
+   "units": 67,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21030@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 30752,
+   "units": 153,
+   "domain": 84,
+   "rubies": 280
+  },
+  {
+   "email": "w21031@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 6484,
+   "units": 33,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21032@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 15940,
+   "units": 54,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21033@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 10604,
+   "units": 23,
+   "domain": 69,
+   "rubies": 231
+  },
+  {
+   "email": "w21034@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 85613,
+   "units": 269,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21035@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 22461,
+   "units": 111,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21036@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 7391,
+   "units": 32,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21037@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 73978,
+   "units": 258,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21038@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 9970,
+   "units": 68,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21039@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 36641,
+   "units": 210,
+   "domain": 79,
+   "rubies": 280
+  },
+  {
+   "email": "w21040@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 11028,
+   "units": 47,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21041@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 210264,
+   "units": 2008,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21042@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 179825,
+   "units": 1387,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21043@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 229063,
+   "units": 2585,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21044@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 178491,
+   "units": 2301,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21045@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 162189,
+   "units": 2585,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21046@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 183924,
+   "units": 1203,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21047@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 156657,
+   "units": 753,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21048@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 198338,
+   "units": 1525,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21049@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 202426,
+   "units": 2066,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21050@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 11,
+   "hero": 100,
+   "power": 96654,
+   "units": 1985,
+   "domain": 79,
+   "rubies": 265
+  },
+  {
+   "email": "w21051@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 34113,
+   "units": 607,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21052@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 37114,
+   "units": 684,
+   "domain": 69,
+   "rubies": 233
+  },
+  {
+   "email": "w21053@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 170045,
+   "units": 2695,
+   "domain": 79,
+   "rubies": 265
+  },
+  {
+   "email": "w21054@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 147446,
+   "units": 1027,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21055@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 120782,
+   "units": 565,
+   "domain": 79,
+   "rubies": 265
+  },
+  {
+   "email": "w21056@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 37818,
+   "units": 700,
+   "domain": 69,
+   "rubies": 233
+  },
+  {
+   "email": "w21057@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 268008,
+   "units": 1721,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21058@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 150640,
+   "units": 1830,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21059@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 38834,
+   "units": 728,
+   "domain": 69,
+   "rubies": 233
+  },
+  {
+   "email": "w21060@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 200494,
+   "units": 1351,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21061@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 28140,
+   "units": 135,
+   "domain": 64,
+   "rubies": 236
+  },
+  {
+   "email": "w21062@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 123800,
+   "units": 565,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21063@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 107607,
+   "units": 449,
+   "domain": 79,
+   "rubies": 280
+  },
+  {
+   "email": "w21064@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 20111,
+   "units": 293,
+   "domain": 64,
+   "rubies": 243
+  },
+  {
+   "email": "w21065@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 25895,
+   "units": 204,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21066@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 138994,
+   "units": 508,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21067@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 31517,
+   "units": 200,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21068@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 32940,
+   "units": 363,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21069@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 70422,
+   "units": 274,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21070@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 9,
+   "hero": 100,
+   "power": 98308,
+   "units": 538,
+   "domain": 79,
+   "rubies": 263
+  },
+  {
+   "email": "w21071@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 206645,
+   "units": 2110,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21072@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 241566,
+   "units": 2681,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21073@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 238127,
+   "units": 2175,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21074@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 247119,
+   "units": 2595,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21075@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 156916,
+   "units": 2879,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21076@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 254437,
+   "units": 3409,
+   "domain": 89,
+   "rubies": 275
+  },
+  {
+   "email": "w21077@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 260590,
+   "units": 2219,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21078@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 190128,
+   "units": 753,
+   "domain": 84,
+   "rubies": 251
+  },
+  {
+   "email": "w21079@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 199885,
+   "units": 3062,
+   "domain": 84,
+   "rubies": 275
+  },
+  {
+   "email": "w21080@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 201517,
+   "units": 1850,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21081@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 8804,
+   "units": 47,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21082@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 6529,
+   "units": 23,
+   "domain": 64,
+   "rubies": 243
+  },
+  {
+   "email": "w21083@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 8269,
+   "units": 6,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21084@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 11923,
+   "units": 48,
+   "domain": 64,
+   "rubies": 243
+  },
+  {
+   "email": "w21085@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 6719,
+   "units": 12,
+   "domain": 64,
+   "rubies": 231
+  },
+  {
+   "email": "w21086@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 10505,
+   "units": 29,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21087@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 17134,
+   "units": 37,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21088@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 10302,
+   "units": 21,
+   "domain": 79,
+   "rubies": 280
+  },
+  {
+   "email": "w21089@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 9360,
+   "units": 16,
+   "domain": 69,
+   "rubies": 236
+  },
+  {
+   "email": "w21090@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 40411,
+   "units": 106,
+   "domain": 84,
+   "rubies": 263
+  },
+  {
+   "email": "w21091@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 218015,
+   "units": 1595,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21092@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 244089,
+   "units": 2017,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21093@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 170545,
+   "units": 1837,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21094@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 234051,
+   "units": 1042,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21095@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 242012,
+   "units": 2259,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21096@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 170199,
+   "units": 561,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21097@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 238123,
+   "units": 1904,
+   "domain": 89,
+   "rubies": 275
+  },
+  {
+   "email": "w21098@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 260291,
+   "units": 1589,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21099@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 172553,
+   "units": 961,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21100@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 158305,
+   "units": 2356,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21101@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 190317,
+   "units": 2344,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21102@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 175496,
+   "units": 1517,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21103@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 228100,
+   "units": 2080,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21104@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 235256,
+   "units": 2545,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21105@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 251325,
+   "units": 1951,
+   "domain": 89,
+   "rubies": 258
+  },
+  {
+   "email": "w21106@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 9,
+   "hero": 100,
+   "power": 192957,
+   "units": 880,
+   "domain": 89,
+   "rubies": 258
+  },
+  {
+   "email": "w21107@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 203636,
+   "units": 947,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21108@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 219694,
+   "units": 1882,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21109@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 212338,
+   "units": 2910,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21110@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 248332,
+   "units": 1688,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21111@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 240428,
+   "units": 980,
+   "domain": 89,
+   "rubies": 275
+  },
+  {
+   "email": "w21112@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 171238,
+   "units": 1472,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21113@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 200718,
+   "units": 765,
+   "domain": 84,
+   "rubies": 251
+  },
+  {
+   "email": "w21114@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 265169,
+   "units": 2465,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21115@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 238335,
+   "units": 1763,
+   "domain": 89,
+   "rubies": 275
+  },
+  {
+   "email": "w21116@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 179141,
+   "units": 2283,
+   "domain": 84,
+   "rubies": 275
+  },
+  {
+   "email": "w21117@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 176895,
+   "units": 3274,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21118@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 157811,
+   "units": 2415,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21119@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 236489,
+   "units": 2422,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21120@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 234717,
+   "units": 1149,
+   "domain": 89,
+   "rubies": 275
+  },
+  {
+   "email": "w21121@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 48010,
+   "units": 288,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21122@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 133396,
+   "units": 571,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21123@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 26855,
+   "units": 179,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21124@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 158436,
+   "units": 1162,
+   "domain": 89,
+   "rubies": 270
+  },
+  {
+   "email": "w21125@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 87493,
+   "units": 631,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21126@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 9,
+   "hero": 100,
+   "power": 57938,
+   "units": 257,
+   "domain": 79,
+   "rubies": 256
+  },
+  {
+   "email": "w21127@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 113675,
+   "units": 476,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21128@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 107913,
+   "units": 431,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21129@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 182937,
+   "units": 1112,
+   "domain": 84,
+   "rubies": 263
+  },
+  {
+   "email": "w21130@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 38881,
+   "units": 133,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21131@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 180004,
+   "units": 1551,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21132@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 157174,
+   "units": 444,
+   "domain": 84,
+   "rubies": 251
+  },
+  {
+   "email": "w21133@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 161487,
+   "units": 1428,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21134@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 142496,
+   "units": 1092,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21135@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 178381,
+   "units": 1733,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21136@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 125535,
+   "units": 295,
+   "domain": 84,
+   "rubies": 268
+  },
+  {
+   "email": "w21137@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 167662,
+   "units": 1730,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21138@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 11,
+   "hero": 100,
+   "power": 35903,
+   "units": 553,
+   "domain": 74,
+   "rubies": 245
+  },
+  {
+   "email": "w21139@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 23213,
+   "units": 426,
+   "domain": 69,
+   "rubies": 238
+  },
+  {
+   "email": "w21140@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 11,
+   "hero": 100,
+   "power": 49337,
+   "units": 751,
+   "domain": 74,
+   "rubies": 245
+  },
+  {
+   "email": "w21141@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 116693,
+   "units": 570,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21142@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 158740,
+   "units": 461,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21143@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 136203,
+   "units": 328,
+   "domain": 84,
+   "rubies": 251
+  },
+  {
+   "email": "w21144@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 60269,
+   "units": 501,
+   "domain": 79,
+   "rubies": 265
+  },
+  {
+   "email": "w21145@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 11,
+   "hero": 100,
+   "power": 22363,
+   "units": 388,
+   "domain": 69,
+   "rubies": 233
+  },
+  {
+   "email": "w21146@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 148444,
+   "units": 1068,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21147@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 146248,
+   "units": 1153,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21148@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 185275,
+   "units": 1201,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21149@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 142064,
+   "units": 781,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21150@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 156045,
+   "units": 398,
+   "domain": 84,
+   "rubies": 251
+  },
+  {
+   "email": "w21151@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 252387,
+   "units": 1403,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21152@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 11,
+   "hero": 100,
+   "power": 125435,
+   "units": 1566,
+   "domain": 79,
+   "rubies": 265
+  },
+  {
+   "email": "w21153@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 190775,
+   "units": 3280,
+   "domain": 84,
+   "rubies": 275
+  },
+  {
+   "email": "w21154@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 11,
+   "hero": 100,
+   "power": 108043,
+   "units": 1981,
+   "domain": 79,
+   "rubies": 265
+  },
+  {
+   "email": "w21155@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 197422,
+   "units": 1604,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21156@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 209706,
+   "units": 2191,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21157@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 233471,
+   "units": 2456,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21158@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 245131,
+   "units": 1888,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21159@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 306925,
+   "units": 1914,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21160@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 216931,
+   "units": 1747,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21161@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 182229,
+   "units": 3962,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21162@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 215956,
+   "units": 1976,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21163@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 234524,
+   "units": 3206,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21164@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 236447,
+   "units": 2849,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21165@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 283643,
+   "units": 1978,
+   "domain": 89,
+   "rubies": 265
+  },
+  {
+   "email": "w21166@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 165143,
+   "units": 2229,
+   "domain": 84,
+   "rubies": 275
+  },
+  {
+   "email": "w21167@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 206566,
+   "units": 1471,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21168@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 201164,
+   "units": 3915,
+   "domain": 84,
+   "rubies": 265
+  },
+  {
+   "email": "w21169@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 180243,
+   "units": 770,
+   "domain": 84,
+   "rubies": 251
+  },
+  {
+   "email": "w21170@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 155208,
+   "units": 599,
+   "domain": 84,
+   "rubies": 258
+  },
+  {
+   "email": "w21171@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 35556,
+   "units": 153,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21172@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 13529,
+   "units": 57,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21173@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 25644,
+   "units": 69,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21174@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 8868,
+   "units": 41,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21175@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 19283,
+   "units": 306,
+   "domain": 64,
+   "rubies": 243
+  },
+  {
+   "email": "w21176@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 18138,
+   "units": 74,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21177@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 11137,
+   "units": 49,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21178@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 12393,
+   "units": 38,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21179@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 17026,
+   "units": 44,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21180@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 13529,
+   "units": 52,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21181@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 10238,
+   "units": 17,
+   "domain": 64,
+   "rubies": 231
+  },
+  {
+   "email": "w21182@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 7382,
+   "units": 34,
+   "domain": 69,
+   "rubies": 236
+  },
+  {
+   "email": "w21183@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 20425,
+   "units": 107,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21184@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 71194,
+   "units": 258,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21185@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 67129,
+   "units": 410,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21186@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 55339,
+   "units": 316,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21187@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 173363,
+   "units": 835,
+   "domain": 84,
+   "rubies": 256
+  },
+  {
+   "email": "w21188@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 34952,
+   "units": 237,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21189@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 55857,
+   "units": 227,
+   "domain": 74,
+   "rubies": 243
+  },
+  {
+   "email": "w21190@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 9,
+   "hero": 100,
+   "power": 47916,
+   "units": 134,
+   "domain": 79,
+   "rubies": 256
+  },
+  {
+   "email": "w21191@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 159932,
+   "units": 500,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21192@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 6807,
+   "units": 5,
+   "domain": 64,
+   "rubies": 236
+  },
+  {
+   "email": "w21193@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 68890,
+   "units": 324,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21194@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 6832,
+   "units": 5,
+   "domain": 64,
+   "rubies": 236
+  },
+  {
+   "email": "w21195@idle1.app",
+   "day": 20,
+   "stage": 149,
+   "castle": 10,
+   "hero": 100,
+   "power": 67813,
+   "units": 386,
+   "domain": 74,
+   "rubies": 250
+  },
+  {
+   "email": "w21196@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 199342,
+   "units": 1026,
+   "domain": 84,
+   "rubies": 270
+  },
+  {
+   "email": "w21197@idle1.app",
+   "day": 20,
+   "stage": 139,
+   "castle": 10,
+   "hero": 100,
+   "power": 30659,
+   "units": 272,
+   "domain": 69,
+   "rubies": 243
+  },
+  {
+   "email": "w21198@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 8688,
+   "units": 74,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21199@idle1.app",
+   "day": 20,
+   "stage": 129,
+   "castle": 10,
+   "hero": 100,
+   "power": 11345,
+   "units": 119,
+   "domain": 64,
+   "rubies": 238
+  },
+  {
+   "email": "w21200@idle1.app",
+   "day": 20,
+   "stage": 159,
+   "castle": 10,
+   "hero": 100,
+   "power": 90354,
+   "units": 389,
+   "domain": 79,
+   "rubies": 270
+  },
+  {
+   "email": "w21201@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 283565,
+   "units": 2063,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21202@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 241012,
+   "units": 2600,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21203@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 276571,
+   "units": 1803,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21204@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 199293,
+   "units": 2724,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21205@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 270874,
+   "units": 1903,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21206@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 245001,
+   "units": 2368,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21207@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 240402,
+   "units": 2041,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21208@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 191049,
+   "units": 1956,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21209@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 234388,
+   "units": 2476,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21210@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 253028,
+   "units": 2206,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21211@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 209216,
+   "units": 3385,
+   "domain": 84,
+   "rubies": 272
+  },
+  {
+   "email": "w21212@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 186149,
+   "units": 1433,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21213@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 197291,
+   "units": 3514,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21214@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 242382,
+   "units": 2277,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21215@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 204836,
+   "units": 3610,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21216@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 232394,
+   "units": 2497,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21217@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 201222,
+   "units": 930,
+   "domain": 84,
+   "rubies": 255
+  },
+  {
+   "email": "w21218@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 188392,
+   "units": 2348,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21219@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 194004,
+   "units": 1337,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21220@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 185699,
+   "units": 2853,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21221@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 225049,
+   "units": 3030,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21222@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 220517,
+   "units": 3275,
+   "domain": 89,
+   "rubies": 255
+  },
+  {
+   "email": "w21223@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 262805,
+   "units": 2654,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21224@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 175606,
+   "units": 2153,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21225@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 269182,
+   "units": 1996,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21226@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 192043,
+   "units": 1503,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21227@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 201822,
+   "units": 1683,
+   "domain": 89,
+   "rubies": 272
+  },
+  {
+   "email": "w21228@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 206111,
+   "units": 2525,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21229@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 9,
+   "hero": 100,
+   "power": 217837,
+   "units": 1224,
+   "domain": 89,
+   "rubies": 255
+  },
+  {
+   "email": "w21230@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 275796,
+   "units": 2316,
+   "domain": 89,
+   "rubies": 272
+  },
+  {
+   "email": "w21231@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 217380,
+   "units": 2069,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21232@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 277295,
+   "units": 3126,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21233@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 206626,
+   "units": 2043,
+   "domain": 89,
+   "rubies": 272
+  },
+  {
+   "email": "w21234@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 154593,
+   "units": 2619,
+   "domain": 84,
+   "rubies": 255
+  },
+  {
+   "email": "w21235@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 174138,
+   "units": 3029,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21236@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 204916,
+   "units": 2028,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21237@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 228495,
+   "units": 2343,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21238@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 9,
+   "hero": 100,
+   "power": 220470,
+   "units": 1220,
+   "domain": 89,
+   "rubies": 255
+  },
+  {
+   "email": "w21239@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 225673,
+   "units": 2268,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21240@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 234261,
+   "units": 2541,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21241@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 183129,
+   "units": 3661,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21242@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 214807,
+   "units": 2201,
+   "domain": 89,
+   "rubies": 255
+  },
+  {
+   "email": "w21243@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 253620,
+   "units": 2127,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21244@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 11,
+   "hero": 100,
+   "power": 196287,
+   "units": 4000,
+   "domain": 84,
+   "rubies": 255
+  },
+  {
+   "email": "w21245@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 270478,
+   "units": 1247,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21246@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 11,
+   "hero": 100,
+   "power": 223046,
+   "units": 2917,
+   "domain": 89,
+   "rubies": 272
+  },
+  {
+   "email": "w21247@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 234701,
+   "units": 2471,
+   "domain": 89,
+   "rubies": 272
+  },
+  {
+   "email": "w21248@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 10,
+   "hero": 100,
+   "power": 193278,
+   "units": 2570,
+   "domain": 84,
+   "rubies": 262
+  },
+  {
+   "email": "w21249@idle1.app",
+   "day": 20,
+   "stage": 179,
+   "castle": 10,
+   "hero": 100,
+   "power": 218523,
+   "units": 2481,
+   "domain": 89,
+   "rubies": 262
+  },
+  {
+   "email": "w21250@idle1.app",
+   "day": 20,
+   "stage": 169,
+   "castle": 9,
+   "hero": 100,
+   "power": 200519,
+   "units": 1454,
+   "domain": 84,
+   "rubies": 255
+  }
+ ]
 }

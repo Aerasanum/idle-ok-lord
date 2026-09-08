@@ -142,3 +142,8 @@ Lingua utente: **italiano**.
 
 - **Imprese con testi** (18b): titolo per metrica + numerale di tier, descrizione, stato (riscattata / completata: ritira N / cosa manca per N Rubini), categorie in italiano (`liveops.ACH_METRIC_IT`).
 - **Avviso Imprese** (18c): pallino rosso con conteggio sulla tab Eventi (`tab-events-dot`) + toast alla prima comparsa di un'impresa riscattabile (`useAchievementAlerts`, set notificato persistito per giocatore; il backlog iniziale non genera toast).
+
+### Simulazione mondo + account massimo (iterazioni 19–20)
+- `scripts/sim_world.py` (250 giocatori/30 alleanze/20 giorni via API; report `test_reports/sim_world_report.md`): 0 errori server, tutti crescono; 364 guerre con perdite. Rilievo di bilanciamento: erosione degli eserciti per chi guerreggia ogni giorno (40/200 sotto 100 unità) — opzioni proposte all'owner (tetto perdite / infermeria / tasso sconfitto ridotto), nessuna modifica di regola.
+- Account end-game `max.lord@idle1.app` verificato giocabile (iterazione 19).
+- `RATE_LIMIT_DISABLED` (solo preview) per i test di carico.

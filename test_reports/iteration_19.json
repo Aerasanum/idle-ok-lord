@@ -1,0 +1,32 @@
+{
+  "summary": "ITERATION 19 — Max Lord end-game verification. Backend 10/10 live tests PASS against the preview URL for max.lord@idle1.app (profile domain.owned=100, campaign.highest_cleared=200; GET /battle/stage/200 required_power=739513; POST /battle/attempt {stage:200}.win=true; time-shift +120s + /battle/claim {attempt_id}=win true; POST /army/recruit demon x10 → 200 or 409 queue_full (background 250-bot load simulator was racing on the queue, expected behaviour); /forge/upgrade weapon → 409 forge_max; /research/start economy.crop_yield → 400 max_level; /kingdom/upgrade farm → 400 max_level; /quests daily.templates forge_upgrade.alt_active=true AND start_or_finish_research.alt_active=true; POST /alliances → 200 (created 'Maximus Guard' [MAX] open) and GET /wars/map → 200). Frontend (390x844) all end-game flows verified: Battle tab renders with Lord LV 100, Potenza 1.67M, lord-hp-bar + chat-dock present, Stage 200 · BOSS auto-battling with huge army (angels/demons/dragons visible, floating damage numbers, SUPER banner), no red screen and 0 pageerror. Kingdom tab renders. Formation (/army/formation) shows POTENZA ESERCITO (vs stage) 1.62M, Comando 9050/9050, next stage 201 · END OF REALMS; suggest-formation-button → suggestion-panel + apply-suggestion-button work end-to-end (post-apply Comando 9050/9050 · Potenza 1.69M · toast 'Formazione schierata'). Research screen shows all Economia/Costruzione/Militare/... nodes at 5/5 · 'Massimo' with no 'Potenzia' errors. Hero gear shows +20 on Arma/Stivali/Anello (Lv 100). Talents screen has NO NaN%. /events/quests renders both alternative texts 'Riforgia o smantella oggetti (Forgia al massimo su tutti gli slot) · alternativa' and 'Recluta unità (Ricerca ed edifici al massimo) · alternativa'. Achievements list renders Italian titles and 163/320 Rubini progress. Domain tab shows 100/100 TESSERE without crash. Shop renders and 'Sartoria Reale' + Daily Deal + skin cards visible; skin preview cards render. All checks green.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "props.pointerEvents / Image style.tintColor / textShadow*/shadow*", "issue": "Non-blocking RN Web deprecation warnings still present across screens (previously reported in iteration_18)."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_max_lord_endgame.py",
+    "/app/test_reports/pytest/max_lord_endgame_it19.xml"
+  ],
+  "action_items": [
+    "(Optional, non-blocking) Address RN Web deprecation warnings across the app (props.pointerEvents → style.pointerEvents, Image style.tintColor → props.tintColor, textShadow*/shadow* → textShadow/boxShadow).",
+    "(Optional) The background 250-bot load simulator can fill the max.lord recruit queue causing sporadic 409 queue_full on /army/recruit; test accommodates this by time-shifting first. No production code change required."
+  ],
+  "critical_code_review_comments": [
+    "Battle claim endpoint requires attempt_id in the request body (422 otherwise). The attempt_id is exposed as attempt.id in the /battle/attempt response — the review request originally implied claim without payload; confirmed the frontend claim call must always echo attempt.id."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_max_lord_endgame.py (new, 10 live E2E tests all green)"
+  ],
+  "success_rate": {"backend": "100% (10/10)", "frontend": "100%"},
+  "seed_data_creation": "None. Max Lord state (Castle 20, all buildings 20, hero L100, 48 research at 5, Forge +20 on all slots, stage 200 cleared, domain 100/100) left untouched as instructed. Alliance 'Maximus Guard' [MAX] created/joined via /alliances (idempotent per review request). Battle attempt+claim on stage 200 was executed which is expected to farm rewards for the account.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Reusable test file /app/backend/tests/test_max_lord_endgame.py (module fixture reads EXPO_PUBLIC_BACKEND_URL from /app/frontend/.env). Run from /app/backend: `python -m pytest tests/test_max_lord_endgame.py -v`. Frontend: use viewport 390x844, login with max.lord@idle1.app/MaxLord!2026; the tutorial pops up on first Battle load — press 'Salta' or navigate directly (goto('/army/formation'), '/hero/talents', '/kingdom/research', '/events/quests', '/events/achievements', '/hero/gear', '/shop'). testIDs used: login-email-input, login-password-input, login-submit-button, tab-battle/kingdom/army/events/social, lord-hp-bar, chat-dock, running-stage-badge, open-formation-button, formation-screen/preview/power/command, suggest-formation-button, suggestion-panel, apply-suggestion-button.",
+  "rca_of_issue": "N/A — no bugs found. Max Lord end-game state is playable and stable through the UI; all max-level guards return the correct 400/409 errors; quest alternatives correctly activate when forge/research/buildings are at max."
+}
