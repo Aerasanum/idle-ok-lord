@@ -253,6 +253,15 @@ async def settle(p: dict) -> dict:
                 sets["offline.chest_from"] = last_prod
         if done:
             sets["offline.pending_timers"] = (off.get("pending_timers") or []) + [{"queue": d["queue"], "ended_at": d["ended_at"], **{k: v for k, v in d.items() if k in ("building", "target_level", "node", "unit", "quantity")}} for d in done]
+    # v1.6 Infirmary: troops fallen in Alliance Wars come back once their ready_at has passed
+    inf = p.get("army", {}).get("infirmary") or []
+    ready = [e for e in inf if aware(e["ready_at"]) <= t]
+    if ready:
+        for e in ready:
+            for k, v in e["units"].items():
+                incs[f"army.units.{k}"] = incs.get(f"army.units.{k}", 0) + int(v)
+        sets["army.infirmary"] = [e for e in inf if aware(e["ready_at"]) > t]
+        sets["army.infirmary_returned_total"] = p["army"].get("infirmary_returned_total", 0) + sum(sum(e["units"].values()) for e in ready)
     sets["kingdom.last_production_at"] = t
     sets["last_seen_at"] = t
     sets["updated_at"] = t

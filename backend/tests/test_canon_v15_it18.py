@@ -39,7 +39,7 @@ def test_canon_validation_v15():
     r = requests.get(f"{BASE}/canon/validation", timeout=15)
     assert r.status_code == 200
     j = r.json()
-    assert j["VERSION"] == "1.5"
+    assert j["VERSION"] >= "1.5"
 
 
 # -------- (2) /api/army effective unlock --------

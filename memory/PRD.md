@@ -148,3 +148,4 @@ Lingua utente: **italiano**.
 - Account end-game `max.lord@idle1.app` verificato giocabile (iterazione 19).
 - `RATE_LIMIT_DISABLED` (solo preview) per i test di carico.
 - **Navigazione** (20b): nuova tab **Guerra** (mappa territori di tutte le alleanze + guerre); tab **Alleanza** (ex Social) con Chat alleanza, Titano, Guerra 10v10 (solo arruolamento/formazione, `?section=roster`). Logout in Profilo ("Esci").
+- **Infermeria** (canon v1.6): 40% dei caduti torna dopo 8 h (`army.infirmary`, settle lazy); UI in dettaglio guerra e tab Esercito. **Formazione 10v10**: blocco 'La tua formazione in guerra' con pulsante verso Area Formazione dentro l'arruolamento.

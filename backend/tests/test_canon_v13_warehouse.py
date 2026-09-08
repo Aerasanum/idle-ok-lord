@@ -40,7 +40,7 @@ def test_02_canon_validation_version_is_1_3():
     r = requests.get(f"{BASE}/canon/validation", timeout=15)
     assert r.status_code == 200, r.text[:200]
     d = r.json()
-    assert d["VERSION"] == "1.5", f"expected VERSION=1.5, got {d.get('VERSION')}"
+    assert d["VERSION"] >= "1.5", f"expected VERSION>=1.5, got {d.get('VERSION')}"
     assert d["CANONICAL_SPEC_PARSED"] == "YES"
 
 

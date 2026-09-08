@@ -771,6 +771,8 @@ def sec_casualties():
             "Corsie vuote ('Corsia vuota'): chi non ha avversario non combatte e non perde nulla. Le guarnigioni NPC non hanno truppe da perdere; chi le affronta subisce le perdite normali.",
             "Le perdite si calcolano sullo <b>snapshot congelato</b> (truppe schierate al blocco) e sull'esito della corsia, si sottraggono <b>una sola volta</b> per guerra e giocatore (registro idempotente), "
             "la formazione viene ridotta ai superstiti e lo snapshot non viene mai modificato. Il risultato della guerra e la chat di alleanza riportano cadute e superstiti.",
+            f"<b>Infermeria (v1.6)</b>: per ogni tipo di unità <b>⌊cadute × {cw['infirmary']['return_pct']}%⌋</b> tornano automaticamente <b>{cw['infirmary']['hours']} ore</b> dopo la risoluzione della guerra (la formazione non cambia). "
+            f"La perdita permanente netta è quindi il {100 - cw['infirmary']['return_pct']}% dei caduti.",
         ]),
         tbl(["r (forza relativa)", "Vincitore attaccante", "Vincitore difensore", "Sconfitto attaccante", "Sconfitto difensore"], ratio_rows, widths=[34 * mm, 34 * mm, 34 * mm, 34 * mm, 34 * mm]),
         P("Esempi calcolati dal server con lo stesso esercito schierato (1.000 Fanteria, 200 Cavalleria, 20 Catapulte, 8 Draghi):", "small"),
@@ -834,11 +836,11 @@ def sec_formulas():
         ["Offline", "max 12 h · risorse 85% · bottino 70% · tiri oggetto min(1,2; 0,35 + stage/250)/h"],
         ["Titan Hunt", "PV boss round(500.000 × tier^1,8) · danno round(potenza × 4)"],
         ["Spedizione evento", "Gettoni round((20 + stage × 0,35) × m) · Oro round((150 + stage × 8) × m) · oggetto min(35%, 5% + stage × 0,1)"],
-        ["Perdite in guerra", "r = min(A,D)/max(A,D) · vincitore 5% + 20% × r · sconfitto 30% + 30% × (1−r) · difensore × 0,85 · categoria (reg. 1 / bestie 0,9 / assedio 0,8 / mitiche 0,6) · cadute = ⌊schierate × tasso⌋"],
+        ["Perdite in guerra", "r = min(A,D)/max(A,D) · vincitore 5% + 20% × r · sconfitto 30% + 30% × (1−r) · difensore × 0,85 · categoria (reg. 1 / bestie 0,9 / assedio 0,8 / mitiche 0,6) · cadute = ⌊schierate × tasso⌋ · Infermeria: ⌊cadute × 40%⌋ tornano dopo 8 h"],
         ["Arrotondamenti", "round = mezzo verso l'alto (⌊x + 0,5⌋) · ⌈ ⌉ eccesso · ⌊ ⌋ difetto · livello oggetto ⌈stage/2⌉ · talenti ⌊lv/5⌋ · mostri ⌊(stage−1)/25⌋ · Polvere Forgia ⌈ ⌉ · accelerazione ⌈min/3⌉ · affissi 2 decimali"],
     ]
     return [H1("13. Tutte le formule in una pagina"), tbl(["Cosa", "Formula"], rows, widths=[38 * mm, 140 * mm]),
-            Spacer(1, 6 * mm), P(f"Hash della specifica: {C['document']['spec_hash'][:16]}… · Ultime modifiche v1.5: " + " · ".join(C["document"]["changelog_v1_5"]), "small")]
+            Spacer(1, 6 * mm), P(f"Hash della specifica: {C['document']['spec_hash'][:16]}… · Ultime modifiche v1.6: " + " · ".join(C["document"]["changelog_v1_6"] + C["document"]["changelog_v1_5"]), "small")]
 
 
 def build():

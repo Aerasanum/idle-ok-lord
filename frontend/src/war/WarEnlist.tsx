@@ -1,8 +1,9 @@
 // War roster booking: first come, first served — the first 10 members who book a slot deploy their troops.
+import { router } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { QK, useAction } from "@/src/api/hooks";
+import { QK, useAction, useProfile } from "@/src/api/hooks";
 import { useAuth } from "@/src/auth/AuthContext";
 import { fonts, useTheme } from "@/src/theme";
 import { Btn, Icon, Row, Txt, fmt, fmtDuration } from "@/src/ui";
@@ -16,7 +17,10 @@ export function WarEnlist({ detail, myAllianceId }: { detail: any; myAllianceId?
   const enlist = useAction("post", `/wars/${w.id}/enlist`, [QK.wars, QK.warMap], { success: (d) => (d.reserve ? `Sei in riserva n.${d.reserve_position}: entri se qualcuno si ritira` : "Prenotato! Le tue truppe scenderanno in campo") });
   const withdraw = useAction("post", `/wars/${w.id}/withdraw`, [QK.wars, QK.warMap], { success: (d) => (d.promoted ? "Ritirato: una riserva ha preso il tuo posto" : "Ti sei ritirato") });
   const lockLeft = useCountdown(w.lock_at);
+  const { data: profile } = useProfile();
   if (!side) return null;
+  const form: Record<string, number> = profile?.army?.formation ?? {};
+  const deployedUnits = Object.values(form).reduce((a: number, b: any) => a + Number(b), 0);
   const roster: string[] = w[side];
   const reserve: string[] = w[side.replace("roster", "reserve")] ?? [];
   const me = user?.player_id;
@@ -52,6 +56,14 @@ export function WarEnlist({ detail, myAllianceId }: { detail: any; myAllianceId?
           {reserve.map((pid, i) => <Txt key={pid} v="small" color={pid === me ? colors.brandPrimary : colors.onSurfaceInverse} testID={`war-reserve-${i + 1}`}>{i + 1}. {detail.roster_players?.[pid]?.display_name ?? "…"}{pid === me ? " (tu)" : ""}</Txt>)}
         </View>
       ) : null}
+      <View style={{ gap: 4, padding: 8, borderRadius: 6, borderWidth: 1, borderColor: colors.wood, backgroundColor: colors.parchment }} testID="war-my-formation">
+        <Row style={{ justifyContent: "space-between" }}>
+          <Txt v="small" color={colors.onSurfaceInverse} style={{ fontFamily: fonts.bodyBold }}>La tua formazione in guerra</Txt>
+          <Txt v="small" color={colors.onSurfaceInverse}>⚔ {fmt(profile?.combat?.total_power ?? 0)} · {fmt(deployedUnits)} unità · {profile?.combat?.command_used ?? 0}/{profile?.combat?.command_capacity ?? 0} comando</Txt>
+        </Row>
+        <Txt v="caption" color={colors.onSurfaceInverse}>In guerra scende in campo la stessa formazione della Campagna (viene congelata al blocco del roster). {deployedUnits === 0 ? "Nessuna unità schierata: schiera le truppe prima del blocco!" : ""}</Txt>
+        <Btn title="Modifica formazione · suggerimenti" small variant={deployedUnits === 0 ? "gold" : "secondary"} icon="chess-rook" onPress={() => router.push("/army/formation")} testID="war-edit-formation-button" />
+      </View>
       {enlisted || inReserve ? (
         <Btn title={inReserve ? `Esci dalla riserva (sei n.${reserve.indexOf(me!) + 1})` : "Ritirati dal roster"} small variant="secondary" icon="undo" loading={withdraw.isPending} onPress={() => withdraw.mutate({})} testID="war-withdraw-button" />
       ) : (

@@ -433,8 +433,13 @@
       },
       "per_unit_type": "lost = min(floor(deployed * rate * defender_mult * category_mult), deployed, owned_now); rate < 1 so at least one unit of every deployed type survives",
       "npc_and_empty_lanes": "NPC garrisons have no troops to lose; a player whose lane opponent is an empty lane ('Corsia vuota') fights nobody and loses nothing; a player facing an NPC garrison suffers normal losses",
-      "application": "computed from the locked snapshot's deployed_army and the resolved lane; deducted ONCE per war and player (ledger key war_losses:<war_id>:<player_id>) from army.units; the formation is clamped to the survivors; war snapshots are never modified. Losses are reported in war.result.casualties and in the alliance chat",
-      "examples_note": "see rulebook chapter 11.3 for the worked examples (attacker/defender x winner/loser)"
+      "application": "computed from the locked snapshot's deployed_army and the resolved lane; deducted ONCE per war and player (ledger key war_losses:<war_id>:<player_id>) from army.units; the formation is clamped to the survivors; war snapshots are never modified. Losses are reported in war.result.casualties and in the alliance chat. Infirmary: 40% of the fallen return after 8h (alliance_war.casualties.infirmary)",
+      "examples_note": "see rulebook chapter 11.3 for the worked examples (attacker/defender x winner/loser)",
+      "infirmary": {
+        "return_pct": 40,
+        "hours": 8,
+        "rule": "per unit type: returned = floor(lost * 0.40); the survivors are credited automatically 8 hours after the war resolves (lazy settlement on the next load), the formation is not changed. Applied per war and player; recorded in army.infirmary. The other 60% is lost for good"
+      }
     }
   },
   "alliances": {
@@ -4967,9 +4972,9 @@
     ],
     "project": "IDLE 1",
     "relationship_to_empire_lords_dragon": "same medieval-fantasy universe inspiration; independent gameplay runtime; do not import multiplayer rules unless explicitly present here",
-    "spec_hash": "b5ab4a576166647dc28c30eda067885c5a316433b13caedef56bad978e8c4e37",
+    "spec_hash": "645149e61c118a33dadf5e7758770d6b70e20303600e4f7b8ab06ad1dd8aeb71",
     "status": "LIVE_UPDATE_v1.2",
-    "version": "1.5",
+    "version": "1.6",
     "working_marketing_title": "TBD - do not invent without approval",
     "changelog_v1_3": [
       "Warehouse capacity raised so that every single upgrade (castle, buildings, research) reachable at castle level L fits in Warehouse level L (110% of the largest cost); capacities only grow, progress preserved."
@@ -5000,6 +5005,9 @@
       "Reforge: the retired affix is not protected; primary stats/rarity/item level/forge never change.",
       "Quests: Italian texts + alternatives when Forge / research (and buildings) are maxed.",
       "Alliance War: permanent casualties on both sides (alliance_war.casualties); PvE unchanged."
+    ],
+    "changelog_v1_6": [
+      "Alliance War: Infirmary returns 40% of the fallen troops 8 hours after the war (net permanent loss = 60% of the casualties)."
     ]
   },
   "dungeons": {

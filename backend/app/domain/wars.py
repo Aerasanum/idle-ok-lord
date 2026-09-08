@@ -450,6 +450,12 @@ async def apply_casualties(war_id: str, result: dict) -> dict:
                         else:
                             ops.unset(f"army.formation.{k}")
             entry = {**cas, "side": side, "lane": lane["lane"], "units": applied, "lost_total": sum(v["lost"] for v in applied.values())}
+            inf = canon()["alliance_war"]["casualties"].get("infirmary")
+            if inf:  # v1.6 Infirmary: a share of the fallen comes back after `hours`
+                back = {k: int(v["lost"] * inf["return_pct"] / 100) for k, v in applied.items() if int(v["lost"] * inf["return_pct"] / 100) > 0}
+                entry["infirmary"] = {"units": back, "total": sum(back.values()), "ready_at": (now() + timedelta(hours=inf["hours"])).isoformat()}
+                if back:
+                    ops.push("army.infirmary", {"war_id": war_id, "units": back, "ready_at": now() + timedelta(hours=inf["hours"])})
             await ledger.apply_to_player(f"war_losses:{war_id}:{pid}", pid, "war_losses", ops.build(), entry)
             summary[pid] = entry
     return summary

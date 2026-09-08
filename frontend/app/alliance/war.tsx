@@ -106,7 +106,12 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
                       Le tue truppe: {Object.entries(detail.my_casualties.units).map(([k, v]: any) => `${k} −${fmt(v.lost)} (${fmt(v.survived)} superstiti)`).join(" · ")}
                     </Txt>
                   ) : null}
-                  <Txt v="small" color={colors.muted}>Regola v1.5: vincitore 5% + 20%×r, sconfitto 30% + 30%×(1−r); difensore ×0,85; bestie ×0,9, assedio ×0,8, mitiche ×0,6. Almeno un superstite per tipo. Il PvE non causa perdite.</Txt>
+                  {detail.my_casualties?.infirmary?.total ? (
+                    <Txt v="small" color={colors.success} testID="war-infirmary">
+                      🏥 Infermeria: {fmt(detail.my_casualties.infirmary.total)} unità tornano {new Date(detail.my_casualties.infirmary.ready_at).getTime() > Date.now() ? `tra ${fmtDuration((new Date(detail.my_casualties.infirmary.ready_at).getTime() - Date.now()) / 1000)}` : "(già rientrate)"} · {Object.entries(detail.my_casualties.infirmary.units).map(([k, v]: any) => `${k} +${fmt(v)}`).join(" · ")}
+                    </Txt>
+                  ) : null}
+                  <Txt v="small" color={colors.muted}>Regola v1.5: vincitore 5% + 20%×r, sconfitto 30% + 30%×(1−r); difensore ×0,85; bestie ×0,9, assedio ×0,8, mitiche ×0,6. Almeno un superstite per tipo; l'Infermeria restituisce il 40% dei caduti dopo 8 ore. Il PvE non causa perdite.</Txt>
                 </View>
               ) : null}
             </View>

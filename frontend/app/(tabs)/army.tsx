@@ -58,6 +58,11 @@ export default function ArmyTab() {
           ) : (
             <Btn title="Area Formazione · schiera e suggerimenti" small icon="chess-rook" variant="gold" onPress={() => router.push("/army/formation")} testID="open-formation-button" style={{ marginTop: 8 }} />
           )}
+          {profile?.army?.infirmary?.length ? (
+            <Txt v="small" color={colors.success} style={{ marginTop: 6 }} testID="army-infirmary">
+              🏥 Infermeria: {profile.army.infirmary.map((e: any) => `${fmt(Object.values(e.units).reduce((x: number, y: any) => x + Number(y), 0))} unità tra ${fmtDuration(Math.max(0, (new Date(e.ready_at).getTime() - Date.now()) / 1000))}`).join(" · ")}
+            </Txt>
+          ) : null}
         </Panel>
         {a.queue.length ? (
           <Panel variant="wood" testID="recruit-queue">

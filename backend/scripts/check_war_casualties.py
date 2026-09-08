@@ -4,7 +4,7 @@ import sys
 
 import requests
 
-BASE = [l.split("=", 1)[1].strip() for l in open("/app/frontend/.env") if l.startswith("EXPO_PUBLIC_BACKEND_URL")][0] + "/api"
+BASE = "http://localhost:8001/api"
 
 
 def login(email, pw):
