@@ -7,16 +7,16 @@ from app.domain.hero import apply_xp
 
 def test_canon_validation():
     r = validation_report()
-    assert r["VERSION"] == "1.3"
-    assert r["SPEC_HASH"] == "bf53ae751a9f5f6a1aa29e4a40643b520d3ff293ae52d74cbe70ec207c099c02" == compute_spec_hash(canon())
+    assert r["VERSION"] == "1.4"
+    assert r["SPEC_HASH"] == "9c4d770d51d7209e40849ac4728845cd0f39eff00504743725de7008b95a4650" == compute_spec_hash(canon())
     assert r["GEAR_SLOTS"] == 9 and r["CAMPAIGN_STAGES"] == 200 and r["RESEARCH_NODES"] == 48 and r["UNITS"] == 13
 
 
 def test_enemy_power_table():
     # v1.1 audit table (04_GAMEPLAY_ECONOMIA_LIVEOPS): stage 1 = 75, stage 200 = 698,958 before the v1.2 ramp (x1.6 at 200)
-    assert F.enemy_power(1) == 75 and F.enemy_power(50) == round(75 * 1.047 ** 49)
-    assert F.difficulty_ramp(50) == 1 and F.difficulty_ramp(100) == 1.2 and abs(F.difficulty_ramp(200) - 1.6) < 1e-9
-    assert F.enemy_power(200) == round(75 * 1.047 ** 199 * 1.6) and abs(F.enemy_power(200) / 698958 - 1.6) < 0.001
+    assert F.enemy_power(1) == 75 and F.enemy_power(50) == round(75 * 1.043 ** 49)
+    assert F.difficulty_ramp(50) == 1 and abs(F.difficulty_ramp(100) - 1.075) < 1e-9 and abs(F.difficulty_ramp(200) - 1.225) < 1e-9
+    assert F.enemy_power(200) == round(75 * 1.043 ** 199 * 1.225)  # v1.4 curve: boss 200 stays beatable
     assert F.enemy_required_power(200) == round(F.enemy_power(200) * 1.85)
     assert F.enemy_required_power(5) == round(F.enemy_power(5) * 1.35)
 

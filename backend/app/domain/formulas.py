@@ -10,7 +10,8 @@ def difficulty_ramp(stage: int) -> float:
 
 
 def enemy_power(stage: int) -> int:
-    return rnd(75 * (1.047 ** (stage - 1)) * difficulty_ramp(stage))
+    b = canon()["battle"]
+    return rnd(b.get("enemy_power_base", 75) * (b.get("enemy_power_growth", 1.047) ** (stage - 1)) * difficulty_ramp(stage))
 
 
 # ---- unit counters (v1.2) ---------------------------------------------------

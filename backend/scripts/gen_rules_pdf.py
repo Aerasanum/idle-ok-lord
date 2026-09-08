@@ -359,7 +359,7 @@ def sec_campaign():
         H2("4.1 Come si vince"),
         *LI([
             "<b>Potenza totale = potenza eroe + potenza esercito</b>.",
-            "<b>Potenza nemica = round(75 × 1,047^(stage−1) × rampa)</b>, dove la rampa vale <b>1 + 0,004 × max(0, stage−50)</b> (+20% allo stage 100, +40% al 150, +60% al 200).",
+            "<b>Potenza nemica = round(75 × 1,043^(stage−1) × rampa)</b>, dove la rampa vale <b>1 + 0,0015 × max(0, stage−50)</b> (+7,5% allo stage 100, +15% al 150, +22,5% al 200). Curva v1.4: ogni boss (50/100/150/180/200) è battibile con potenza e unità ottenibili prima di affrontarlo.",
             "Potenza richiesta = potenza nemica × 1,35 (Elite) o × 1,85 (Boss).",
             "<b>Vinci se potenza totale ≥ potenza richiesta.</b> Nessun dado.",
             "Durata della vittoria = clamp(round(18 + 55 × richiesta/totale), 18, 90) secondi: più sei forte, più in fretta finisce.",
@@ -439,7 +439,8 @@ def sec_units():
         ]),
         WHY("la capacità di comando lega l'esercito alla crescita di eroe e castello, così non si può 'comprare' un esercito enorme al livello 1. I contro-attacchi premiano chi cambia formazione per regione invece di usare sempre le unità più costose."),
         H2("5.2 Catalogo delle unità: statistiche"),
-        P("'Potenza/comando' indica quanto rende ogni punto di comando: utile per capire quale unità conviene quando la capacità è il limite."),
+        P("'Potenza/comando' indica quanto rende ogni punto di comando. <b>Regola v1.4</b>: potenza/comando = 36 + 1,4 × Castello di sblocco (+14 mitiche, +6 assedio, +3 bestie): "
+          "le unità d'élite valgono il loro comando (un Drago 1.740 vs 925 di 25 Fanti), le unità iniziali restano le più economiche per punto di potenza."),
         tbl(["Unità", "Categoria", "Ruolo", "Classe", "ATT", "DIF", "PV", "Potenza", "Comando", "Potenza/comando"], stat_rows,
             widths=[30 * mm, 18 * mm, 22 * mm, 18 * mm, 11 * mm, 11 * mm, 11 * mm, 15 * mm, 16 * mm, 24 * mm]),
         H2("5.3 Catalogo delle unità: costi, tempi e sblocchi"),
@@ -732,7 +733,7 @@ def sec_achievements_shop():
 
 def sec_formulas():
     rows = [
-        ["Potenza nemica", "round(75 × 1,047^(stage−1) × (1 + 0,004 × max(0, stage−50)))"],
+        ["Potenza nemica", "round(75 × 1,043^(stage−1) × (1 + 0,0015 × max(0, stage−50)))"],
         ["Potenza richiesta", "potenza nemica × 1,35 (Elite, ogni 5) · × 1,85 (Boss, ogni 10)"],
         ["Vittoria", "potenza eroe + potenza esercito ≥ potenza richiesta"],
         ["Durata vittoria", "clamp(round(18 + 55 × richiesta / totale), 18, 90) s"],

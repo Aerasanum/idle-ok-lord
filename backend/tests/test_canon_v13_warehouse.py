@@ -40,7 +40,7 @@ def test_02_canon_validation_version_is_1_3():
     r = requests.get(f"{BASE}/canon/validation", timeout=15)
     assert r.status_code == 200, r.text[:200]
     d = r.json()
-    assert d["VERSION"] == "1.3", f"expected VERSION=1.3, got {d.get('VERSION')}"
+    assert d["VERSION"] == "1.4", f"expected VERSION=1.4, got {d.get('VERSION')}"
     assert d["CANONICAL_SPEC_PARSED"] == "YES"
 
 
@@ -51,7 +51,7 @@ def _load_spec() -> dict:
 
 def test_03_spec_version_and_warehouse_rule_present():
     c = _load_spec()
-    assert c["document"]["version"] == "1.3"
+    assert c["document"]["version"] == "1.4"
     assert "warehouse_rule" in c["kingdom"]
     assert "capacity(L)" in c["kingdom"]["warehouse_rule"]
 

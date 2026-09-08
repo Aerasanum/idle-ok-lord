@@ -216,14 +216,21 @@ def suggest_formation(p: dict, affix_army_pct: float, enemy_mix: dict, territory
         per_unit = u["base_power"] * mult * (1 + cpct / 100)
         cands.append({"key": k, "name": u["name"], "owned": owned, "cost": u["command_cost"], "per_unit": per_unit, "per_command": per_unit / u["command_cost"], "counter_pct": round(cpct, 1)})
     cands.sort(key=lambda c: -c["per_command"])
-    chosen = cands[:slots] if slots > 0 else []
+    # greedy fill in order of power-per-command: a type only takes a slot if at least one unit fits; low-stock types no longer
+    # waste slots, and leftover command is filled by the next-best types (fixes "Suggerisci" leaving capacity unused)
     formation: dict = {}
     left = cap
-    for c in chosen:
+    chosen = []
+    for c in cands:
+        if len(chosen) >= slots or left < c["cost"]:
+            continue
         q = min(c["owned"], left // c["cost"])
         if q > 0:
             formation[c["key"]] = int(q)
             left -= q * c["cost"]
+            chosen.append(c)
+        if left <= 0:
+            break
     power = sum(formation[k] * next(c["per_unit"] for c in chosen if c["key"] == k) for k in formation)
     return {"formation": formation, "army_power": rnd(power), "command_used": cap - left, "command_capacity": cap, "formation_slots": slots,
             "picks": [{**{kk: vv for kk, vv in c.items() if kk != "per_unit"}, "per_command": round(c["per_command"], 2), "quantity": formation.get(c["key"], 0)} for c in cands]}
