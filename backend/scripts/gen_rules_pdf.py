@@ -33,7 +33,7 @@ from app.domain import formulas as F
 
 C = canon()
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
-OUT = os.path.join(OUT_DIR, "IDLE1_Regolamento_v1.2.pdf")
+OUT = os.path.join(OUT_DIR, "IDLE1_Regolamento.pdf")
 
 # ---------------------------------------------------------------- fonts / styles
 FONT_DIR = "/usr/share/fonts/truetype/liberation"
@@ -165,7 +165,7 @@ class Doc(BaseDocTemplate):
         canv.saveState()
         canv.setFont("Body", 7.5)
         canv.setFillColor(MUTED)
-        canv.drawString(self.leftMargin, A4[1] - 11 * mm, "IDLE 1 · Regolamento completo · spec v1.2")
+        canv.drawString(self.leftMargin, A4[1] - 11 * mm, f"IDLE 1 · Regolamento completo · spec v{C['document']['version']}")
         canv.drawRightString(A4[0] - self.rightMargin, A4[1] - 11 * mm, f"Pagina {doc.page}")
         canv.setStrokeColor(LINE)
         canv.line(self.leftMargin, A4[1] - 12.5 * mm, A4[0] - self.rightMargin, A4[1] - 12.5 * mm)
@@ -261,7 +261,8 @@ def sec_resources():
         H3("Dotazione iniziale di un nuovo Lord"),
         tbl(["Risorsa", "Quantità"], rows, widths=[50 * mm, 30 * mm]),
         WHY("le risorse iniziali bastano per i primi potenziamenti e le prime reclute; il resto va guadagnato producendo e combattendo. "
-            f"Il Magazzino limita la scorta di ogni risorsa (livello 1: {n(C['buildings'][4]['levels'][0]['capacity_each_resource'])}), quindi va potenziato prima dei grandi acquisti."),
+            f"Il Magazzino limita la scorta di ogni risorsa (livello 1: {n(C['buildings'][4]['levels'][0]['capacity_each_resource'])}, livello 20: {n(C['buildings'][4]['levels'][-1]['capacity_each_resource'])}). "
+            "<b>Regola v1.3</b>: il Magazzino di livello L contiene sempre almeno il 110% del costo singolo più alto raggiungibile al Castello L (castello, edifici, ricerche): ogni potenziamento è pagabile con un magazzino pieno, senza eccezioni."),
         H3("Il tuo dominio aumenta la produzione"),
         P(f"Ogni {C['battle']['domain_tile_every_stages']} stage superati conquisti una casella adiacente della tua mappa {C['personal_domain']['map']}. "
           f"Ogni {10} caselle possedute danno <b>+{C['personal_domain']['production_bonus_per_10_owned_tiles_pct']}%</b> di produzione, fino a un massimo di "

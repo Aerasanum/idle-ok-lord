@@ -90,6 +90,7 @@ export default function KingdomTab() {
                   <Btn title={b.level === 0 ? "Costruisci" : "Potenzia"} icon="hammer" disabled={!b.unlocked || !canAfford(b.next.cost) || k.queues.construction_queue.length >= k.queue_caps.construction} loading={upgrade.isPending} onPress={() => upgrade.mutate({ building: b.key }, { onSuccess: () => sheet.current?.dismiss() })} testID="building-upgrade-button" />
                 )}
                 {!canAfford(b.next.cost) ? <Txt v="small" color={colors.burgundy}>Risorse insufficienti</Txt> : null}
+                {Math.max(...Object.values(b.next.cost as Record<string, number>)) > k.warehouse_capacity ? <Txt v="small" color={colors.burgundy} testID="capacity-hint">Il Magazzino ({fmt(k.warehouse_capacity)}) non basta per questo costo: potenzialo prima.</Txt> : null}
               </Panel>
             ) : <Txt v="small" color={colors.goldBright}>Livello massimo raggiunto</Txt>}
           </View>

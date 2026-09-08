@@ -1,0 +1,34 @@
+{
+  "summary": "Iteration 16 — Canon v1.3 warehouse invariant + progress preserved + rulebook v1.3 + war roster power (own team only). Backend 14/14 PASSED against preview URL (see /app/backend/tests/test_canon_v13_warehouse.py). VERSION 1.3 verified via /api/canon/validation. Canon file /app/backend/canon/IDLE_1_v1.1_CANONICAL_SPEC.json has document.version='1.3' and kingdom.warehouse_rule text. Warehouse capacities are monotonic non-decreasing across L1..L20; L20=2,641,000 as required. Invariant verified programmatically: for every castle L in 1..20 warehouse cap L covers (a) castle L->L+1 upgrade_cost, (b) every reachable building level (unlock_castle_level<=L, capped near L+1), (c) every research level with unlock_castle_level<=L; no cost anywhere exceeds L20 cap. QA lord progress: warehouse_capacity matches canon for the player's warehouse building level; castle 'next' cost fits canon cap at castle_level. GET /api/docs/regolamento.pdf → 200, application/pdf, 149KB, extracted text contains 'v1.3', 'Regola v1.3', and '2.641.000'. War power exposure (war_0b2db37c91bb4cd8b4ca6e933ca8509d): qa.lord (attacker) → my_side='attack', team_power=6420=sum of attack_roster war_powers, every attack roster/reserve has war_power, defense side has NO war_power leaked; orsi.bot1 (defender) → my_side='defense', attack side hidden, defense side exposed; lord.tester (QAT member) → same as qa.lord (attack side visible). Frontend (390x844, qa.lord): Kingdom tab renders kingdom-screen, production-panel shows 'Magazzino 5000', building sheet for Castello shows 'Prossimo livello 11' with cost 46.5K wood and capacity-hint 'Il Magazzino (5000) non basta per questo costo: potenzialo prima.' in red. No red screens. WarEnlist.tsx frontend was code-reviewed and contains the required testIDs (war-team-power, war-slot-power-1..10) and copy ('Avversari schierati', 'la loro potenza resta segreta') at /app/frontend/src/war/WarEnlist.tsx:31,44,60. RUNTIME UI test for war-enlist could NOT be executed because the war has transitioned from 'prep' to 'locked' since iteration 15 (natural time progression: lock_at=05:07 UTC has passed); WarEnlist.tsx is only rendered when war.status==='prep' in /app/frontend/app/alliance/war.tsx:51. Backend contract for team_power/war_power (which powers the UI) is fully verified via test_12/13/14.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Territorio → war-row → war-enlist (prep-only UI)", "issue": "Cannot runtime-verify war-team-power / war-slot-power-N UI because war war_0b2db37c91bb4cd8b4ca6e933ca8509d has naturally locked (lock_at reached ~5 min before test run). Code review confirms the testIDs are present at WarEnlist.tsx:31 and :44 with correct 'Potenza squadra {n}' and '⚔ {n}' rendering, and copy 'Avversari schierati … la loro potenza resta segreta' at :60. Backend team_power + roster_players[*].war_power own-team-only contract passes (tests 12-14).", "affected_testIDs": ["war-team-power", "war-slot-power-1..10", "war-enlist"]}
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_canon_v13_warehouse.py",
+    "/app/test_reports/pytest/canon_v13.xml"
+  ],
+  "action_items": [
+    "If runtime frontend verification of war-enlist power UI is required, either declare a fresh war (Territorio → click adjacent enemy node → Dichiara guerra) or use POST /api/_test/war-shift with a NEGATIVE seconds value on an existing war to reset it to prep, then re-run the qa.lord/orsi.bot1/lord.tester UI walkthrough. Do this only when explicitly instructed — current war state is preserved as required.",
+    "OPTIONAL: qa.lord kingdom currently has warehouse building level 1 (capacity 5000) while castle_level is 10; this is a player-progress condition (not a canon violation) — canon test 05 proves canon warehouse L10 (80,000) is enough for castle 10→11. The review notes 'QA warehouse level ~8' — if that seed expectation is meant to hold, the seed script should upgrade the warehouse building alongside the castle."
+  ],
+  "critical_code_review_comments": [
+    "/api/canon/static does NOT expose the canon VERSION — the request literally says 'GET /api/canon/static → VERSION \"1.3\"'. VERSION is instead served by /api/canon/validation. Consider adding {'version': canon()['document']['version']} to /api/canon/static so clients don't need a second call. Non-blocking (validation endpoint covers the requirement).",
+    "app/domain/wars.py:451-454 correctly gates war_power exposure to 'mine_ids' and team_power to attack_roster/defense_roster only (no reserve). Solid — no enemy leak on any of the three tested viewers. Reserve players get war_power (they are 'mine') but are not summed into team_power — matches spec.",
+    "WarEnlist.tsx renders war-team-power/war-slot-power only under war.status==='prep' (via parent gate in alliance/war.tsx:51). If a viewer opens the war row post-lock, the enlist panel disappears entirely — consider showing a read-only 'Snapshot congelato — potenza squadra {team_power}' summary post-lock so ally members can still see the total they deploy."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_canon_v13_warehouse.py (new — 14 tests)"
+  ],
+  "success_rate": {"backend": "100% (14/14)", "frontend": "80% (Kingdom capacity-hint verified; WarEnlist runtime UI blocked by war state — code review OK, backend contract OK)"},
+  "seed_data_creation": "None. War war_0b2db37c91bb4cd8b4ca6e933ca8509d state was NOT modified — it locked naturally between iterations 15 and 16. attack_roster length went from 10 → 9 (one member appears to have withdrawn or fallen off between iterations); backend team_power=6420, my_side/war_power exposure all correct.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "war_0b2db37c91bb4cd8b4ca6e933ca8509d is now 'locked' (status). WarEnlist runtime UI can only be re-verified on a war in 'prep' status. Canon spec is v1.3, spec_hash bf53ae751a9f5f6a1aa29e4a40643b520d3ff293ae52d74cbe70ec207c099c02. Rulebook PDF served at /api/docs/regolamento.pdf embeds v1.3 warehouse rule and L20 capacity 2.641.000.",
+  "rca_of_issue": "N/A — feature works. Original user bug (max warehouse holds 877,152 but castle 20 costs > 2.1M) is fixed: warehouse L20 now caps at 2,641,000 (>= 2.1M) and every castle/building/research upgrade at each level fits in the warehouse cap at the corresponding level (invariant proven by tests 05/06/07/08)."
+}

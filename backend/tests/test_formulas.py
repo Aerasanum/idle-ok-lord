@@ -7,8 +7,8 @@ from app.domain.hero import apply_xp
 
 def test_canon_validation():
     r = validation_report()
-    assert r["VERSION"] == "1.2"
-    assert r["SPEC_HASH"] == "481dd02413642f7935c9efbb946a9d1e1a1a39cfccae8137067c3ff9cd42e0a8" == compute_spec_hash(canon())
+    assert r["VERSION"] == "1.3"
+    assert r["SPEC_HASH"] == "bf53ae751a9f5f6a1aa29e4a40643b520d3ff293ae52d74cbe70ec207c099c02" == compute_spec_hash(canon())
     assert r["GEAR_SLOTS"] == 9 and r["CAMPAIGN_STAGES"] == 200 and r["RESEARCH_NODES"] == 48 and r["UNITS"] == 13
 
 

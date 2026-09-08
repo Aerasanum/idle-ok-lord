@@ -61,7 +61,7 @@ app.include_router(liveops.router, prefix=API)
 app.include_router(social.router, prefix=API)
 app.include_router(store.router, prefix=API)
 
-RULES_PDF = Path(__file__).parent / "static" / "IDLE1_Regolamento_v1.2.pdf"
+RULES_PDF = Path(__file__).parent / "static" / "IDLE1_Regolamento.pdf"
 
 
 @app.get(f"{API}/docs/regolamento.pdf", include_in_schema=False)

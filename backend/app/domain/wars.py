@@ -440,11 +440,19 @@ async def war_detail(p: dict, war_id: str) -> dict:
         a = await db.alliances.find_one({"_id": aid}, {"name": 1, "tag": 1})
         names[aid] = {"name": a["name"], "tag": a["tag"]} if a else None
     roster_players = {}
+    me = await membership(p["_id"])
+    my_aid = me["alliance_id"] if me else None
+    my_side = "attack" if my_aid and my_aid == w["attacker_id"] else "defense" if my_aid and my_aid == w.get("defender_id") else None
+    mine_ids = set(w[f"{my_side}_roster"] + w.get(f"{my_side}_reserve", [])) if my_side else set()
     for pid in w["attack_roster"] + w["defense_roster"] + w.get("attack_reserve", []) + w.get("defense_reserve", []):
         pl = await db.players.find_one({"_id": pid}, {"display_name": 1, "hero.level": 1})
         if pl:
             roster_players[pid] = {"display_name": pl["display_name"], "hero_level": pl["hero"]["level"]}
-    return {"war": clean(w), "alliances": names, "roster_players": roster_players, "snapshot": clean(snap) if snap else None, "server_time": now().isoformat()}
+            if pid in mine_ids:  # war power is shown ONLY for the requester's own team, never for the enemy
+                snap_p = await _player_snapshot(pid, w["shard_id"], my_aid)
+                roster_players[pid]["war_power"] = snap_p["war_power"] if snap_p else 0
+    team_power = sum(roster_players[pid].get("war_power", 0) for pid in (w[f"{my_side}_roster"] if my_side else []) if pid in roster_players)
+    return {"war": clean(w), "alliances": names, "roster_players": roster_players, "my_side": my_side, "team_power": team_power, "snapshot": clean(snap) if snap else None, "server_time": now().isoformat()}
 
 
 async def list_wars(p: dict) -> dict:
