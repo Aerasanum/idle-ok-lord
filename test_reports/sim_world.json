@@ -1,0 +1,1952 @@
+{
+ "players": 250,
+ "alliances": 30,
+ "days": [
+  {
+   "day": 1,
+   "wars_declared": 20,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 17072,
+   "errors": 0,
+   "stage": {
+    "min": 29,
+    "avg": 38.7,
+    "max": 49
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.0,
+    "max": 9
+   },
+   "hero": {
+    "min": 18,
+    "avg": 22.4,
+    "max": 27
+   },
+   "units_total": 50000,
+   "power_avg": 8166,
+   "domain_avg": 19.0
+  },
+  {
+   "day": 2,
+   "wars_declared": 19,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 34678,
+   "errors": 3,
+   "stage": {
+    "min": 41,
+    "avg": 50.7,
+    "max": 61
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.0,
+    "max": 9
+   },
+   "hero": {
+    "min": 25,
+    "avg": 29.5,
+    "max": 34
+   },
+   "units_total": 92775,
+   "power_avg": 16195,
+   "domain_avg": 25.0
+  },
+  {
+   "day": 3,
+   "wars_declared": 16,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 51169,
+   "errors": 17,
+   "stage": {
+    "min": 53,
+    "avg": 62.7,
+    "max": 73
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.28,
+    "max": 10
+   },
+   "hero": {
+    "min": 32,
+    "avg": 36.4,
+    "max": 41
+   },
+   "units_total": 120600,
+   "power_avg": 23165,
+   "domain_avg": 31.0
+  },
+  {
+   "day": 4,
+   "wars_declared": 17,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 67587,
+   "errors": 37,
+   "stage": {
+    "min": 65,
+    "avg": 74.7,
+    "max": 85
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.88,
+    "max": 10
+   },
+   "hero": {
+    "min": 38,
+    "avg": 43.2,
+    "max": 48
+   },
+   "units_total": 144148,
+   "power_avg": 29574,
+   "domain_avg": 37.0
+  },
+  {
+   "day": 5,
+   "wars_declared": 15,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 84259,
+   "errors": 59,
+   "stage": {
+    "min": 77,
+    "avg": 86.7,
+    "max": 97
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.9,
+    "max": 10
+   },
+   "hero": {
+    "min": 45,
+    "avg": 50.0,
+    "max": 55
+   },
+   "units_total": 167508,
+   "power_avg": 36883,
+   "domain_avg": 43.0
+  },
+  {
+   "day": 6,
+   "wars_declared": 14,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 100907,
+   "errors": 83,
+   "stage": {
+    "min": 89,
+    "avg": 98.7,
+    "max": 109
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.9,
+    "max": 10
+   },
+   "hero": {
+    "min": 52,
+    "avg": 56.6,
+    "max": 62
+   },
+   "units_total": 184090,
+   "power_avg": 43500,
+   "domain_avg": 49.0
+  },
+  {
+   "day": 7,
+   "wars_declared": 9,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 117708,
+   "errors": 123,
+   "stage": {
+    "min": 101,
+    "avg": 110.7,
+    "max": 121
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.9,
+    "max": 10
+   },
+   "hero": {
+    "min": 58,
+    "avg": 63.3,
+    "max": 69
+   },
+   "units_total": 204526,
+   "power_avg": 55096,
+   "domain_avg": 55.0
+  },
+  {
+   "day": 8,
+   "wars_declared": 11,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 133758,
+   "errors": 154,
+   "stage": {
+    "min": 113,
+    "avg": 122.4,
+    "max": 133
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.9,
+    "max": 10
+   },
+   "hero": {
+    "min": 65,
+    "avg": 69.8,
+    "max": 75
+   },
+   "units_total": 229098,
+   "power_avg": 69551,
+   "domain_avg": 60.8
+  },
+  {
+   "day": 9,
+   "wars_declared": 9,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 149456,
+   "errors": 192,
+   "stage": {
+    "min": 119,
+    "avg": 133.3,
+    "max": 145
+   },
+   "castle": {
+    "min": 9,
+    "avg": 9.96,
+    "max": 11
+   },
+   "hero": {
+    "min": 71,
+    "avg": 75.9,
+    "max": 82
+   },
+   "units_total": 244224,
+   "power_avg": 80948,
+   "domain_avg": 66.3
+  },
+  {
+   "day": 10,
+   "wars_declared": 10,
+   "tick": {
+    "timers": 0,
+    "offline_full": 0,
+    "event_ending": 0,
+    "wars": {
+     "locked": 0,
+     "resolved": 0
+    },
+    "leaders": 0
+   },
+   "requests": 164149,
+   "errors": 226,
+   "stage": {
+    "min": 119,
+    "avg": 142.9,
+    "max": 157
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.07,
+    "max": 11
+   },
+   "hero": {
+    "min": 75,
+    "avg": 81.8,
+    "max": 88
+   },
+   "units_total": 262828,
+   "power_avg": 96096,
+   "domain_avg": 71.1
+  },
+  {
+   "day": 11,
+   "wars_declared": 1,
+   "tick": null,
+   "requests": 178105,
+   "errors": 265,
+   "stage": {
+    "min": 129,
+    "avg": 151.0,
+    "max": 169
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 87.1,
+    "max": 94
+   },
+   "units_total": 281144,
+   "power_avg": 113121,
+   "domain_avg": 75.1
+  },
+  {
+   "day": 12,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 185223,
+   "errors": 1203,
+   "stage": {
+    "min": 129,
+    "avg": 153.8,
+    "max": 177
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.1,
+    "max": 99
+   },
+   "units_total": 293498,
+   "power_avg": 119832,
+   "domain_avg": 76.5
+  },
+  {
+   "day": 13,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 188111,
+   "errors": 2101,
+   "stage": {
+    "min": 129,
+    "avg": 154.2,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.8,
+    "max": 100
+   },
+   "units_total": 298290,
+   "power_avg": 122377,
+   "domain_avg": 76.6
+  },
+  {
+   "day": 14,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 190019,
+   "errors": 3112,
+   "stage": {
+    "min": 129,
+    "avg": 154.3,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.9,
+    "max": 100
+   },
+   "units_total": 299251,
+   "power_avg": 123091,
+   "domain_avg": 76.7
+  },
+  {
+   "day": 15,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 191441,
+   "errors": 4096,
+   "stage": {
+    "min": 129,
+    "avg": 154.4,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.9,
+    "max": 100
+   },
+   "units_total": 299962,
+   "power_avg": 122996,
+   "domain_avg": 76.7
+  },
+  {
+   "day": 16,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 192729,
+   "errors": 5100,
+   "stage": {
+    "min": 129,
+    "avg": 154.4,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.9,
+    "max": 100
+   },
+   "units_total": 300565,
+   "power_avg": 123142,
+   "domain_avg": 76.8
+  },
+  {
+   "day": 17,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 193896,
+   "errors": 6123,
+   "stage": {
+    "min": 129,
+    "avg": 154.4,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.9,
+    "max": 100
+   },
+   "units_total": 300784,
+   "power_avg": 123268,
+   "domain_avg": 76.8
+  },
+  {
+   "day": 18,
+   "wars_declared": 0,
+   "tick": null,
+   "requests": 195014,
+   "errors": 7148,
+   "stage": {
+    "min": 129,
+    "avg": 154.4,
+    "max": 179
+   },
+   "castle": {
+    "min": 9,
+    "avg": 10.09,
+    "max": 11
+   },
+   "hero": {
+    "min": 80,
+    "avg": 89.9,
+    "max": 100
+   },
+   "units_total": 300915,
+   "power_avg": 123273,
+   "domain_avg": 76.8
+  }
+ ],
+ "errors": [
+  {
+   "player": "w20021@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20021@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20021@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20081@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20021@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20121@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20041@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20171@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20081@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20081@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20081@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20121@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20121@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20121@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20081@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20101@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20111@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20131@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20141@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20151@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20161@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20171@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20181@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20191@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20201@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20031@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "displaced",
+   "body": "{\"detail\":{\"code\":\"displaced\",\"message\":\"Alliance is relocating after losing its home castle\"}}"
+  },
+  {
+   "player": "w20061@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "defender_busy",
+   "body": "{\"detail\":{\"code\":\"defender_busy\",\"message\":\"Defender already in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20071@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  },
+  {
+   "player": "w20091@idle1.app",
+   "path": "/wars/declare",
+   "status": 409,
+   "code": "war_active",
+   "body": "{\"detail\":{\"code\":\"war_active\",\"message\":\"Alliance already involved in an active war\"}}"
+  }
+ ],
+ "stats": {
+  "requests": 195014,
+  "unexpected": 7148
+ }
+}

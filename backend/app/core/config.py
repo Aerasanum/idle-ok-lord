@@ -31,6 +31,7 @@ class Settings:
     RC_WEBHOOK_TOKEN = os.environ.get("REVENUECAT_WEBHOOK_TOKEN", "")
     RC_WEBHOOK_SIGNING_SECRET = os.environ.get("REVENUECAT_WEBHOOK_SIGNING_SECRET", "")
     TEST_HOOKS = os.environ.get("TEST_HOOKS_ENABLED", "false").lower() == "true"
+    RATE_LIMIT_DISABLED = os.environ.get("RATE_LIMIT_DISABLED", "false").lower() == "true"  # QA/load simulations only; refused in production
     MIN_AGE = int(os.environ.get("MIN_AGE_GATE", "13"))
     PRIVACY_URL = os.environ.get("PRIVACY_POLICY_URL", "")
     TERMS_URL = os.environ.get("TERMS_URL", "")
@@ -43,3 +44,5 @@ if len(settings.JWT_SECRET) < 32:
     raise RuntimeError("JWT_SECRET too short (min 32 chars)")
 if settings.ENV == "production" and settings.TEST_HOOKS:
     raise RuntimeError("TEST_HOOKS_ENABLED must be false in production")
+if settings.ENV == "production" and settings.RATE_LIMIT_DISABLED:
+    raise RuntimeError("RATE_LIMIT_DISABLED must be false in production")

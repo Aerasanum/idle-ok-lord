@@ -5,5 +5,5 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["600/minute"])
 
 from .config import settings  # noqa: E402
 
-if settings.ENV == "test":
+if settings.ENV == "test" or settings.RATE_LIMIT_DISABLED:
     limiter.enabled = False
