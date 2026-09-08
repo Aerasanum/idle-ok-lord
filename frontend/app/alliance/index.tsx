@@ -54,10 +54,10 @@ export default function AllianceScreen() {
           <Txt v="h3">Gestione alleanza</Txt>
           <Txt v="caption">Poteri di guerra: leader + massimo 2 ufficiali (dichiarare guerra, gestire roster, impostazioni e membri).</Txt>
           {me === "leader" ? (
-            <Row style={{ alignItems: "flex-end" }}>
-              <Input label="Nuovo nome (3-20) · una volta ogni 7 giorni" value={newName} onChangeText={setNewName} maxLength={20} style={{ flex: 1 }} testID="alliance-rename-input" />
-              <Btn title="Rinomina" small variant="gold" disabled={newName.trim().length < 3 || newName.trim() === a.name} loading={settings.isPending} onPress={() => settings.mutate({ name: newName.trim() }, { onSuccess: () => setNewName("") })} testID="alliance-rename-button" />
-            </Row>
+            <View style={{ gap: 6 }}>
+              <Input label="Nuovo nome (3-20) · una volta ogni 7 giorni" value={newName} onChangeText={setNewName} maxLength={20} testID="alliance-rename-input" />
+              <Btn title="Rinomina alleanza" small variant="gold" icon="pencil" disabled={newName.trim().length < 3 || newName.trim() === a.name} loading={settings.isPending} onPress={() => settings.mutate({ name: newName.trim() }, { onSuccess: () => setNewName("") })} testID="alliance-rename-button" />
+            </View>
           ) : null}
           <Input label="Descrizione (max 200)" value={desc ?? a.description ?? ""} onChangeText={setDesc} maxLength={200} multiline testID="alliance-description-input" />
           <Btn title="Salva descrizione" small variant="secondary" disabled={desc === null || desc === a.description} loading={settings.isPending} onPress={() => settings.mutate({ description: desc }, { onSuccess: () => setDesc(null) })} testID="alliance-description-save" />
