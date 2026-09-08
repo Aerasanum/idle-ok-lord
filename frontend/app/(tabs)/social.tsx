@@ -36,12 +36,13 @@ export default function SocialTab() {
         <ResourceBar resources={profile.resources} compact />
       </View>
       <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 24, gap: 12 }} showsVerticalScrollIndicator={false}>
-        <Txt v="h1">Alleanza & Guerra</Txt>
+        <Txt v="h1">Alleanza</Txt>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <HubTile art={hubArt("chat")} icon="chat" title="Chat" subtitle={a ? "Canali: Globale · Alleanza · Feed di guerra" : "Chat globale aperta a tutti · quella d'alleanza quando ne entri in una"} onPress={() => router.push("/alliance/chat")} testID="hub-chat" wide height={110} />
-          <HubTile art={hubArt("alliance_war")} icon="map-marker-radius" title="Mappa guerra" subtitle={a ? `${a.season_points} punti stagione` : "Guerre 10v10 asincrone"} onPress={() => router.push("/alliance/war")} testID="hub-war" locked={!a} />
-          <HubTile art={hubArt("titan_hunt")} icon="skull-crossbones" title="Titan Hunt" subtitle={a ? "Boss di alleanza · 3 attacchi al giorno" : "Serve un'alleanza"} onPress={() => router.push(a ? "/alliance/boss" : "/social")} testID="hub-boss" locked={!a} />
+          <HubTile art={hubArt("chat")} icon="chat" title="Chat alleanza" subtitle={a ? "Canali: Alleanza · Globale · Feed di guerra" : "Chat globale aperta a tutti · quella d'alleanza quando ne entri in una"} onPress={() => router.push("/alliance/chat")} testID="hub-chat" wide height={110} />
+          <HubTile art={hubArt("titan_hunt")} icon="skull-crossbones" title="Titano" subtitle={a ? "Boss di alleanza · 3 attacchi al giorno" : "Serve un'alleanza"} onPress={() => router.push(a ? "/alliance/boss" : "/social")} testID="hub-boss" locked={!a} />
+          <HubTile art={hubArt("alliance_war")} icon="sword-cross" title="Guerra 10v10" subtitle={a ? "Arruolati e schiera la formazione" : "Serve un'alleanza"} onPress={() => router.push({ pathname: "/alliance/war", params: { section: "roster" } })} testID="hub-war" locked={!a} />
         </View>
+        <Txt v="small" color={colors.muted}>La mappa dei territori con tutte le alleanze è nella scheda <Txt v="small" color={colors.goldBright} onPress={() => router.push("/(tabs)/war")} testID="goto-war-tab">Guerra</Txt>.</Txt>
         <QuickChat />
         {a ? (
           <Panel variant="parchment" testID="my-alliance-card">

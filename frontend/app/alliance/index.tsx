@@ -22,7 +22,7 @@ export default function AllianceScreen() {
   const settings = useAction("patch", "/alliances/settings", [QK.alliance], { success: () => "Impostazioni aggiornate" });
   if (isLoading) return <Loading />;
   const a = id ? other.data?.alliance : mine?.alliance;
-  if (!a) return <Screen title="Alleanza" testID="alliance-screen"><Txt v="body">Nessuna alleanza. Unisciti o fondane una dalla scheda Social.</Txt></Screen>;
+  if (!a) return <Screen title="Alleanza" testID="alliance-screen"><Txt v="body">Nessuna alleanza. Unisciti o fondane una dalla scheda Alleanza.</Txt></Screen>;
   const me = a.my_role;
   const officer = me === "leader" || me === "officer";
   return (

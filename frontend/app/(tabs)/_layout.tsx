@@ -14,7 +14,8 @@ const TABS: { name: string; title: string; icon: IconName; sf: string }[] = [
   { name: "domain", title: "Dominio", icon: "map", sf: "map" },
   { name: "army", title: "Esercito", icon: "account-group", sf: "person.3" },
   { name: "events", title: "Eventi", icon: "calendar-star", sf: "calendar" },
-  { name: "social", title: "Social", icon: "flag", sf: "flag" },
+  { name: "war", title: "Guerra", icon: "map-marker-radius", sf: "map.fill" },
+  { name: "social", title: "Alleanza", icon: "shield-account", sf: "person.2.badge.shield" },
 ];
 
 export default function TabsLayout() {
@@ -44,8 +45,9 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.goldBright,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.surfaceSecondary, borderTopColor: colors.gold, borderTopWidth: 2, ...(Platform.OS === "web" ? { height: 64 } : {}) },
-        tabBarItemStyle: { alignSelf: "center" },
-        tabBarLabelStyle: { fontFamily: fonts.bodyBold, fontSize: 11 },
+        tabBarItemStyle: { alignSelf: "center", paddingHorizontal: 0 },
+        tabBarAllowFontScaling: false,
+        tabBarLabelStyle: { fontFamily: fonts.bodyBold, fontSize: 9.5, letterSpacing: -0.2 },
         sceneStyle: { backgroundColor: colors.surface },
       }}
     >

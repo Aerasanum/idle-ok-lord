@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { QK, useAction, useMyAlliance, useWar, useWarMap, useWars } from "@/src/api/hooks";
@@ -12,8 +13,10 @@ import { WarReplay } from "@/src/war/WarReplay";
 
 const STATUS_LABEL: Record<string, string> = { prep: "Preparazione", locking: "Blocco roster", locked: "Roster bloccato", resolving: "Risoluzione", resolved: "Risolta", cancelled: "Annullata" };
 
-export default function WarScreen() {
+export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
   const { colors } = useTheme();
+  const params = useLocalSearchParams<{ section?: string }>();
+  const rosterOnly = params.section === "roster"; // opened from the Alleanza tab: only wars + enlistment/formation
   const { data: m, isLoading } = useWarMap();
   const { data: wars } = useWars();
   const { data: mine } = useMyAlliance();
@@ -33,14 +36,20 @@ export default function WarScreen() {
   const contested = new Set<number>(m.active_wars.map((w: any) => w.node_id));
   const seasonEnds = new Date(m.season.ends_at).getTime() - Date.now();
   return (
-    <Screen title="Territorio" subtitle={`Stagione ${m.season.key} · termina in ${fmtDuration(seasonEnds / 1000)} · shard ${m.shard_id.slice(-6)}`} testID="war-screen">
-      {!a ? <Txt v="small" color={colors.warning}>Entra in un&apos;alleanza per partecipare alle guerre. La mappa è visibile a tutti.</Txt> : null}
-      <WarMap nodes={m.nodes} myAlliance={m.my_alliance_id} selected={sel?.node_id} contested={contested} alliances={m.alliances} onSelect={(n) => { setSel(n); sheet.current?.present(); }} />
-      <Panel testID="territory-bonus">
-        <Txt v="h3">Bonus territorio della tua alleanza</Txt>
-        {Object.keys(m.territory_bonus).length ? Object.entries(m.territory_bonus).map(([k, v]) => <Txt key={k} v="small">{k.replace(/_/g, " ")}: +{Number(v).toFixed(1)}%</Txt>) : <Txt v="small" color={colors.muted}>Nessun nodo con bonus conquistato.</Txt>}
-        <Txt v="small" color={colors.muted} style={{ marginTop: 6 }}>Regole: prep {m.rules.prep_hours}h, roster bloccato {m.rules.roster_lock_minutes_before_resolution} min prima, 10 corsie 1v1 sullo snapshot congelato, 1 attacco/24h, min {m.rules.minimum_members_to_attack} membri, bersaglio adiacente.</Txt>
-      </Panel>
+    <Screen title={rosterOnly ? "Guerra 10v10" : "Territori"} back={!inTab} subtitle={`Stagione ${m.season.key} · termina in ${fmtDuration(seasonEnds / 1000)} · shard ${m.shard_id.slice(-6)}`} testID="war-screen">
+      {!a ? <Txt v="small" color={colors.warning}>Entra in un&apos;alleanza (scheda Alleanza, Castello 8) per partecipare alle guerre. La mappa è visibile a tutti.</Txt> : null}
+      {!rosterOnly ? (
+        <>
+          <WarMap nodes={m.nodes} myAlliance={m.my_alliance_id} selected={sel?.node_id} contested={contested} alliances={m.alliances} onSelect={(n) => { setSel(n); sheet.current?.present(); }} />
+          <Panel testID="territory-bonus">
+            <Txt v="h3">Bonus territorio della tua alleanza</Txt>
+            {Object.keys(m.territory_bonus).length ? Object.entries(m.territory_bonus).map(([k, v]) => <Txt key={k} v="small">{k.replace(/_/g, " ")}: +{Number(v).toFixed(1)}%</Txt>) : <Txt v="small" color={colors.muted}>Nessun nodo con bonus conquistato.</Txt>}
+            <Txt v="small" color={colors.muted} style={{ marginTop: 6 }}>Regole: prep {m.rules.prep_hours}h, roster bloccato {m.rules.roster_lock_minutes_before_resolution} min prima, 10 corsie 1v1 sullo snapshot congelato, 1 attacco/24h, min {m.rules.minimum_members_to_attack} membri, bersaglio adiacente. Perdite permanenti su entrambi i lati (v1.5).</Txt>
+          </Panel>
+        </>
+      ) : (
+        <Txt v="small" color={colors.muted}>Arruolati nelle guerre in preparazione: i primi 10 per potenza formano lo schieramento, gli altri restano in riserva. Per dichiarare una guerra usa la mappa nella scheda Guerra.</Txt>
+      )}
       <Txt v="h2">Guerre</Txt>
       {(wars?.wars ?? []).map((w: any) => <WarRow key={w.id} w={w} mine={a?.id} serverTime={wars.server_time} onOpen={() => setWarId(warId === w.id ? undefined : w.id)} open={warId === w.id} />)}
       {!wars?.wars?.length ? <Txt v="small" color={colors.muted}>Nessuna guerra. Seleziona un nodo adiacente al tuo territorio per dichiararla.</Txt> : null}
