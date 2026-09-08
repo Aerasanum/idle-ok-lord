@@ -258,5 +258,5 @@ class TestRulebook:
         n_pages = len(reader.pages)
         assert 35 <= n_pages <= 60, f"page count={n_pages}"
         text = "\n".join((p.extract_text() or "") for p in reader.pages)
-        assert "v1.4" in text or "v1.5" in text or "v1.6" in text, \
+        assert "v1.4" in text or "v1.5" in text or "v1.6" in text or "v1.7" in text, \
             f"pdf does not mention v1.4. First 500 chars: {text[:500]}"

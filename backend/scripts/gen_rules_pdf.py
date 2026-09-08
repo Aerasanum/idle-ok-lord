@@ -714,7 +714,9 @@ def sec_alliance():
         H1("11. Alleanze e Guerra d'Alleanza"),
         H2("11.1 Alleanze"),
         *LI([
-            f"Sbloccate al <b>Castello {a['unlock_castle_level']}</b>; creare un'alleanza costa <b>{n(a['create_cost_gold'])} Oro</b>. Fino a <b>{a['member_cap']} membri</b>: 1 leader, max {a['roles']['officers_max']} ufficiali.",
+            f"Sbloccate al <b>Castello {a['unlock_castle_level']}</b>; creare un'alleanza costa <b>{n(a['create_cost_gold'])} Oro</b>. Fino a <b>{a['member_cap']} membri</b>: 1 leader, max {a['roles']['officers_max']} ufficiali. <b>Poteri di guerra (v1.7)</b>: solo leader e ufficiali dichiarano guerra, gestiscono roster, impostazioni e membri; tutti possono arruolarsi. "
+            f"Il <b>nome</b> si cambia solo dal leader, una volta ogni {a['rename']['cooldown_days']} giorni (il tag è fisso). "
+            f"<b>Nodo neutrale</b>: difeso da 10 guarnigioni NPC, ciascuna con potenza = round({C['alliance_war']['underfilled_defense_npc_fill']['npc_power_pct_of_alliance_median']}% della potenza mediana dei membri dell'alleanza attaccante): la guarnigione cresce con chi attacca ed è mostrata nella scheda del nodo prima di dichiarare.",
             f"Ingresso: {', '.join(a['join_modes'])}. Se il leader è inattivo per {a['leader_inactivity_days_before_transfer']} giorni, il comando passa automaticamente.",
             f"Canali chat: {', '.join(a['chat_channels'])}; max {C['chat']['max_message_chars']} caratteri per messaggio.",
             f"Servono almeno <b>{a['minimum_members_to_attack']} membri</b> per dichiarare guerra.",
@@ -840,7 +842,7 @@ def sec_formulas():
         ["Arrotondamenti", "round = mezzo verso l'alto (⌊x + 0,5⌋) · ⌈ ⌉ eccesso · ⌊ ⌋ difetto · livello oggetto ⌈stage/2⌉ · talenti ⌊lv/5⌋ · mostri ⌊(stage−1)/25⌋ · Polvere Forgia ⌈ ⌉ · accelerazione ⌈min/3⌉ · affissi 2 decimali"],
     ]
     return [H1("13. Tutte le formule in una pagina"), tbl(["Cosa", "Formula"], rows, widths=[38 * mm, 140 * mm]),
-            Spacer(1, 6 * mm), P(f"Hash della specifica: {C['document']['spec_hash'][:16]}… · Ultime modifiche v1.6: " + " · ".join(C["document"]["changelog_v1_6"] + C["document"]["changelog_v1_5"]), "small")]
+            Spacer(1, 6 * mm), P(f"Hash della specifica: {C['document']['spec_hash'][:16]}… · Ultime modifiche v1.7: " + " · ".join(C["document"]["changelog_v1_7"] + C["document"]["changelog_v1_6"] + C["document"]["changelog_v1_5"]), "small")]
 
 
 def build():

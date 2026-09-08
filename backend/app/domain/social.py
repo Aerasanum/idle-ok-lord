@@ -170,7 +170,7 @@ async def manage_member(p: dict, target_id: str, action: str) -> dict:
         if me["role"] != "leader" or tgt["role"] != "member":
             raise fail(403, "forbidden")
         if await db.alliance_members.count_documents({"alliance_id": me["alliance_id"], "role": "officer"}) >= roles["officers_max"]:
-            raise fail(409, "officers_max")
+            raise fail(409, "officers_max", f"Massimo {roles['officers_max']} ufficiali per alleanza")
         await db.alliance_members.update_one({"_id": tgt["_id"]}, {"$set": {"role": "officer"}})
     elif action == "demote":
         if me["role"] != "leader" or tgt["role"] != "officer":
@@ -188,11 +188,25 @@ async def manage_member(p: dict, target_id: str, action: str) -> dict:
     return {"ok": True, "action": action}
 
 
-async def update_settings(p: dict, join_mode: str | None, description: str | None) -> dict:
+async def update_settings(p: dict, join_mode: str | None, description: str | None, name: str | None = None) -> dict:
     me = await membership(p["_id"])
     if not me or role_rank(me["role"]) < 2:
-        raise fail(403, "officer_required")
+        raise fail(403, "officer_required", "Solo il leader e gli ufficiali possono modificare l'alleanza")
     sets = {}
+    if name is not None:  # rename: leader only, unique, cooldown (canon alliances.rename)
+        if me["role"] != "leader":
+            raise fail(403, "leader_required", "Solo il leader può rinominare l'alleanza")
+        name = name.strip()
+        if not (3 <= len(name) <= 20) or not re.match(r"^[\w \-']+$", name):
+            raise fail(400, "bad_name", "Nome non valido: 3-20 caratteri, lettere, numeri, spazi, - e '")
+        a = await db.alliances.find_one({"_id": me["alliance_id"]})
+        cd_days = canon()["alliances"].get("rename", {}).get("cooldown_days", 7)
+        if a.get("renamed_at") and aware(a["renamed_at"]) > now() - timedelta(days=cd_days):
+            raise fail(409, "rename_cooldown", f"Puoi cambiare nome una volta ogni {cd_days} giorni")
+        if name.lower() != a["name_lower"] and await db.alliances.find_one({"name_lower": name.lower(), "disbanded_at": None}):
+            raise fail(409, "name_taken", "Nome già usato da un'altra alleanza")
+        sets.update({"name": name, "name_lower": name.lower(), "renamed_at": now()})
+        await system_feed(me["alliance_id"], f"L'alleanza ora si chiama {name}")
     if join_mode:
         if join_mode not in canon()["alliances"]["join_modes"]:
             raise fail(400, "bad_join_mode")

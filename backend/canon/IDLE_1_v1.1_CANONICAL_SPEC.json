@@ -408,7 +408,8 @@
     "underfilled_attack_allowed": false,
     "underfilled_defense_npc_fill": {
       "enabled": true,
-      "npc_power_pct_of_alliance_median": 70
+      "npc_power_pct_of_alliance_median": 70,
+      "neutral_garrison": "a node without an owner is defended by 10 NPC 'Garrison' lanes, each with war_power = round(70% of the ATTACKING alliance's median member war power): the garrison scales with the attacker so it is never trivial nor impossible; it is shown in the node sheet before declaring (attack_state.garrison_lane_power)"
     },
     "casualties": {
       "enabled": true,
@@ -461,10 +462,17 @@
     "minimum_members_to_attack": 10,
     "roles": {
       "leader": 1,
-      "member": 25,
-      "officers_max": 4
+      "officers_max": 2,
+      "member": 27
     },
-    "unlock_castle_level": 8
+    "unlock_castle_level": 8,
+    "war_powers": "only the leader and the (max 2) officers can declare war, edit the war roster, change settings and manage members; every member can enlist",
+    "rename": {
+      "who": "leader only",
+      "cooldown_days": 7,
+      "name_rule": "3-20 chars, letters/digits/space/-/', unique among active alliances",
+      "tag": "fixed at creation"
+    }
   },
   "army_visual_progression": {
     "goal": "By late campaign the scene must read as a truly enormous army, not six icons behind the hero.",
@@ -4972,9 +4980,9 @@
     ],
     "project": "IDLE 1",
     "relationship_to_empire_lords_dragon": "same medieval-fantasy universe inspiration; independent gameplay runtime; do not import multiplayer rules unless explicitly present here",
-    "spec_hash": "645149e61c118a33dadf5e7758770d6b70e20303600e4f7b8ab06ad1dd8aeb71",
+    "spec_hash": "9412582255ccf17758dbf5eec68ecd8218d7a6ce5055aa04f2222ec6ec7a78da",
     "status": "LIVE_UPDATE_v1.2",
-    "version": "1.6",
+    "version": "1.7",
     "working_marketing_title": "TBD - do not invent without approval",
     "changelog_v1_3": [
       "Warehouse capacity raised so that every single upgrade (castle, buildings, research) reachable at castle level L fits in Warehouse level L (110% of the largest cost); capacities only grow, progress preserved."
@@ -5008,6 +5016,9 @@
     ],
     "changelog_v1_6": [
       "Alliance War: Infirmary returns 40% of the fallen troops 8 hours after the war (net permanent loss = 60% of the casualties)."
+    ],
+    "changelog_v1_7": [
+      "Alliances: 1 leader + max 2 officers hold war powers; rename (leader, 7-day cooldown); neutral garrison power documented and shown in-app."
     ]
   },
   "dungeons": {

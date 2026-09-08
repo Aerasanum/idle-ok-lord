@@ -144,6 +144,9 @@ async def map_view(p: dict) -> dict:
         attack_state["attackable_node_ids"] = [n["node_id"] for n in nodes if n["owner_alliance_id"] != a["_id"] and n["node_id"] not in contested
                                               and any(nb in owned for nb in neighbors(n["node_id"])) and (not n["owner_alliance_id"] or n["owner_alliance_id"] not in busy)]
         attack_state["members"] = members
+        npc_pct = aw["underfilled_defense_npc_fill"]["npc_power_pct_of_alliance_median"]
+        attack_state["garrison_lane_power"] = rnd(await _alliance_median(a["_id"], shard_id) * npc_pct / 100)
+        attack_state["garrison_pct_of_median"] = npc_pct
     return {
         "shard_id": shard_id, "size": N, "season": {"key": season_key(), "starts_at": start.isoformat(), "ends_at": end.isoformat()},
         "nodes": [{"node_id": n["node_id"], "x": n["x"], "y": n["y"], "type": n["type"], "owner": n["owner_alliance_id"], "bonus": n["bonus"]} for n in nodes],

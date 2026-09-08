@@ -111,7 +111,7 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
                       🏥 Infermeria: {fmt(detail.my_casualties.infirmary.total)} unità tornano {new Date(detail.my_casualties.infirmary.ready_at).getTime() > Date.now() ? `tra ${fmtDuration((new Date(detail.my_casualties.infirmary.ready_at).getTime() - Date.now()) / 1000)}` : "(già rientrate)"} · {Object.entries(detail.my_casualties.infirmary.units).map(([k, v]: any) => `${k} +${fmt(v)}`).join(" · ")}
                     </Txt>
                   ) : null}
-                  <Txt v="small" color={colors.muted}>Regola v1.5: vincitore 5% + 20%×r, sconfitto 30% + 30%×(1−r); difensore ×0,85; bestie ×0,9, assedio ×0,8, mitiche ×0,6. Almeno un superstite per tipo; l'Infermeria restituisce il 40% dei caduti dopo 8 ore. Il PvE non causa perdite.</Txt>
+                  <Txt v="small" color={colors.muted}>Regola v1.5: vincitore 5% + 20%×r, sconfitto 30% + 30%×(1−r); difensore ×0,85; bestie ×0,9, assedio ×0,8, mitiche ×0,6. Almeno un superstite per tipo; l&apos;Infermeria restituisce il 40% dei caduti dopo 8 ore. Il PvE non causa perdite.</Txt>
                 </View>
               ) : null}
             </View>
@@ -124,6 +124,7 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
         {sel ? (
           <View style={{ gap: 8 }}>
             <Row><View style={{ width: 14, height: 14, backgroundColor: allianceColor(sel.owner, m.my_alliance_id), borderWidth: 1, borderColor: colors.gold }} /><Txt v="body">{sel.owner ? `Controllato da [${m.alliances[sel.owner]?.tag}] ${m.alliances[sel.owner]?.name}` : "Neutrale (guarnigione)"}</Txt></Row>
+            {!sel.owner && m.attack_state?.garrison_lane_power ? <Txt v="small" color={colors.muted} testID="garrison-power">Guarnigione: 10 difensori NPC da ~{fmt(m.attack_state.garrison_lane_power)} potenza ciascuno ({m.attack_state.garrison_pct_of_median}% della potenza mediana dei tuoi membri).</Txt> : null}
             {sel.bonus ? <Txt v="small" color={colors.muted}>Bonus: {Object.entries(sel.bonus).map(([k, v]) => `${k.replace(/_/g, " ")} +${v}%`).join(", ")}</Txt> : <Txt v="small" color={colors.muted}>Nessun bonus.</Txt>}
             {contested.has(sel.node_id) ? <Txt v="small" color={colors.error}>Guerra in corso su questo nodo.</Txt> : null}
             {officer && sel.owner !== m.my_alliance_id ? (() => {

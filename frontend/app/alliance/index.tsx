@@ -15,6 +15,8 @@ export default function AllianceScreen() {
   const { data: mine, isLoading } = useMyAlliance();
   const other = useQuery({ queryKey: ["alliance", id], queryFn: () => api.get(`/alliances/${id}`), enabled: !!id });
   const [gold, setGold] = useState("500");
+  const [newName, setNewName] = useState("");
+  const [desc, setDesc] = useState<string | null>(null);
   const leave = useAction("post", "/alliances/leave", [QK.alliance, QK.alliances], { success: () => "Hai lasciato l'alleanza" });
   const member = useAction("post", "/alliances/members", [QK.alliance], { success: (d) => `Azione ${d.action} eseguita` });
   const decide = useAction("post", "/alliances/applications/decide", [QK.alliance], { success: () => "Candidatura gestita" });
@@ -49,8 +51,18 @@ export default function AllianceScreen() {
       ) : null}
       {officer ? (
         <Panel testID="alliance-settings">
-          <Txt v="h3">Modalità di ingresso</Txt>
-          <Row>{["open", "application", "invite_only"].map((m) => <Btn key={m} title={m} small variant={a.join_mode === m ? "gold" : "secondary"} onPress={() => settings.mutate({ join_mode: m })} testID={`set-join-${m}`} />)}</Row>
+          <Txt v="h3">Gestione alleanza</Txt>
+          <Txt v="caption">Poteri di guerra: leader + massimo 2 ufficiali (dichiarare guerra, gestire roster, impostazioni e membri).</Txt>
+          {me === "leader" ? (
+            <Row style={{ alignItems: "flex-end" }}>
+              <Input label="Nuovo nome (3-20) · una volta ogni 7 giorni" value={newName} onChangeText={setNewName} maxLength={20} style={{ flex: 1 }} testID="alliance-rename-input" />
+              <Btn title="Rinomina" small variant="gold" disabled={newName.trim().length < 3 || newName.trim() === a.name} loading={settings.isPending} onPress={() => settings.mutate({ name: newName.trim() }, { onSuccess: () => setNewName("") })} testID="alliance-rename-button" />
+            </Row>
+          ) : null}
+          <Input label="Descrizione (max 200)" value={desc ?? a.description ?? ""} onChangeText={setDesc} maxLength={200} multiline testID="alliance-description-input" />
+          <Btn title="Salva descrizione" small variant="secondary" disabled={desc === null || desc === a.description} loading={settings.isPending} onPress={() => settings.mutate({ description: desc }, { onSuccess: () => setDesc(null) })} testID="alliance-description-save" />
+          <Txt v="h3" style={{ marginTop: 8 }}>Modalità di ingresso</Txt>
+          <Row>{["open", "application", "invite_only"].map((m) => <Btn key={m} title={{ open: "Aperta", application: "Su candidatura", invite_only: "Solo invito" }[m] ?? m} small variant={a.join_mode === m ? "gold" : "secondary"} onPress={() => settings.mutate({ join_mode: m })} testID={`set-join-${m}`} />)}</Row>
           {a.applications?.length ? (
             <View style={{ marginTop: 8, gap: 6 }}>
               <Txt v="caption">Candidature</Txt>

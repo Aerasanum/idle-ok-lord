@@ -39,6 +39,7 @@ class MemberIn(BaseModel):
 class SettingsIn(BaseModel):
     join_mode: str | None = None
     description: str | None = None
+    name: str | None = None
 
 
 class DonateIn(BaseModel):
@@ -117,7 +118,7 @@ async def members(body: MemberIn, p: Principal = Depends(current_user)):
 
 @router.patch("/alliances/settings")
 async def settings(body: SettingsIn, p: Principal = Depends(current_user)):
-    return await S.update_settings(await load(p), body.join_mode, body.description)
+    return await S.update_settings(await load(p), body.join_mode, body.description, body.name)
 
 
 @router.post("/alliances/donate")
