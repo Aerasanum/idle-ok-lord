@@ -6,7 +6,7 @@ from ..core.canon import buildings_by_key, canon, research_by_key, support_forma
 from ..core.util import aware, ceil, fail, new_id, now, rnd
 from . import formulas as F
 from .player import research_pct
-from .progress import Ops, quest_progress
+from .progress import Ops, alt_quest_progress, quest_progress
 
 
 def _cost_filter(flt: dict, inc: dict, cost: dict):
@@ -69,17 +69,25 @@ async def upgrade_building(p: dict, key: str) -> dict:
     flt = {"_id": p["_id"], "version": p["version"]}
     inc = {"version": 1}
     _cost_filter(flt, inc, cost)
+    alt_ops = alt_quest_progress(Ops(), p, "all_research_at_max")  # v1.5: a building upgrade counts as the research task when research is maxed
     if minutes <= 0:
         sets = {f"kingdom.buildings.{key}": lvl + 1, "updated_at": now()}
         if key == "castle":
             sets["kingdom.castle_level"] = lvl + 1
-        res = await db.players.update_one(flt, {"$inc": inc, "$set": sets})
+        upd = alt_ops.build()
+        upd.setdefault("$inc", {}).update(inc)
+        upd.setdefault("$set", {}).update(sets)
+        res = await db.players.update_one(flt, upd)
         if res.matched_count == 0:
             raise fail(409, "insufficient", "Not enough resources")
         return {"building": key, "level": lvl + 1, "instant": True, "cost": cost}
     ends = now() + timedelta(minutes=minutes)
     item = {"id": new_id("q_"), "building": key, "target_level": lvl + 1, "started_at": now(), "ends_at": ends}
-    res = await db.players.update_one(flt, {"$inc": inc, "$push": {"kingdom.construction_queue": item}, "$set": {"kingdom.queue_next_end": _queue_next_end(p, ends), "updated_at": now()}})
+    upd = alt_ops.build()
+    upd.setdefault("$inc", {}).update(inc)
+    upd["$push"] = {"kingdom.construction_queue": item}
+    upd.setdefault("$set", {}).update({"kingdom.queue_next_end": _queue_next_end(p, ends), "updated_at": now()})
+    res = await db.players.update_one(flt, upd)
     if res.matched_count == 0:
         raise fail(409, "insufficient", "Not enough resources")
     return {"building": key, "queued": item, "cost": cost}
@@ -158,10 +166,15 @@ def unit_gates(p: dict, u: dict) -> dict:
 def army_view(p: dict) -> list[dict]:
     out = []
     speed = research_pct(p["research"], "beast_recruit_speed_pct")
+    research = research_by_key()
     for u in canon()["units"]["catalog"]:
         g = unit_gates(p, u)
         minutes = u["recruit_time_minutes_each"] * (1 - (speed if u["category"] == "beast" else 0) / 100)
+        req = u.get("required_research")
         out.append({**{k: u[k] for k in ("key", "name", "category", "role", "base_power", "command_cost", "attack", "defense", "hp", "recruit_cost", "unlock_campaign_stage", "unlock_castle_level", "required_research")},
+                    "effective_unlock_castle_level": u.get("effective_unlock_castle_level", u["unlock_castle_level"]),
+                    "required_research_name": research[req]["name"] if req and req in research else None,
+                    "required_research_castle_level": research[req]["unlock_castle_level"] if req and req in research else None,
                     "recruit_minutes_each": round(minutes, 3), "owned": p["army"]["units"].get(u["key"], 0), "deployed": p["army"]["formation"].get(u["key"], 0), "gates": g, "unlocked": all(g.values())})
     return out
 
@@ -189,6 +202,7 @@ async def recruit(p: dict, unit: str, quantity: int) -> dict:
     item = {"id": new_id("q_"), "unit": unit, "quantity": quantity, "started_at": now(), "ends_at": ends}
     ops = Ops()
     quest_progress(ops, p, "recruit_units", "recruit_units", quantity)
+    alt_quest_progress(ops, p, "all_research_and_buildings_at_max")  # v1.5: recruiting counts as the research task when research and buildings are maxed
     ops.add("codex.units", unit)
     upd = ops.build()
     upd.setdefault("$inc", {}).update(inc)

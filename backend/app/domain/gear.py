@@ -7,7 +7,7 @@ from ..core import db
 from ..core.canon import canon
 from ..core.util import fail, new_id, now, rnd
 from . import formulas as F
-from .progress import Ops, resources_inc
+from .progress import Ops, alt_quest_progress, resources_inc
 
 RARITY_ORDER = None
 
@@ -223,9 +223,12 @@ async def salvage(p: dict, item_ids: list[str]) -> dict:
             for k, v in y.items():
                 total[k] = total.get(k, 0) + v
             done.append(it["_id"])
+    ops = Ops()
     if total:
-        ops = Ops()
         resources_inc(ops, total)
+    if done:
+        alt_quest_progress(ops, p, "all_forge_slots_at_max", len(done))  # v1.5: salvaging counts as a forge task when the Forge is maxed
+    if ops.incs or ops.sets:
         ops.inc("version", 1).set("updated_at", now())
         await db.players.update_one({"_id": p["_id"]}, ops.build())
     return {"salvaged": done, "materials": total}
@@ -272,9 +275,11 @@ async def reforge(p: dict, item_id: str, affix_index: int) -> dict:
     key = rng.choice(pool)
     lo, hi = canon()["gear"]["affix_values"]["roll_scalar_range"]
     new_affix = {"key": key, "value": F.affix_value(key, it["item_level"], it["rarity"], rng.uniform(lo, hi))}
+    ops = Ops().inc("resources.gold", -cost["gold"]).inc("resources.reforge_stone", -cost["reforge_stone"]).inc("version", 1).set("updated_at", now())
+    alt_quest_progress(ops, p, "all_forge_slots_at_max")  # v1.5: reforging counts as a forge task when the Forge is maxed
     res = await db.players.update_one(
         {"_id": p["_id"], "resources.gold": {"$gte": cost["gold"]}, "resources.reforge_stone": {"$gte": cost["reforge_stone"]}},
-        {"$inc": {"resources.gold": -cost["gold"], "resources.reforge_stone": -cost["reforge_stone"], "version": 1}, "$set": {"updated_at": now()}},
+        ops.build(),
     )
     if res.matched_count == 0:
         raise fail(409, "insufficient", "Not enough Gold/Reforge Stones")

@@ -99,8 +99,9 @@ export default function ArmyTab() {
                   </View>
                 ) : null}
                 {!u.unlocked ? (
-                  <Txt v="small" color={colors.warning}>
-                    {[!u.gates.castle && `Castello ${u.unlock_castle_level}`, !u.gates.campaign && `Stage ${u.unlock_campaign_stage}`, !u.gates.research && `Ricerca ${u.required_research}`].filter(Boolean).join(" · ")}
+                  <Txt v="small" color={colors.warning} testID={`unit-gates-${u.key}`}>
+                    {[!u.gates.castle && `Castello ${u.unlock_castle_level}`, !u.gates.campaign && `Stage ${u.unlock_campaign_stage}`, !u.gates.research && `Ricerca ${u.required_research_name ?? u.required_research}${u.required_research_castle_level ? ` (Castello ${u.required_research_castle_level})` : ""}`].filter(Boolean).join(" · ")}
+                    {u.effective_unlock_castle_level > u.unlock_castle_level ? ` · disponibile dal Castello ${u.effective_unlock_castle_level}` : ""}
                   </Txt>
                 ) : null}
               </View>

@@ -108,14 +108,64 @@ def quest_points(kind: str, p: dict) -> tuple[int, dict]:
     if q.get("day" if kind == "daily" else "week") != cur:
         q = {"progress": {}, "chests_claimed": []}
     templates = canon()["quests"][kind]["templates"]
+    alts = quest_alternatives(p)
     pts = 0
     detail = {}
     for t in templates:
         prog = q.get("progress", {}).get(t["key"], 0)
         done = prog >= t["target"]
         pts += t["points"] if done else 0
-        detail[t["key"]] = {"progress": min(prog, t["target"]), "target": t["target"], "points": t["points"], "done": done}
+        alt = alts.get(t["key"])
+        detail[t["key"]] = {"progress": min(prog, t["target"]), "target": t["target"], "points": t["points"], "done": done,
+                            "text": alt["text"] if alt else t.get("text", t["key"]), "alt_active": bool(alt), "alt_when": alt["when"] if alt else None}
     return pts, {"tasks": detail, "chests_claimed": q.get("chests_claimed", [])}
+
+
+# ---- quest alternatives (canon v1.5 quests.fallback_rule) ---------------------------------------------------
+def forge_all_max(p: dict) -> bool:
+    g = canon()["gear"]
+    return all(p.get("forge", {}).get(s, 0) >= g["forge"]["max_level_per_slot"] for s in g["slots"])
+
+
+def research_all_max(p: dict) -> bool:
+    return all(p.get("research", {}).get(n["key"], 0) >= n["max_level"] for n in canon()["research"]["nodes"])
+
+
+def buildings_all_max(p: dict) -> bool:
+    b = p.get("kingdom", {}).get("buildings", {})
+    return all(b.get(x["key"], 0) >= x["max_level"] for x in canon()["buildings"])
+
+
+def _condition(when: str, p: dict) -> bool:
+    if when == "all_forge_slots_at_max":
+        return forge_all_max(p)
+    if when == "all_research_at_max":
+        return research_all_max(p)
+    if when == "all_research_and_buildings_at_max":
+        return research_all_max(p) and buildings_all_max(p)
+    return False
+
+
+def quest_alternatives(p: dict) -> dict:
+    """template key -> active alternative ({when, text, counts}) when the base objective is permanently impossible; last matching wins."""
+    out = {}
+    for kind in ("daily", "weekly"):
+        for t in canon()["quests"][kind]["templates"]:
+            for alt in t.get("alternatives", []):
+                if _condition(alt["when"], p):
+                    out[t["key"]] = alt
+    return out
+
+
+def alt_quest_progress(ops: Ops, p: dict, when: str, amount: float = 1) -> Ops:
+    """Credit every task whose active alternative is `when` (e.g. a reforge counts as a forge upgrade when the Forge is maxed)."""
+    for kind, key_field in (("daily", "daily_key"), ("weekly", "weekly_key")):
+        for t in canon()["quests"][kind]["templates"]:
+            alts = t.get("alternatives", [])
+            active = next((a for a in reversed(alts) if _condition(a["when"], p)), None)
+            if active and active["when"] == when:
+                quest_progress(ops, p, **{key_field: t["key"]}, amount=amount)
+    return ops
 
 
 # ---- codex / stats ------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 """Unit tests: canonical formulas must reproduce the CANONICAL_SPEC sample tables exactly (v1.1 baseline + v1.2 live update)."""
-from app.core.canon import canon, compute_spec_hash, validation_report
+from app.core.canon import REQUIRED_SPEC_HASH, canon, compute_spec_hash, validation_report
 from app.domain import formulas as F
 from app.domain.domain_map import conquest_order
 from app.domain.hero import apply_xp
@@ -7,8 +7,8 @@ from app.domain.hero import apply_xp
 
 def test_canon_validation():
     r = validation_report()
-    assert r["VERSION"] == "1.4"
-    assert r["SPEC_HASH"] == "9c4d770d51d7209e40849ac4728845cd0f39eff00504743725de7008b95a4650" == compute_spec_hash(canon())
+    assert r["VERSION"] == "1.5"
+    assert r["SPEC_HASH"] == REQUIRED_SPEC_HASH == compute_spec_hash(canon())
     assert r["GEAR_SLOTS"] == 9 and r["CAMPAIGN_STAGES"] == 200 and r["RESEARCH_NODES"] == 48 and r["UNITS"] == 13
 
 
@@ -113,7 +113,7 @@ def test_domain_order_is_adjacent_and_complete():
         x, y = idx % 10, idx // 10
         assert any((nx + ny * 10) in owned for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)) if 0 <= nx < 10 and 0 <= ny < 10)
         owned.add(idx)
-    assert F.domain_tiles_for_stage(200) == 100 and F.domain_tiles_for_stage(3) == 2
+    assert F.domain_tiles_for_stage(200) == 100 and F.domain_tiles_for_stage(3) == 1 and F.domain_tiles_for_stage(4) == 2 and F.domain_tiles_for_stage(199) == 99
 
 
 def test_speedup_and_boss_formulas():

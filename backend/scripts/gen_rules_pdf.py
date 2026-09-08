@@ -124,20 +124,29 @@ def t(minutes: float) -> str:
     return " ".join(parts)
 
 
+def fx(text) -> str:
+    """Liberation Sans has no ⌊⌋ ⌈⌉ glyphs: write them as floor()/ceil() so every rounding is explicit and readable."""
+    import re as _re
+    s = str(text)
+    s = _re.sub(r"⌊([^⌊⌋]*)⌋", r"floor(\1)", s)
+    s = _re.sub(r"⌈([^⌈⌉]*)⌉", r"ceil(\1)", s)
+    return s.replace("⌊", "floor(").replace("⌋", ")").replace("⌈", "ceil(").replace("⌉", ")")
+
+
 def P(text, style="p"):
-    return Paragraph(text, S[style])
+    return Paragraph(fx(text), S[style])
 
 
 def WHY(text):
-    return Paragraph(f"<b>Perché:</b> {text}", S["why"])
+    return Paragraph(f"<b>Perché:</b> {fx(text)}", S["why"])
 
 
 def LI(items):
-    return [Paragraph(f"• {i}", S["li"]) for i in items]
+    return [Paragraph(f"• {fx(i)}", S["li"]) for i in items]
 
 
 def cell(v, bold=False):
-    return Paragraph(str(v), S["cellb" if bold else "cell"])
+    return Paragraph(fx(v), S["cellb" if bold else "cell"])
 
 
 def tbl(header, rows, widths=None, align_right_from=1):
@@ -169,7 +178,7 @@ class Doc(BaseDocTemplate):
         canv.drawRightString(A4[0] - self.rightMargin, A4[1] - 11 * mm, f"Pagina {doc.page}")
         canv.setStrokeColor(LINE)
         canv.line(self.leftMargin, A4[1] - 12.5 * mm, A4[0] - self.rightMargin, A4[1] - 12.5 * mm)
-        canv.drawCentredString(A4[0] / 2, 9 * mm, "Ogni valore proviene dal CANONICAL_SPEC v1.2 e dalle formule del server: nessun numero è inventato.")
+        canv.drawCentredString(A4[0] / 2, 9 * mm, f"Ogni valore proviene dal CANONICAL_SPEC v{C['document']['version']} e dalle formule del server: nessun numero è inventato.")
         canv.restoreState()
 
     def afterFlowable(self, fl):
@@ -222,14 +231,15 @@ def sec_intro():
             "<b>Bottino</b>: XP per l'eroe, Oro, risorse e equipaggiamento. Gli stage già superati vengono <i>farmati</i> in automatico (anche offline).",
             "<b>Regno</b>: le risorse pagano edifici, ricerche e reclutamento. Il Castello sblocca tutto il resto.",
             "<b>Esercito</b>: dallo stage 10 schieri unità che si sommano alla potenza del Lord; ogni unità è forte o debole contro certe classi di nemici.",
-            "<b>Dominio</b>: ogni 2 stage superati conquisti una casella della tua mappa 10x10 e aumenti la produzione.",
+            "<b>Dominio</b>: dallo stage 4, a ogni stage pari superato conquisti una casella della tua mappa 10x10 (100 caselle esatte allo stage 200) e aumenti la produzione.",
             "<b>Alleanze</b>: chat, Titan Hunt e guerre 10 contro 10 asincrone per il controllo della mappa stagionale.",
         ]),
         H2("1.2 Regole di fondo (valgono ovunque)"),
         *LI([
             "<b>Server-autoritativo</b>: ogni calcolo (potenza, ricompense, timer, acquisti) è eseguito dal server. L'app anima soltanto il risultato. L'orologio del telefono non è mai usato.",
             f"<b>Nessuna casualità nell'esito</b> della Campagna: vinci se <i>potenza totale ≥ potenza richiesta</i>. Il caso esiste solo in drop e animazioni.",
-            f"<b>Nessuna perdita permanente</b>: le unità reclutate non muoiono mai, né in PvE né in Guerra d'Alleanza ({C['units']['casualties']}).",
+            "<b>Perdite permanenti solo in Guerra d'Alleanza (v1.5)</b>: in PvE (Campagna, dungeon, eventi, Titan Hunt) le unità reclutate non muoiono mai. "
+            "Nelle guerre 10 contro 10 <b>entrambe</b> le parti perdono definitivamente una quota delle truppe schierate in ogni corsia (capitolo 11.3).",
             f"<b>Offline</b>: il gioco progredisce fino a <b>{o['max_hours']} ore</b> senza di te, con efficienza {int(o['resource_efficiency']*100)}% sulle risorse, "
             f"{int(o['battle_loot_efficiency']*100)}% sul bottino di battaglia e {int(o['gear_roll_efficiency']*100)}% sui tiri equipaggiamento. Costruzioni, ricerche e reclutamenti proseguono al 100%.",
             "<b>Niente pay-to-win diretto</b>: nessun acquisto casuale di equipaggiamento (gacha); i Rubini accelerano tempi e comprano cosmetici o risorse limitate al giorno.",
@@ -298,7 +308,7 @@ def sec_hero():
         tbl(["Lv", "XP per il prossimo", "XP cumulati", "ATT", "DIF", "PV", "Potenza base", "Punti talento"], rows,
             widths=[10 * mm, 28 * mm, 28 * mm, 14 * mm, 14 * mm, 18 * mm, 24 * mm, 22 * mm]),
         H2("3.3 Talenti"),
-        P(f"Ottieni <b>1 punto talento ogni 5 livelli</b> (massimo 20 al livello 100). Quattro rami, ognuno con {h['talents']['branches']['warrior']['max_ranks']} ranghi. "
+        P(f"Ottieni <b>1 punto talento ogni 5 livelli</b>: punti = min(20, ⌊livello/5⌋), arrotondato per difetto (livello 4 → 0, livello 5 → 1; massimo 20 al livello 100). Quattro rami, ognuno con {h['talents']['branches']['warrior']['max_ranks']} ranghi. "
           f"Il reset costa <b>{h['talents']['respec_rubies']} Rubini</b>."),
         tbl(["Ramo", "Effetto per rango", "Ranghi max", "Effetto al massimo"],
             [[TALENT_IT[k][0], TALENT_IT[k][1], v["max_ranks"], v["effect_per_rank"].split("+")[-1].replace(".", ",") + "% × " + str(v["max_ranks"])]
@@ -372,7 +382,7 @@ def sec_campaign():
             + ", ".join(f"{RES[k]} {int(v*100)}%" for k, v in b["soft_resource_split"].items()) + ".",
             f"<b>Farm ripetuto</b> (stage più alto superato, ogni {b['repeat_farm_cycle_seconds']} s anche offline): {int(b['repeat_xp_fraction']*100)}% dell'XP, "
             f"{int(b['repeat_gold_fraction']*100)}% dell'Oro e {int(b['repeat_soft_resource_fraction']*100)}% delle risorse della prima vittoria.",
-            f"<b>Casella di dominio</b> ogni {b['domain_tile_every_stages']} stage superati.",
+            f"<b>Casella di dominio</b>: la prima allo stage {C['personal_domain']['first_extra_tile_stage']}, poi una ogni {b['domain_tile_every_stages']} stage pari fino al 200 (capitolo 9.1).",
             f"<b>Equipaggiamento</b>: probabilità di drop a fine stage {gd['normal_stage_clear_roll_pct']}% (normale), {gd['elite_stage_clear_roll_pct']}% (elite); il boss garantisce "
             f"{gd['boss_guaranteed_items']} oggetto + {gd['boss_extra_item_roll_pct']}% di un secondo. In farm ripetuto il drop è dimezzato (×{gd['repeat_drop_rate_multiplier']}).",
             "Boss traguardo con rarità minima garantita: " + ", ".join(f"stage {k} → {RARITY_IT[v]}" for k, v in sorted(gd["milestone_boss_minimum_rarity"].items(), key=lambda kv: int(kv[0]))) + ".",
@@ -400,9 +410,11 @@ def sec_units():
                           x["base_power"], x["command_cost"], round(x["base_power"] / x["command_cost"], 1)])
         rc = x["recruit_cost"]
         req = x["required_research"]
-        req_name = next((r["name"] for r in C["research"]["nodes"] if r["key"] == req), "—") if req else "—"
+        req_node = next((r for r in C["research"]["nodes"] if r["key"] == req), None) if req else None
+        req_name = f"{req_node['name']} (Castello {req_node['unlock_castle_level']})" if req_node else "—"
+        eff = x["effective_unlock_castle_level"]
         cost_rows.append([x["name"], n(rc["grain"]), n(rc["wood"]), n(rc["clay"]), n(rc["iron"]), n(rc["gold"]), t(x["recruit_time_minutes_each"]),
-                          f"Castello {x['unlock_castle_level']}", f"Stage {x['unlock_campaign_stage']}", req_name])
+                          f"Castello {x['unlock_castle_level']}", f"Stage {x['unlock_campaign_stage']}", req_name, f"<b>Castello {eff}</b>" if eff != x["unlock_castle_level"] else f"Castello {eff}"])
         row = cc["table"][x["key"]]
         counter_rows.append([x["name"], ", ".join(CLASS_IT[c] for c in row["strong_vs"]), ", ".join(CLASS_IT[c] for c in row["weak_vs"])])
     # enemies grouped by class
@@ -447,8 +459,12 @@ def sec_units():
         P("Costi e tempo per <b>una</b> unità; il reclutamento di N unità costa N volte e dura N volte (le bestie sono più veloci con la ricerca Addomesticamento). "
           f"Code di reclutamento: {C['kingdom']['recruit_queues']['start']} (2 dal Castello {C['kingdom']['recruit_queues']['second_unlock_castle_level']}). "
           "Per reclutare servono <b>tutti</b> i requisiti: Castello, stage di campagna e ricerca (livello 1 basta)."),
-        tbl(["Unità", "Grano", "Legno", "Argilla", "Ferro", "Oro", "Tempo", "Castello", "Campagna", "Ricerca richiesta"], cost_rows,
-            widths=[28 * mm, 13 * mm, 13 * mm, 13 * mm, 13 * mm, 12 * mm, 14 * mm, 18 * mm, 17 * mm, 37 * mm]),
+        P("<b>Requisito nominale e disponibilità effettiva (v1.5)</b>: la colonna 'Castello' è il requisito nominale dell'unità; la ricerca richiesta ha però un proprio Castello di sblocco. "
+          "La colonna <b>'Disponibile dal'</b> = max(Castello nominale, Castello della ricerca) è il primo livello di Castello al quale l'unità si può <i>davvero</i> reclutare "
+          "(dopo aver completato la ricerca e raggiunto lo stage). Esempio: gli Arcieri richiedono Castello 3, ma la ricerca Tiro con l'Arco si sblocca al Castello 4 → disponibili dal Castello 4. "
+          "Tutti i requisiti restano validi: nessuno viene rimosso né anticipato."),
+        tbl(["Unità", "Grano", "Legno", "Argilla", "Ferro", "Oro", "Tempo", "Castello", "Campagna", "Ricerca richiesta (suo Castello)", "Disponibile dal"], cost_rows,
+            widths=[24 * mm, 12 * mm, 12 * mm, 12 * mm, 12 * mm, 11 * mm, 13 * mm, 17 * mm, 15 * mm, 30 * mm, 20 * mm]),
         H2("5.4 Contro chi è forte e debole ogni unità"),
         P(f"Bonus <b>+{cc['bonus_pct']}%</b> contro le classi 'forte', malus <b>−{cc['malus_pct']}%</b> contro le classi 'debole', neutrale altrimenti. Esempio: Fanteria (forte contro Bestie e Giganti) in uno stage con 2 famiglie di bestie su 4 "
           f"guadagna +{cc['bonus_pct']}% × 0,5 = +{cc['bonus_pct']//2}%."),
@@ -486,7 +502,8 @@ def sec_kingdom():
     for r in C["research"]["nodes"]:
         unlock[r["unlock_castle_level"]].append(f"Ricerca: {r['name']}")
     for x in C["units"]["catalog"]:
-        unlock[x["unlock_castle_level"]].append(f"Unità: {x['name']}")
+        eff = x["effective_unlock_castle_level"]
+        unlock[eff].append(f"Unità: {x['name']}" + (f" (requisito nominale Castello {x['unlock_castle_level']}, disponibile qui per la ricerca richiesta)" if eff != x["unlock_castle_level"] else ""))
     for s in k["support_formation_slots_by_castle_level"]:
         unlock[s["castle_level"]].append(f"{s['slots']} slot di formazione")
     unlock[C["alliances"]["unlock_castle_level"]].append("Alleanze")
@@ -583,7 +600,13 @@ def sec_gear():
         tbl(["Rarità", "Molt. statistiche", "Affissi", "Molt. affissi", "Dallo stage", "Pietre per riforgiare", "Polvere allo smantellamento"], rar_rows,
             widths=[24 * mm, 24 * mm, 14 * mm, 20 * mm, 18 * mm, 28 * mm, 46 * mm]),
         H3("Probabilità di rarità per fascia di stage"),
+        P("<b>Regola v1.5</b>: una rarità può cadere <b>solo dal suo stage di sblocco</b> (colonna 'Dallo stage'). Le fasce sono divise a ogni sblocco (10 Non Comune, 25 Raro, 50 Epico, 90 Leggendario, 140 Mitico, 180 Antico), "
+          "quindi nessuna fascia elenca una probabilità per una rarità ancora bloccata: negli stage 1–24 i Rari sono allo 0%, negli stage 25–49 gli Epici allo 0%. "
+          "Il server applica sempre lo stesso filtro (peso 0 alle rarità bloccate, pesi rimanenti rinormalizzati): tabella e calcolo coincidono."),
         tbl(["Stage"] + [RARITY_IT[r] for r in g["rarity_order"]], drop_rows, widths=[20 * mm] + [21 * mm] * 7),
+        P("<b>Eccezioni esplicite</b> (uniche): (1) i boss traguardo garantiscono una rarità minima applicata <i>dopo</i> il tiro (stage 50 Epico, 100 Leggendario, 150 Mitico, 200 Antico); "
+          "(2) i traguardi premium del Pass Evento garantiscono una rarità minima e tirano due volte tenendo il migliore; (3) il 7° giorno del calendario accessi e il dungeon Rovine Antiche tirano 2–3 volte tenendo il migliore. "
+          "Tutti questi tiri usano comunque la tabella dello stage più alto superato.", "small"),
         WHY("le rarità alte compaiono solo dove la campagna è dura: così un Mitico è sempre un traguardo di gioco, mai un acquisto."),
         H2("8.3 Affissi"),
         P("<b>Valore = round(base@100 × (0,35 + 0,65 × livello oggetto / 100) × molt. rarità × tiro casuale [0,85–1,15], 2)</b>. Ogni affisso compare al massimo una volta per oggetto; "
@@ -599,7 +622,10 @@ def sec_gear():
         WHY("la Forgia è l'investimento sicuro del gioco: resta anche quando trovi un pezzo migliore, quindi conviene forgiare con oggetti di livello basso (costano meno) e poi indossare il meglio."),
         H2("8.5 Riforgiatura e smantellamento"),
         *LI([
-            "<b>Riforgiatura</b>: ritira <b>un</b> affisso a scelta. Costo <b>Oro = round(50 × lv oggetto × molt. rarità)</b> + Pietre di Riforgiatura secondo la rarità (tabella 8.2). Statistiche e rarità non peggiorano mai.",
+            "<b>Riforgiatura</b>: ritira <b>un</b> affisso a scelta e lo sostituisce con un affisso casuale estratto dal pool (esclusi quelli già presenti sugli altri slot dell'oggetto: lo stesso tipo può ricapitare), "
+            "con un nuovo tiro di valore (×0,85–1,15). <b>Cosa è protetto</b>: statistiche primarie, rarità, livello oggetto, Forgia e gli altri affissi non cambiano mai. "
+            "<b>Cosa NON è protetto</b>: l'affisso ritirato — il nuovo può essere di tipo diverso e avere un valore più basso o più alto di quello rimosso. "
+            "Costo <b>Oro = round(50 × lv oggetto × molt. rarità)</b> + Pietre di Riforgiatura secondo la rarità (tabella 8.2).",
             f"<b>Smantellamento</b>: Polvere = base rarità + ⌊lv/10⌋ × fattore rarità; i Leggendari o superiori danno una Pietra extra nel {g['salvage']['legendary_or_higher_extra_reforge_stone_chance_pct']}% dei casi, "
             f"Mitici e Antichi un'Essenza Mitica nell'{g['salvage']['mythic_or_ancient_mythic_essence_chance_pct']}%.",
             f"<b>Smantellamento automatico</b> dallo stage {inv['auto_salvage_unlock_stage']} con filtri per rarità, slot e 'sotto il livello indossato'.",
@@ -610,13 +636,16 @@ def sec_gear():
 
 def sec_domain_offline():
     pd, o = C["personal_domain"], C["offline"]
+    seq_rows = [[f"{s}", F.domain_tiles_for_stage(s)] for s in (1, 3, 4, 5, 6, 10, 20, 50, 100, 150, 198, 199, 200)]
     return [
         H1("9. Dominio personale e progresso offline"),
         H2("9.1 Dominio"),
-        P(f"Mappa {pd['map']} tutta tua ({pd['tiles_total']} caselle, parti con {pd['start_owned_tiles']}). <b>{pd['conquest_rule'].replace('one new canonical adjacent tile every 2 cleared campaign stages', 'Una nuova casella adiacente ogni 2 stage di campagna superati')}</b>; "
-          f"dominio completo allo stage {pd['full_domain_at_stage']}. Bonus produzione <b>+{pd['production_bonus_per_10_owned_tiles_pct']}% ogni 10 caselle</b>, massimo +{pd['production_bonus_cap_pct']}%. "
+        P(f"Mappa {pd['map']} tutta tua: <b>{pd['tiles_total']} caselle</b>, parti con {pd['start_owned_tiles']}. <b>Regola v1.5</b>: la prima casella extra arriva allo <b>stage {pd['first_extra_tile_stage']}</b>, "
+          f"poi una a ogni stage pari fino al <b>200</b> (99 caselle extra): <b>caselle = min(100, 1 + max(0, ⌊(stage superato − {pd['first_extra_tile_stage']}) / 2⌋ + 1))</b>. "
+          f"Dominio completo esattamente allo stage {pd['full_domain_at_stage']} (100/100), mai più di una casella per stage. Bonus produzione <b>+{pd['production_bonus_per_10_owned_tiles_pct']}% ogni 10 caselle</b>, massimo +{pd['production_bonus_cap_pct']}%. "
           f"Tipi di terreno: {', '.join(pd['tile_visuals'])}. Strade, fattorie, torri e città compaiono man mano che cresci, nel tuo colore araldico."),
-        WHY("il dominio rende visibile il progresso della campagna e premia chi avanza con più produzione, senza toccare la potenza in battaglia."),
+        tbl(["Stage più alto superato", "Caselle possedute"], seq_rows, widths=[50 * mm, 40 * mm]),
+        WHY("la vecchia regola 'una ogni 2 stage dallo stage 2' avrebbe dato 101 caselle su una mappa da 100; partendo dallo stage 4 il conto chiude a 100 proprio all'ultimo stage. Il dominio rende visibile il progresso della campagna e premia chi avanza con più produzione, senza toccare la potenza in battaglia."),
         H2("9.2 Offline"),
         *LI([
             f"Massimo <b>{o['max_hours']} ore</b> accumulabili; il calcolo usa il tempo del server.",
@@ -659,8 +688,13 @@ def sec_dungeons_events_quests():
         P(f"<b>Giornaliere</b>: {q['daily']['task_count']} compiti, casse a {', '.join(str(c['points']) for c in q['daily']['point_chests'])} punti, {q['daily']['total_rubies_per_day']} Rubini al giorno. "
           f"<b>Settimanali</b>: {q['weekly']['task_count']} compiti, {q['weekly']['total_rubies_per_week']} Rubini più Polvere, Pietre ed Essenza. "
           f"<b>Calendario accessi</b>: ciclo di {q['login_calendar']['cycle_days']} giorni, {q['login_calendar']['rubies_total_per_cycle']} Rubini a ciclo; il 7° giorno un tiro equipaggiamento potenziato + 10 Rubini."),
-        tbl(["Compito giornaliero", "Obiettivo", "Punti"], [[x["key"].replace("_", " "), x["target"], x["points"]] for x in q["daily"]["templates"]], widths=[60 * mm, 25 * mm, 20 * mm]),
-        tbl(["Compito settimanale", "Obiettivo", "Punti"], [[x["key"].replace("_", " "), x["target"], x["points"]] for x in q["weekly"]["templates"]], widths=[60 * mm, 25 * mm, 20 * mm]),
+        tbl(["Compito giornaliero", "Obiettivo", "Punti", "Alternativa (quando l'obiettivo base è impossibile)"],
+            [[x["text"], x["target"], x["points"], " / ".join(a["text"] for a in x.get("alternatives", [])) or "—"] for x in q["daily"]["templates"]], widths=[62 * mm, 18 * mm, 14 * mm, 84 * mm]),
+        tbl(["Compito settimanale", "Obiettivo", "Punti", "Alternativa (quando l'obiettivo base è impossibile)"],
+            [[x["text"], x["target"], x["points"], " / ".join(a["text"] for a in x.get("alternatives", [])) or "—"] for x in q["weekly"]["templates"]], widths=[62 * mm, 18 * mm, 14 * mm, 84 * mm]),
+        P("<b>Alternative (v1.5)</b>: quando la Forgia è a +20 su tutti i 9 slot, ogni oggetto riforgiato o smantellato conta come 'potenziamento Forgia'; quando tutte le 48 ricerche sono al livello 5, "
+          "ogni potenziamento edificio avviato conta come 'ricerca'; se anche tutti gli edifici sono al massimo, conta ogni ordine di reclutamento. L'app mostra il testo dell'alternativa al posto di quello base; "
+          "il contatore e i punti sono gli stessi, quindi le casse restano sempre completabili.", "small"),
         P(f"Rubini gratuiti attesi in 28 giorni da giornaliere, settimanali e calendario: <b>{n(C['economy_controls']['free_rubies_expected_28d_from_daily_weekly_login'])}</b> (esclusi traguardi, Codex ed eventi).", "small"),
     ]
 
@@ -700,6 +734,48 @@ def sec_alliance():
         ]),
         tbl(["Tipo di nodo", "Quanti", "Bonus per nodo", "Tetto cumulato", "Note"], node_rows, widths=[26 * mm, 14 * mm, 70 * mm, 22 * mm, 46 * mm]),
         WHY("la guerra è asincrona e a snapshot congelato perché tutti possano partecipare a orari diversi e nessuno possa comprare la vittoria all'ultimo minuto."),
+        *sec_casualties(),
+    ]
+
+
+def sec_casualties():
+    from app.domain.wars import lane_casualties  # same code path as the server: examples below ARE the server's numbers
+    cw = C["alliance_war"]["casualties"]
+    cm = cw["category_multiplier"]
+    ratio_rows = []
+    for r in (1.0, 0.9, 0.75, 0.5, 0.25, 0.1):
+        lw, ll = 0.05 + 0.20 * r, 0.30 + 0.30 * (1 - r)
+        ratio_rows.append([n(r).replace(".", ","), f"{lw*100:.1f}%".replace(".", ","), f"{lw*cw['defender_multiplier']*100:.1f}%".replace(".", ","), f"{ll*100:.1f}%".replace(".", ","), f"{ll*cw['defender_multiplier']*100:.1f}%".replace(".", ",")])
+    dep = {"infantry": 1000, "cavalry": 200, "catapult": 20, "dragon": 8}
+    names = {u["key"]: u["name"] for u in C["units"]["catalog"]}
+    cases = [
+        ("Attaccante vincitore", True, False, 12000, 9000), ("Difensore sconfitto", False, True, 9000, 12000),
+        ("Attaccante sconfitto", False, False, 9000, 12000), ("Difensore vincitore", True, True, 12000, 9000),
+        ("Attaccante vincitore (schiacciante)", True, False, 20000, 5000), ("Difensore sconfitto (schiacciato)", False, True, 5000, 20000),
+    ]
+    ex_rows = []
+    for label, won, is_def, own, opp in cases:
+        c = lane_casualties({"player_id": "x", "deployed_army": dep, "war_power": own}, won, own, opp, is_def)
+        ex_rows.append([label, f"{n(own)} vs {n(opp)}", n(c["ratio"]).replace(".", ","), f"{c['rate_pct']}%".replace(".", ","),
+                        " · ".join(f"{names[k]} {v['lost']}/{v['deployed']}" for k, v in c["units"].items()), f"{c['lost_total']} cadute, {c['deployed_total'] - c['lost_total']} superstiti"])
+    return [
+        H2("11.3 Perdite permanenti in guerra (v1.5)"),
+        P("Nelle guerre d'alleanza <b>entrambe le parti</b> perdono definitivamente una quota delle truppe schierate in ogni corsia; il PvE non cambia (nessuna perdita). "
+          "Le perdite dipendono da <b>esito</b> (chi vince la corsia perde meno), <b>forza relativa</b> (r = potenza minore / potenza maggiore della corsia, dopo contro-unità, bonus e varianza) "
+          "e <b>reclutamento</b> (le unità lente e costose da reclutare perdono meno)."),
+        *LI([
+            "<b>Tasso vincitore = 5% + 20% × r</b> (5% in una vittoria schiacciante, 25% in un duello alla pari).",
+            "<b>Tasso sconfitto = 30% + 30% × (1 − r)</b> (30% alla pari, fino al 60% se travolto).",
+            f"<b>Difensore × {n(cw['defender_multiplier']).replace('.', ',')}</b> (posizione fortificata). Categoria: " + ", ".join(f"{CAT_IT[k]} × {n(v).replace('.', ',')}" for k, v in cm.items()) + ".",
+            "<b>Per ogni tipo schierato: cadute = ⌊schierate × tasso × molt. difensore × molt. categoria⌋</b>, mai oltre le schierate né oltre le possedute al momento; il tasso è sempre < 100%, quindi <b>almeno un superstite per tipo</b>.",
+            "Corsie vuote ('Corsia vuota'): chi non ha avversario non combatte e non perde nulla. Le guarnigioni NPC non hanno truppe da perdere; chi le affronta subisce le perdite normali.",
+            "Le perdite si calcolano sullo <b>snapshot congelato</b> (truppe schierate al blocco) e sull'esito della corsia, si sottraggono <b>una sola volta</b> per guerra e giocatore (registro idempotente), "
+            "la formazione viene ridotta ai superstiti e lo snapshot non viene mai modificato. Il risultato della guerra e la chat di alleanza riportano cadute e superstiti.",
+        ]),
+        tbl(["r (forza relativa)", "Vincitore attaccante", "Vincitore difensore", "Sconfitto attaccante", "Sconfitto difensore"], ratio_rows, widths=[34 * mm, 34 * mm, 34 * mm, 34 * mm, 34 * mm]),
+        P("Esempi calcolati dal server con lo stesso esercito schierato (1.000 Fanteria, 200 Cavalleria, 20 Catapulte, 8 Draghi):", "small"),
+        tbl(["Caso", "Potenza propria vs avversaria", "r", "Tasso base", "Cadute per tipo", "Totale"], ex_rows, widths=[34 * mm, 28 * mm, 10 * mm, 16 * mm, 62 * mm, 28 * mm]),
+        WHY("le perdite danno peso alle guerre (ogni schieramento costa davvero) ma non azzerano mai un esercito: chi perde alla pari conserva il 70%, e le unità mitiche cadono a un tasso dimezzato perché ricostruirle richiede giorni."),
     ]
 
 
@@ -754,13 +830,15 @@ def sec_formulas():
         ["Riforgiatura", "Oro round(50 × lv × molt. rarità) + Pietre per rarità"],
         ["Smantellamento", "Polvere = base rarità + ⌊lv/10⌋ × fattore rarità"],
         ["Accelerazione", "Rubini = max(5, ⌈minuti rimanenti / 3⌉)"],
-        ["Dominio", "caselle = 1 + ⌊stage superato / 2⌋ · bonus = min(50%, ⌊caselle/10⌋ × 5%)"],
+        ["Dominio", "caselle = min(100, 1 + max(0, ⌊(stage superato − 4)/2⌋ + 1)) · bonus = min(50%, ⌊caselle/10⌋ × 5%)"],
         ["Offline", "max 12 h · risorse 85% · bottino 70% · tiri oggetto min(1,2; 0,35 + stage/250)/h"],
         ["Titan Hunt", "PV boss round(500.000 × tier^1,8) · danno round(potenza × 4)"],
         ["Spedizione evento", "Gettoni round((20 + stage × 0,35) × m) · Oro round((150 + stage × 8) × m) · oggetto min(35%, 5% + stage × 0,1)"],
+        ["Perdite in guerra", "r = min(A,D)/max(A,D) · vincitore 5% + 20% × r · sconfitto 30% + 30% × (1−r) · difensore × 0,85 · categoria (reg. 1 / bestie 0,9 / assedio 0,8 / mitiche 0,6) · cadute = ⌊schierate × tasso⌋"],
+        ["Arrotondamenti", "round = mezzo verso l'alto (⌊x + 0,5⌋) · ⌈ ⌉ eccesso · ⌊ ⌋ difetto · livello oggetto ⌈stage/2⌉ · talenti ⌊lv/5⌋ · mostri ⌊(stage−1)/25⌋ · Polvere Forgia ⌈ ⌉ · accelerazione ⌈min/3⌉ · affissi 2 decimali"],
     ]
     return [H1("13. Tutte le formule in una pagina"), tbl(["Cosa", "Formula"], rows, widths=[38 * mm, 140 * mm]),
-            Spacer(1, 6 * mm), P(f"Hash della specifica: {C['document']['spec_hash'][:16]}… · Ultime modifiche v1.2: " + " · ".join(C["document"]["changelog_v1_2"]), "small")]
+            Spacer(1, 6 * mm), P(f"Hash della specifica: {C['document']['spec_hash'][:16]}… · Ultime modifiche v1.5: " + " · ".join(C["document"]["changelog_v1_5"]), "small")]
 
 
 def build():

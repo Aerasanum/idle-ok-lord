@@ -318,9 +318,14 @@ def quests_view(p: dict) -> dict:
     dp, dd = quest_points("daily", p)
     wp, wd = quest_points("weekly", p)
     login = p["quests"].get("login", {"cycle_day": 0, "last_claim_day": None})
+
+    def templates(kind: str) -> list:  # v1.5: text of the active alternative replaces the base text
+        return [{**t, "text": dd["tasks"][t["key"]]["text"] if kind == "daily" else wd["tasks"][t["key"]]["text"],
+                 "alt_active": (dd if kind == "daily" else wd)["tasks"][t["key"]]["alt_active"]} for t in q[kind]["templates"]]
+
     return {
-        "daily": {"points": dp, "chests": q["daily"]["point_chests"], "templates": q["daily"]["templates"], **dd, "resets": "00:00 UTC"},
-        "weekly": {"points": wp, "chests": q["weekly"]["point_chests"], "templates": q["weekly"]["templates"], **wd},
+        "daily": {"points": dp, "chests": q["daily"]["point_chests"], "templates": templates("daily"), **dd, "resets": "00:00 UTC"},
+        "weekly": {"points": wp, "chests": q["weekly"]["point_chests"], "templates": templates("weekly"), **wd},
         "login": {"cycle_days": q["login_calendar"]["cycle_days"], "cycle_day": login.get("cycle_day", 0), "claimed_today": login.get("last_claim_day") == day_key(),
                   "rewards": LOGIN_RUBIES, "day_7": q["login_calendar"]["day_7_reward"], "rubies_total": q["login_calendar"]["rubies_total_per_cycle"]},
         "season": season_view(p),

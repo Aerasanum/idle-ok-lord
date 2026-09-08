@@ -47,7 +47,7 @@ export default function QuestsScreen() {
                 return (
                   <Row key={t.key} style={{ justifyContent: "space-between" }} testID={`${kind}-task-${t.key}`}>
                     <Icon name={task.done ? "check-circle" : "circle-outline"} size={16} color={task.done ? colors.success : colors.muted} />
-                    <Txt v="small" style={{ flex: 1 }}>{t.text}</Txt>
+                    <Txt v="small" style={{ flex: 1 }}>{t.text}{t.alt_active ? <Txt v="small" color={colors.goldBright}> · alternativa</Txt> : null}</Txt>
                     <Txt v="small" color={colors.muted}>{Math.floor(task.progress)}/{task.target} · {t.points}pt</Txt>
                   </Row>
                 );

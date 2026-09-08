@@ -409,6 +409,32 @@
     "underfilled_defense_npc_fill": {
       "enabled": true,
       "npc_power_pct_of_alliance_median": 70
+    },
+    "casualties": {
+      "enabled": true,
+      "scope": "Alliance War lanes only (attack and defense). PvE never removes troops",
+      "power_ratio": "r = min(A, D) / max(A, D), where A and D are the final lane powers (after counters, bonuses and seeded variance) - 1 = even duel, ~0 = crushing",
+      "loser_rate": {
+        "formula": "0.30 + 0.30 * (1 - r)",
+        "min_pct": 30,
+        "max_pct": 60
+      },
+      "winner_rate": {
+        "formula": "0.05 + 0.20 * r",
+        "min_pct": 5,
+        "max_pct": 25
+      },
+      "defender_multiplier": 0.85,
+      "category_multiplier": {
+        "regular": 1.0,
+        "beast": 0.9,
+        "siege": 0.8,
+        "mythic": 0.6
+      },
+      "per_unit_type": "lost = min(floor(deployed * rate * defender_mult * category_mult), deployed, owned_now); rate < 1 so at least one unit of every deployed type survives",
+      "npc_and_empty_lanes": "NPC garrisons have no troops to lose; a player whose lane opponent is an empty lane ('Corsia vuota') fights nobody and loses nothing; a player facing an NPC garrison suffers normal losses",
+      "application": "computed from the locked snapshot's deployed_army and the resolved lane; deducted ONCE per war and player (ledger key war_losses:<war_id>:<player_id>) from army.units; the formation is clamped to the survivors; war snapshots are never modified. Losses are reported in war.result.casualties and in the alliance chat",
+      "examples_note": "see rulebook chapter 11.3 for the worked examples (attacker/defender x winner/loser)"
     }
   },
   "alliances": {
@@ -880,7 +906,9 @@
     "stage_time_limit_seconds": 90,
     "waves_per_stage": 10,
     "enemy_power_base": 75,
-    "enemy_power_growth": 1.043
+    "enemy_power_growth": 1.043,
+    "monsters_per_wave_formula": "min(12, 4 + floor((stage - 1) / 25))",
+    "boss_minions_formula": "min(10, floor(stage / 20))"
   },
   "buildings": [
     {
@@ -4939,15 +4967,39 @@
     ],
     "project": "IDLE 1",
     "relationship_to_empire_lords_dragon": "same medieval-fantasy universe inspiration; independent gameplay runtime; do not import multiplayer rules unless explicitly present here",
-    "spec_hash": "9c4d770d51d7209e40849ac4728845cd0f39eff00504743725de7008b95a4650",
+    "spec_hash": "b5ab4a576166647dc28c30eda067885c5a316433b13caedef56bad978e8c4e37",
     "status": "LIVE_UPDATE_v1.2",
-    "version": "1.4",
+    "version": "1.5",
     "working_marketing_title": "TBD - do not invent without approval",
     "changelog_v1_3": [
       "Warehouse capacity raised so that every single upgrade (castle, buildings, research) reachable at castle level L fits in Warehouse level L (110% of the largest cost); capacities only grow, progress preserved."
     ],
     "changelog_v1_4": [
       "Units: power per command = 36 + 1.4*unlock_castle (+14 mythic, +6 siege, +3 beast); stats scaled, recruit costs scaled at 85% of the power gain. Enemy power = 75 * 1.043^(stage-1) * (1 + 0.0015*max(0, stage-50)); every boss (50/100/150/180/200) verified beatable with power obtainable before it."
+    ],
+    "rounding": {
+      "round": "half away from zero: round(x) = floor(x + 0.5) for x >= 0 (util.rnd). Used by every formula written as round()",
+      "ceil_floor": "⌈x⌉ / ⌊x⌋ are exact integer ceiling / floor",
+      "item_level": "min(100, max(1, ceil(stage / 2)))",
+      "talent_points": "min(20, floor(hero_level / 5))",
+      "monsters_per_wave": "min(12, 4 + floor((stage - 1) / 25))",
+      "boss_minions": "min(10, floor(stage / 20))",
+      "forge_gold_cost": "round((25 + item_level * 8) * 1.35^F)",
+      "forge_dust_cost": "ceil((2 + item_level * 0.08) * 1.22^F)",
+      "salvage_dust": "rarity_base + floor(item_level / 10) * rarity_level_factor (integer, no rounding needed)",
+      "speedup_rubies": "max(5, ceil(remaining_minutes / 3)) with remaining_minutes as a real number (seconds count)",
+      "affix_value": "round(value, 2 decimals) then min(value, cap)",
+      "enemy_power": "round(75 * 1.043^(stage-1) * ramp), then required = round(enemy_power * multiplier)",
+      "recruit_time": "minutes kept as real numbers (3 decimals in the API)"
+    },
+    "changelog_v1_5": [
+      "Units: effective_unlock_castle_level (nominal castle gate vs research castle gate); all gates kept.",
+      "Gear: rarity drop bands split at every unlock stage (1-9 / 10-24 / 25-49 ...); explicit drop_filter_rule with exceptions.",
+      "Domain: 100 tiles, full at stage 200 (1 start tile + 1 at every even stage from 4 to 200).",
+      "Rounding rules made explicit (document.rounding).",
+      "Reforge: the retired affix is not protected; primary stats/rarity/item level/forge never change.",
+      "Quests: Italian texts + alternatives when Forge / research (and buildings) are maxed.",
+      "Alliance War: permanent casualties on both sides (alliance_war.casualties); PvE unchanged."
     ]
   },
   "dungeons": {
@@ -5305,7 +5357,7 @@
     },
     "rarity_upgrade_by_payment": false,
     "reforge": {
-      "effect": "rerolls one selected secondary affix; primary stats and rarity never decrease",
+      "effect": "replaces ONE chosen secondary affix with a new random affix drawn from the affix pool minus the affixes already present on the other slots of the item (the same affix type can come back), with a fresh value roll (roll_scalar 0.85-1.15). The new affix may be of a different type and its value may be lower or higher than the retired one. Primary stats, rarity, item level, Forge level and the other affixes never change",
       "gold_cost_formula": "round(50 * item_level * rarity.stat_multiplier)",
       "reforge_stone_cost_by_rarity": {
         "ancient": 4,
@@ -5315,7 +5367,15 @@
         "mythic": 3,
         "rare": 1,
         "uncommon": 1
-      }
+      },
+      "retired_affix_protected": false,
+      "never_decrease_applies_to": [
+        "primary stats",
+        "rarity",
+        "item level",
+        "forge level",
+        "the other affixes"
+      ]
     },
     "salvage": {
       "forge_dust_formula": "rarity_base + floor(item_level/10)*rarity_level_factor",
@@ -5400,78 +5460,98 @@
     ],
     "stage_drop_weights": [
       {
-        "stages": "1-24",
+        "stages": "1-9",
         "weights_pct": {
-          "ancient": 0,
-          "common": 75,
+          "common": 100,
+          "uncommon": 0,
+          "rare": 0,
           "epic": 0,
           "legendary": 0,
           "mythic": 0,
-          "rare": 2,
-          "uncommon": 23
+          "ancient": 0
+        }
+      },
+      {
+        "stages": "10-24",
+        "weights_pct": {
+          "common": 77,
+          "uncommon": 23,
+          "rare": 0,
+          "epic": 0,
+          "legendary": 0,
+          "mythic": 0,
+          "ancient": 0
         }
       },
       {
         "stages": "25-49",
         "weights_pct": {
-          "ancient": 0,
-          "common": 55,
-          "epic": 1,
+          "common": 56,
+          "uncommon": 35,
+          "rare": 9,
+          "epic": 0,
           "legendary": 0,
           "mythic": 0,
-          "rare": 9,
-          "uncommon": 35
+          "ancient": 0
         }
       },
       {
         "stages": "50-89",
         "weights_pct": {
-          "ancient": 0,
           "common": 35,
+          "uncommon": 38,
+          "rare": 22,
           "epic": 5,
           "legendary": 0,
           "mythic": 0,
-          "rare": 22,
-          "uncommon": 38
+          "ancient": 0
         }
       },
       {
         "stages": "90-139",
         "weights_pct": {
-          "ancient": 0,
           "common": 15,
+          "uncommon": 30,
+          "rare": 35,
           "epic": 17,
           "legendary": 3,
           "mythic": 0,
-          "rare": 35,
-          "uncommon": 30
+          "ancient": 0
         }
       },
       {
         "stages": "140-179",
         "weights_pct": {
-          "ancient": 0,
           "common": 5,
+          "uncommon": 15,
+          "rare": 30,
           "epic": 30,
           "legendary": 17,
           "mythic": 3,
-          "rare": 30,
-          "uncommon": 15
+          "ancient": 0
         }
       },
       {
         "stages": "180-200",
         "weights_pct": {
-          "ancient": 3,
           "common": 2,
+          "uncommon": 8,
+          "rare": 20,
           "epic": 30,
           "legendary": 25,
           "mythic": 12,
-          "rare": 20,
-          "uncommon": 8
+          "ancient": 3
         }
       }
-    ]
+    ],
+    "drop_filter_rule": {
+      "rule": "a rarity can drop only from its rarity_unlock_stage; in every band the weight of a locked rarity is 0 and the remaining weights are renormalized (unlocked_drop_weights). The tables above already respect this: bands are split at every unlock stage (10 uncommon, 25 rare, 50 epic, 90 legendary, 140 mythic, 180 ancient)",
+      "exceptions": [
+        "milestone bosses guarantee a minimum rarity (battle.gear_drop.milestone_boss_minimum_rarity: 50 epic, 100 legendary, 150 mythic, 200 ancient) - the minimum is applied after the roll",
+        "Event Pass premium track milestones guarantee a minimum rarity and roll twice keeping the best (events.event_track.premium_guaranteed_gear_milestones)",
+        "login calendar day 7 rolls twice keeping the best; Ancient Ruins dungeon rolls 2-3 times keeping the best - all rolls still use the unlocked table of the highest cleared stage"
+      ]
+    }
   },
   "hero": {
     "active_skill_slots": 3,
@@ -5583,7 +5663,8 @@
         }
       },
       "points": "1 point every 5 Hero levels, max 20 points at level 100",
-      "respec_rubies": 50
+      "respec_rubies": 50,
+      "points_rule": "min(20, floor(level / 5))"
     },
     "xp_to_next_formula": "round(80 * level^1.55 + 40 * level)"
   },
@@ -5994,7 +6075,8 @@
         "visual": "cittadella enorme, mura multilivello, monumenti, santuario mitico, drappi, effetti magici discreti"
       }
     ],
-    "warehouse_rule": "capacity(L) >= 1.1 x max single upgrade cost reachable at castle level L; every upgrade is payable from a full warehouse"
+    "warehouse_rule": "capacity(L) >= 1.1 x max single upgrade cost reachable at castle level L; every upgrade is payable from a full warehouse",
+    "speedup_rubies_formula": "max(5, ceil(remaining_minutes / 3))"
   },
   "monetization": {
     "alliance_boss_extra_attack_rubies": 50,
@@ -6157,7 +6239,7 @@
     "mobile_target_fps": 60
   },
   "personal_domain": {
-    "conquest_rule": "one new canonical adjacent tile every 2 cleared campaign stages",
+    "conquest_rule": "start with 1 tile; +1 adjacent tile at every even cleared campaign stage from 4 to 200 (99 tiles) - owned = min(100, 1 + max(0, floor((highest_cleared - 4) / 2) + 1))",
     "full_domain_at_stage": 200,
     "map": "10x10 tile map",
     "multiplayer_shared": false,
@@ -6178,7 +6260,22 @@
       "city"
     ],
     "tiles_total": 100,
-    "visual_growth": "roads, farms, towers, villages, forts and city silhouettes become denser as tile ownership grows"
+    "visual_growth": "roads, farms, towers, villages, forts and city silhouettes become denser as tile ownership grows",
+    "first_extra_tile_stage": 4,
+    "tiles_formula": "min(tiles_total, start_owned_tiles + max(0, floor((highest_cleared - first_extra_tile_stage) / battle.domain_tile_every_stages) + 1))",
+    "sequence_examples": {
+      "1-3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 3,
+      "10": 5,
+      "50": 25,
+      "100": 50,
+      "150": 75,
+      "198": 99,
+      "199": 99,
+      "200": 100
+    }
   },
   "platforms": {
     "backend": "Python + FastAPI + Pydantic",
@@ -6287,42 +6384,69 @@
         {
           "key": "clear_stages",
           "points": 15,
-          "target": 10
+          "target": 10,
+          "text": "Supera 10 stage (anche ripetuti)"
         },
         {
           "key": "claim_offline",
           "points": 10,
-          "target": 1
+          "target": 1,
+          "text": "Ritira il forziere offline"
         },
         {
           "key": "forge_upgrade",
           "points": 10,
-          "target": 1
+          "target": 1,
+          "text": "Potenzia la Forgia di uno slot",
+          "alternatives": [
+            {
+              "when": "all_forge_slots_at_max",
+              "text": "Riforgia o smantella oggetti (Forgia al massimo su tutti gli slot)",
+              "counts": "1 per oggetto riforgiato o smantellato"
+            }
+          ]
         },
         {
           "key": "recruit_units",
           "points": 15,
-          "target": 25
+          "target": 25,
+          "text": "Recluta 25 unità"
         },
         {
           "key": "start_or_finish_research",
           "points": 10,
-          "target": 1
+          "target": 1,
+          "text": "Avvia o completa una ricerca",
+          "alternatives": [
+            {
+              "when": "all_research_at_max",
+              "text": "Avvia o completa un potenziamento edificio (Ricerca al massimo)",
+              "counts": "1 per potenziamento avviato"
+            },
+            {
+              "when": "all_research_and_buildings_at_max",
+              "text": "Recluta unità (Ricerca ed edifici al massimo)",
+              "counts": "1 per ordine di reclutamento"
+            }
+          ]
         },
         {
           "key": "run_dungeon",
           "points": 15,
-          "target": 2
+          "target": 2,
+          "text": "Completa 2 dungeon"
         },
         {
           "key": "event_deployment",
           "points": 15,
-          "target": 1
+          "target": 1,
+          "text": "Completa 1 spedizione evento"
         },
         {
           "key": "alliance_action",
           "points": 10,
-          "target": 1
+          "target": 1,
+          "text": "Fai un'azione di alleanza (donazione, chat, guerra o Titano)"
         }
       ],
       "total_rubies_per_day": 10
@@ -6361,41 +6485,56 @@
         {
           "key": "clear_stages",
           "points": 15,
-          "target": 50
+          "target": 50,
+          "text": "Supera 50 stage (anche ripetuti)"
         },
         {
           "key": "forge_upgrades",
           "points": 15,
-          "target": 5
+          "target": 5,
+          "text": "Potenzia la Forgia 5 volte",
+          "alternatives": [
+            {
+              "when": "all_forge_slots_at_max",
+              "text": "Riforgia o smantella oggetti (Forgia al massimo su tutti gli slot)",
+              "counts": "1 per oggetto riforgiato o smantellato"
+            }
+          ]
         },
         {
           "key": "recruit_units",
           "points": 15,
-          "target": 250
+          "target": 250,
+          "text": "Recluta 250 unità"
         },
         {
           "key": "dungeon_runs",
           "points": 15,
-          "target": 10
+          "target": 10,
+          "text": "Completa 10 dungeon"
         },
         {
           "key": "event_deployments",
           "points": 15,
-          "target": 10
+          "target": 10,
+          "text": "Completa 10 spedizioni evento"
         },
         {
           "key": "alliance_war_or_boss",
           "points": 15,
-          "target": 2
+          "target": 2,
+          "text": "Partecipa a 2 guerre d'alleanza o attacchi al Titano"
         },
         {
           "key": "collect_offline_hours",
           "points": 10,
-          "target": 24
+          "target": 24,
+          "text": "Raccogli 24 ore di progresso offline"
         }
       ],
       "total_rubies_per_week": 50
-    }
+    },
+    "fallback_rule": "when the base objective of a task is permanently impossible (Forge +20 on all 9 slots; all 48 research nodes at level 5; then also all buildings at max), the first applicable alternative increments the SAME counter and its text replaces the base text in the app. Conditions are evaluated live on the player"
   },
   "research": {
     "branches": [
@@ -9871,10 +10010,10 @@
   },
   "units": {
     "campaign_army_unlock_stage": 10,
-    "casualties": "no permanent loss in PvE or Alliance War v1.1",
+    "casualties": "PvE (campaign, dungeons, events, Titan Hunt): no permanent loss. Alliance War: permanent losses of deployed troops on both sides, see alliance_war.casualties",
     "catalog": [
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 12,
         "base_power": 37,
         "category": "regular",
@@ -9897,10 +10036,11 @@
         "role": "frontline",
         "unlock_campaign_stage": 10,
         "unlock_castle_level": 1,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 1
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 22,
         "base_power": 40,
         "category": "regular",
@@ -9923,10 +10063,11 @@
         "role": "ranged",
         "unlock_campaign_stage": 20,
         "unlock_castle_level": 3,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 4
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 62,
         "base_power": 129,
         "category": "regular",
@@ -9949,10 +10090,11 @@
         "role": "mobile",
         "unlock_campaign_stage": 40,
         "unlock_castle_level": 5,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 7
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 242,
         "base_power": 414,
         "category": "siege",
@@ -9975,10 +10117,11 @@
         "role": "siege",
         "unlock_campaign_stage": 60,
         "unlock_castle_level": 7,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 7
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 106,
         "base_power": 655,
         "category": "siege",
@@ -10002,10 +10145,11 @@
         "role": "domain",
         "unlock_campaign_stage": 80,
         "unlock_castle_level": 9,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 10
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 84,
         "base_power": 212,
         "category": "beast",
@@ -10028,10 +10172,11 @@
         "role": "frontline",
         "unlock_campaign_stage": 100,
         "unlock_castle_level": 10,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 10
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 45,
         "base_power": 106,
         "category": "beast",
@@ -10054,10 +10199,11 @@
         "role": "mobile",
         "unlock_campaign_stage": 90,
         "unlock_castle_level": 10,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 10
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 110,
         "base_power": 218,
         "category": "beast",
@@ -10080,10 +10226,11 @@
         "role": "assault",
         "unlock_campaign_stage": 110,
         "unlock_castle_level": 11,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 11
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 61,
         "base_power": 109,
         "category": "beast",
@@ -10106,10 +10253,11 @@
         "role": "scout",
         "unlock_campaign_stage": 105,
         "unlock_castle_level": 11,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 11
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 211,
         "base_power": 558,
         "category": "beast",
@@ -10132,10 +10280,11 @@
         "role": "heavy",
         "unlock_campaign_stage": 120,
         "unlock_castle_level": 12,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 13
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 816,
         "base_power": 1740,
         "category": "mythic",
@@ -10158,10 +10307,11 @@
         "role": "legendary",
         "unlock_campaign_stage": 140,
         "unlock_castle_level": 14,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 14
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 742,
         "base_power": 1810,
         "category": "mythic",
@@ -10184,10 +10334,11 @@
         "role": "legendary",
         "unlock_campaign_stage": 160,
         "unlock_castle_level": 16,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 16
       },
       {
-        "alliance_war_permanent_death": false,
+        "alliance_war_permanent_death": true,
         "attack": 1028,
         "base_power": 1880,
         "category": "mythic",
@@ -10210,7 +10361,8 @@
         "role": "legendary",
         "unlock_campaign_stage": 180,
         "unlock_castle_level": 18,
-        "visible_in_campaign_battle": true
+        "visible_in_campaign_battle": true,
+        "effective_unlock_castle_level": 18
       }
     ],
     "command_capacity_formula": "50 + hero_level*10 + castle_level^2*20",
@@ -10388,10 +10540,11 @@
     },
     "formation_representation": "squad icon/formation; do not render every owned soldier",
     "formation_rule": "Lord is always present; deploy up to the unlocked formation-type slots without exceeding command capacity",
-    "ownership": "recruited quantities persist; no permanent PvE or Alliance War death in v1.1",
+    "ownership": "recruited quantities persist; only Alliance War lanes remove troops permanently (alliance_war.casualties); PvE never does",
     "pve_army_power_formula": "sum(deployed_quantity * unit.base_power * applicable research/talent/territory multipliers)",
     "unit_count": 13,
-    "visualization": "cohort virtualization; backend stores real quantities, client renders representative troops plus layered background cohorts"
+    "visualization": "cohort virtualization; backend stores real quantities, client renders representative troops plus layered background cohorts",
+    "recruit_gate_rule": "all listed castle / research (level >= 1) / campaign-stage gates must be satisfied. 'unlock_castle_level' is the nominal castle gate; 'effective_unlock_castle_level' = max(nominal castle gate, castle level that unlocks the required research) is the first castle level at which the unit can actually be recruited (the research itself must still be completed and the campaign stage reached)"
   },
   "ux": {
     "battle_primary CTA": "Auto battle always runs while Battle screen is active; player manages gear, skills, army formation and progression between attempts.",

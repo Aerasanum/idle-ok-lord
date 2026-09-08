@@ -1,0 +1,40 @@
+{
+  "summary": "ITERATION 18 (Canon v1.5) — BACKEND 14/14 live E2E green + 1 skipped (forge grant not supported by /_test/grant); unit tests test_formulas + test_canon_v13_warehouse + test_canon_v15 = 35 passed. FRONTEND (390x844, qa.lord@example.com) all iteration-18 UI features verified: Army tab shows unit-gates for conquest_wagon 'Ricerca Carri di Conquista (Castello 10) · disponibile dal Castello 10' and war_elephant 'Castello 12 · Stage 120 · Ricerca Elefante da Guerra (Castello 13) · disponibile dal Castello 13'; /events/quests all 8 daily + 7 weekly tasks render non-empty Italian text (e.g. 'Supera 10 stage', 'Potenzia la Forgia di uno slot'); /alliance/war opens a resolved war → war-casualties panel with '⚰ Perdite della squadra: 70 unità cadute su 1515 schierate · 1445 superstiti', 10 war-casualty-<pid> rows, and war-my-casualties 'Le tue truppe: cavalry −0 (10 superstiti) · archer −1 (17 superstiti) · infantry −1 (19 superstiti)'. Battle and Kingdom tabs render without red-screen. Backend verifications: canon VERSION 1.5; /api/army carries effective_unlock_castle_level (archer 4/3, cavalry 7/5, conquest_wagon 10/9, war_elephant 13/12, infantry 1/1) plus required_research_name; recruiting dragon returns 403 unit_locked; canon.gear.stage_drop_weights has 7 bands each summing to 100 with all positive-weight rarities <= band start (bands 1-9 and 10-24 have rare=0); domain tiles on qa.bot4 highest_cleared 3→1, 4→2, 199→99, 200→100; quests templates[]/tasks[] have Italian text and alt_active bool (false for qa.lord as expected); full war between QAT and ORS ran successfully — casualties dict is per-player with side/lane/won/ratio/rate_pct/units{...}/deployed_total/lost_total, lost<=deployed, ≥1 survivor per deployed type, in each contested lane loser rate_pct > winner rate_pct, qa.lord units_after == before − lost and formation clamped to owned, second /_test/tick did NOT re-apply losses (idempotent) and snapshot identical before/after, chat channel alliance:<QAT id> last '⚰ Perdite' alert present; PvE campaign attempt+claim on stage 25 leaves qa.lord units unchanged; PDF /api/docs/regolamento.pdf → 200, 43 pages, contains 'spec v1.5', '11.3 Perdite permanenti' (well 'Perdite permanenti'), 'Disponibile dal', 'floor('. Backend startup logs show current canon 1.5 loaded; earlier CanonError entries in backend.err.log are from prior boots BEFORE canon_v15 migration (stale) — no live CanonError. NOT VERIFIED: quest alternative flow when forge_all_max — /_test/grant GrantIn schema does not support forge state (see /app/backend/app/routers/test_hooks.py, only resources/highest_cleared/castle_level/hero_level/units/research/email_verified). This part was skipped as instructed by the request.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/_test/grant", "issue": "Cannot force forge_all_max via the test hook (GrantIn has no forge field); quest alternative case for maxed forge (forge_upgrade/forge_upgrades credited by reforge/salvage) could not be exercised in preview. Consider adding 'forge' to GrantIn or a dedicated /_test/forge-max hook."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "props.pointerEvents", "issue": "Deprecation warning 'props.pointerEvents is deprecated. Use style.pointerEvents' (non-blocking, seen across screens)."},
+      {"component": "Image.tintColor", "issue": "Deprecation warning 'Image: style.tintColor is deprecated. Please use props.tintColor.' (non-blocking)."},
+      {"component": "textShadow*/shadow*", "issue": "Deprecation warnings 'textShadow* style props are deprecated. Use textShadow.' and 'shadow* style props are deprecated. Use boxShadow.' (non-blocking)."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_canon_v15_it18.py",
+    "/app/test_reports/pytest/canon_v15_it18.xml"
+  ],
+  "action_items": [
+    "(Optional) Extend /_test/grant GrantIn with a 'forge' field (dict slot->level) or add a dedicated hook so the forge_all_max quest-alternative branch can be exercised end-to-end in preview.",
+    "(Optional, non-blocking) Address RN Web deprecation warnings across the app (props.pointerEvents → style.pointerEvents, Image style.tintColor → props.tintColor, textShadow*/shadow* → textShadow/boxShadow)."
+  ],
+  "critical_code_review_comments": [
+    "GET /api/canon/static intentionally does NOT expose gear.stage_drop_weights or drop_filter_rule (see /app/backend/app/routers/game.py :33-43 whitelist). The review request's phrasing 'GET /api/canon/static gear.stage_drop_weights has 7 bands' is misleading — verification was done against the live in-memory canon (canon()['gear']['stage_drop_weights']) which is the source of truth (verified: 7 bands, each summing to 100, no band contains a locked rarity with weight > 0). If the client needs the bands, add them to the /canon/static payload.",
+    "Backend log /var/log/supervisor/backend.err.log still has an older 'CanonError: Canonical version mismatch: 1.1' entry from a previous boot before canon_v15 was applied. Current process (pid 22159) started cleanly with VERSION 1.5. Not a live issue; consider clearing/rotating the stale error log so new operators are not confused."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_canon_v15_it18.py (new — 15 live E2E tests: 14 pass, 1 skipped for unsupported hook)"
+  ],
+  "success_rate": {"backend": "100% (14/14 exercised; 1 skipped due to test-hook limitation)", "frontend": "100%"},
+  "seed_data_creation": "qa.bot4@idle1.app was temporarily reset via POST /_test/grant {highest_cleared: 3,4,199,200} to verify F.domain_tiles_for_stage; final value restored with highest_cleared=10 (existing progression) as requested. QA war (QAT vs ORS) was declared, rostered, locked and resolved during the run; QA Lord formation is auto-clamped and remains valid post-war.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Reusable live test suite: /app/backend/tests/test_canon_v15_it18.py (BASE from EXPO_PUBLIC_BACKEND_URL + /api). Login testIDs: login-email-input, login-password-input, login-submit-button. Direct-nav works for /army, /events/quests, /alliance/war on web preview. Rulebook PDF is AES-encrypted with empty password (pypdf reader.decrypt('')). To exercise the forge_all_max quest alternative once /_test/grant is extended, set forge slots to max, GET /api/quests → expect daily.tasks.forge_upgrade.alt_active=true and text containing 'Riforgia o smantella'; then POST /api/gear/salvage {item_ids:[...]} on an unequipped item and re-GET /api/quests to see forge_upgrade.progress +1 and weekly forge_upgrades.progress +1.",
+  "rca_of_issue": "N/A — no bugs found. Only limitation: /_test/grant does not expose forge state, so one sub-case of the quest-alternatives review item was documented as untestable in preview rather than verified."
+}

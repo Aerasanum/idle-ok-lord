@@ -20,6 +20,7 @@ class GrantIn(BaseModel):
     units: dict[str, int] | None = None
     research: dict[str, int] | None = None
     email_verified: bool | None = None
+    forge: dict[str, int] | None = None  # slot -> forge level (QA: exercise the v1.5 quest alternatives)
 
 
 class ShiftIn(BaseModel):
@@ -57,6 +58,9 @@ async def grant(body: GrantIn, p: Principal = Depends(current_user)):
     if body.units:
         for k, v in body.units.items():
             sets[f"army.units.{k}"] = v
+    if body.forge:
+        for k, v in body.forge.items():
+            sets[f"forge.{k}"] = v
     if body.research:
         cur = (await db.players.find_one({"_id": p.player_id}, {"research": 1}))["research"]
         sets["research"] = {**cur, **body.research}  # node keys contain dots: never use them as Mongo paths

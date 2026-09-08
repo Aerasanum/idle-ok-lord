@@ -3,7 +3,7 @@ import statistics
 from datetime import timedelta
 
 from ..core import db, ledger
-from ..core.canon import canon
+from ..core.canon import canon, units_by_key
 from ..core.push import safe_push
 from ..core.util import aware, clean, fail, new_id, now, rnd, seeded_rng
 from . import formulas as F
@@ -342,6 +342,29 @@ def lane_power(s: dict, opp: dict) -> tuple[float, float]:
     return (s["hero_power"] + army) * (1 + s.get("roster_pct", 0) / 100), pct
 
 
+def lane_casualties(entry: dict, won: bool, own_pow: float, opp_pow: float, is_defender: bool) -> dict | None:
+    """Canon v1.5 alliance_war.casualties: permanent losses of the deployed troops of one lane duel.
+    rate = 0.05 + 0.20*r (winner) or 0.30 + 0.30*(1-r) (loser), r = min/max of the final lane powers; x0.85 for defenders;
+    x category multiplier; lost = min(floor(deployed*rate), deployed). NPC/empty entries have nothing to lose."""
+    cw = canon()["alliance_war"].get("casualties")
+    if not cw or not cw.get("enabled") or entry.get("npc") or not entry.get("player_id"):
+        return None
+    r = min(own_pow, opp_pow) / max(own_pow, opp_pow, 1e-9)
+    rate = (0.05 + 0.20 * r) if won else (0.30 + 0.30 * (1 - r))
+    if is_defender:
+        rate *= cw["defender_multiplier"]
+    units = units_by_key()
+    out = {}
+    for k, q in (entry.get("deployed_army") or {}).items():
+        q = int(q or 0)
+        if k in units and q > 0:
+            uk = rate * cw["category_multiplier"].get(units[k]["category"], 1.0)
+            lost = min(int(q * uk), q)
+            out[k] = {"deployed": q, "lost": lost, "survived": q - lost, "rate_pct": round(uk * 100, 1)}
+    return {"player_id": entry["player_id"], "won": won, "ratio": round(r, 3), "rate_pct": round(rate * 100, 1), "units": out,
+            "deployed_total": sum(v["deployed"] for v in out.values()), "lost_total": sum(v["lost"] for v in out.values())}
+
+
 def resolve_lanes(snap: dict) -> dict:
     aw = canon()["alliance_war"]
     lo, hi = aw["seeded_variance_range"]
@@ -362,12 +385,47 @@ def resolve_lanes(snap: dict) -> dict:
         margins += margin
         a_pts += 1 if win else 0
         d_pts += 0 if win else 1
+        # v1.5 casualties: nobody fights (or loses troops) against an empty lane
+        a_cas = lane_casualties(a, win, a_pow, d_pow, False) if not d.get("empty") else None
+        d_cas = lane_casualties(d, not win, d_pow, a_pow, True) if not a.get("empty") else None
         lanes.append({"lane": i + 1, "attacker": a.get("display_name"), "attacker_id": a.get("player_id"), "defender": d.get("display_name"), "defender_id": d.get("player_id"),
                       "attacker_level": a.get("hero_level"), "defender_level": d.get("hero_level"), "attacker_npc": bool(a.get("npc")), "defender_npc": bool(d.get("npc")),
                       "attacker_power": rnd(a_pow), "defender_power": rnd(d_pow), "attacker_counter_pct": round(a_cpct, 1), "defender_counter_pct": round(d_cpct, 1),
-                      "attacker_wins": win, "margin": round(margin, 4)})
+                      "attacker_wins": win, "margin": round(margin, 4), "attacker_casualties": a_cas, "defender_casualties": d_cas})
     attacker_won = a_pts > d_pts or (a_pts == d_pts and margins > 0)
     return {"lanes": lanes, "attacker_points": a_pts, "defender_points": d_pts, "margin_sum": round(margins, 4), "attacker_won": attacker_won, "tie_break_used": a_pts == d_pts}
+
+
+async def apply_casualties(war_id: str, result: dict) -> dict:
+    """Deduct the lane casualties from each player's army exactly once (ledger key war_losses:<war>:<player>), never above the
+    deployed or currently owned quantities; clamp the formation to the survivors. The war snapshot is never touched."""
+    summary: dict = {}
+    for lane in result["lanes"]:
+        for side in ("attacker", "defender"):
+            cas = lane.get(f"{side}_casualties")
+            if not cas:
+                continue
+            pid = cas["player_id"]
+            pl = await db.players.find_one({"_id": pid}, {"army": 1})
+            if not pl:
+                continue
+            ops = Ops()
+            applied = {}
+            for k, v in cas["units"].items():
+                owned = int(pl["army"]["units"].get(k, 0))
+                lost = max(0, min(v["lost"], owned))
+                applied[k] = {**v, "lost": lost, "survived": v["deployed"] - lost}
+                if lost > 0:
+                    ops.inc(f"army.units.{k}", -lost)
+                    if pl["army"]["formation"].get(k, 0) > owned - lost:
+                        if owned - lost > 0:
+                            ops.set(f"army.formation.{k}", owned - lost)
+                        else:
+                            ops.unset(f"army.formation.{k}")
+            entry = {**cas, "side": side, "lane": lane["lane"], "units": applied, "lost_total": sum(v["lost"] for v in applied.values())}
+            await ledger.apply_to_player(f"war_losses:{war_id}:{pid}", pid, "war_losses", ops.build(), entry)
+            summary[pid] = entry
+    return summary
 
 
 async def resolve_war(w: dict) -> dict | None:
@@ -402,12 +460,18 @@ async def resolve_war(w: dict) -> dict | None:
             if pl:
                 quest_progress(ops, pl, None, "alliance_war_or_boss")
                 await ledger.apply_to_player(f"war:{w['_id']}:{s['player_id']}", s["player_id"], "war_reward", ops.build(), {"war_coins": coins, "won": won})
+    result["casualties"] = await apply_casualties(w["_id"], result)
     result.update({"captured": captured, "winner_alliance_id": winner, "resolved_at": now().isoformat()})
     await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"status": "resolved", "result": result, "resolved_at": now(), "archived_at": now() + timedelta(hours=24)}})
     for aid in filter(None, (w["attacker_id"], w.get("defender_id"))):
         mine_won = (aid == w["attacker_id"]) == result["attacker_won"]
+        side = "attacker" if aid == w["attacker_id"] else "defender"
+        cas = [c for c in result["casualties"].values() if c["side"] == side]
+        lost = sum(c["lost_total"] for c in cas)
+        dep = sum(c["deployed_total"] for c in cas)
         await alliance_alert(aid, f"{'🏆 VITTORIA' if mine_won else '💀 SCONFITTA'} sul nodo {w['node_id']}: {'attaccante' if result['attacker_won'] else 'difensore'} vince {result['attacker_points']}-{result['defender_points']}"
-                             f"{' · nodo conquistato' if captured else ''}{' · spareggio sui margini' if result['tie_break_used'] else ''}.")
+                             f"{' · nodo conquistato' if captured else ''}{' · spareggio sui margini' if result['tie_break_used'] else ''}."
+                             f"{f' ⚰ Perdite: {lost:,} unità cadute su {dep:,} schierate ({dep - lost:,} superstiti).'.replace(',', '.') if dep else ''}")
         members = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": aid}).to_list(40)]
         await safe_push(members, {"title": "Alliance War result", "message": f"Node {w['node_id']}: {result['attacker_points']}-{result['defender_points']}", "action_url": "/alliance/war"}, f"war_result:{w['_id']}:{aid}")
     return result
@@ -452,7 +516,13 @@ async def war_detail(p: dict, war_id: str) -> dict:
                 snap_p = await _player_snapshot(pid, w["shard_id"], my_aid)
                 roster_players[pid]["war_power"] = snap_p["war_power"] if snap_p else 0
     team_power = sum(roster_players[pid].get("war_power", 0) for pid in (w[f"{my_side}_roster"] if my_side else []) if pid in roster_players)
-    return {"war": clean(w), "alliances": names, "roster_players": roster_players, "my_side": my_side, "team_power": team_power, "snapshot": clean(snap) if snap else None, "server_time": now().isoformat()}
+    cas = (w.get("result") or {}).get("casualties") or {}
+    my_team = [c for c in cas.values() if my_side and c["side"] == ("attacker" if my_side == "attack" else "defender")]
+    team_casualties = {"deployed": sum(c["deployed_total"] for c in my_team), "lost": sum(c["lost_total"] for c in my_team),
+                       "players": [{"player_id": c["player_id"], "display_name": roster_players.get(c["player_id"], {}).get("display_name"), "lane": c["lane"], "won": c["won"],
+                                    "rate_pct": c["rate_pct"], "deployed": c["deployed_total"], "lost": c["lost_total"]} for c in sorted(my_team, key=lambda c: c["lane"])]} if my_team else None
+    return {"war": clean(w), "alliances": names, "roster_players": roster_players, "my_side": my_side, "team_power": team_power, "snapshot": clean(snap) if snap else None,
+            "my_casualties": cas.get(p["_id"]), "team_casualties": team_casualties, "server_time": now().isoformat()}
 
 
 async def list_wars(p: dict) -> dict:

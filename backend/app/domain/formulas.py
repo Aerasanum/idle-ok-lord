@@ -215,8 +215,11 @@ def domain_bonus_pct(owned_tiles: int) -> float:
 
 
 def domain_tiles_for_stage(highest_cleared: int) -> int:
+    """v1.5: 1 start tile + 1 tile at every even cleared stage from `first_extra_tile_stage` (4) to 200 -> exactly 100 at stage 200."""
     pd = canon()["personal_domain"]
-    return min(pd["tiles_total"], pd["start_owned_tiles"] + highest_cleared // canon()["battle"]["domain_tile_every_stages"])
+    every = canon()["battle"]["domain_tile_every_stages"]
+    extra = max(0, (highest_cleared - pd["first_extra_tile_stage"]) // every + 1) if highest_cleared >= pd["first_extra_tile_stage"] else 0
+    return min(pd["tiles_total"], pd["start_owned_tiles"] + extra)
 
 
 # ---- events / dungeons / boss ----------------------------------------------------

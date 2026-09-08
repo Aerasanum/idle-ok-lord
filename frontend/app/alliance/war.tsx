@@ -75,6 +75,23 @@ export default function WarScreen() {
                 captured={!!detail.war.result.captured}
                 mineIsAttacker={myId ? detail.war.attacker_id === myId : null}
               />
+              {detail.team_casualties ? (
+                <View style={{ gap: 4, padding: 8, borderRadius: 8, backgroundColor: colors.parchment, borderWidth: 1, borderColor: colors.wood }} testID="war-casualties">
+                  <Txt v="bodyBold" color={colors.onSurfaceInverse}>⚰ Perdite della squadra: {fmt(detail.team_casualties.lost)} unità cadute su {fmt(detail.team_casualties.deployed)} schierate · {fmt(detail.team_casualties.deployed - detail.team_casualties.lost)} superstiti</Txt>
+                  {detail.team_casualties.players.map((c: any) => (
+                    <Row key={c.player_id} style={{ justifyContent: "space-between" }} testID={`war-casualty-${c.player_id}`}>
+                      <Txt v="small" color={colors.onSurfaceInverse}>Corsia {c.lane} · {c.display_name ?? c.player_id} · {c.won ? "vinta" : "persa"} ({c.rate_pct}%)</Txt>
+                      <Txt v="small" color={c.lost ? colors.error : colors.onSurfaceInverse}>−{fmt(c.lost)} / {fmt(c.deployed)}</Txt>
+                    </Row>
+                  ))}
+                  {detail.my_casualties ? (
+                    <Txt v="small" color={colors.onSurfaceInverse} testID="war-my-casualties">
+                      Le tue truppe: {Object.entries(detail.my_casualties.units).map(([k, v]: any) => `${k} −${fmt(v.lost)} (${fmt(v.survived)} superstiti)`).join(" · ")}
+                    </Txt>
+                  ) : null}
+                  <Txt v="small" color={colors.muted}>Regola v1.5: vincitore 5% + 20%×r, sconfitto 30% + 30%×(1−r); difensore ×0,85; bestie ×0,9, assedio ×0,8, mitiche ×0,6. Almeno un superstite per tipo. Il PvE non causa perdite.</Txt>
+                </View>
+              ) : null}
             </View>
           ) : null}
         </Panel>

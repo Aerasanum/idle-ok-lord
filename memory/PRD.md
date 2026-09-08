@@ -128,3 +128,14 @@ Lingua utente: **italiano**.
 - `/army/suggest` (`kingdom.suggest_formation`): greedy per potenza/comando su tutti i candidati, un tipo occupa uno slot solo se almeno un'unità ci sta, il comando residuo è riempito dai tipi successivi.
 - Regolamento PDF rigenerato (v1.4). Test: `test_formulas`, `test_canon_v13_warehouse`, `test_canon_v14_it17` (live).
 - Nota: `tests/test_alliance_wars.py` e `tests/test_war_reserves_it15.py` dipendono dallo stato seed del DB (guerra specifica) e non sono più indicativi.
+
+### Canon v1.5 — coerenza regolamento + perdite in guerra (iterazione 18, testing agent verde)
+- `scripts/canon_v15.py` (idempotente; `REQUIRED_VERSION=1.5`, hash `b5ab4a57…`, mirror `docs/CANONICAL_SPEC.json`).
+- **Sblocchi**: `effective_unlock_castle_level` = max(Castello nominale, Castello della ricerca richiesta) (arcieri 3→4, cavalleria 5→7, ariete 9→10, elefante 12→13); tutti i requisiti conservati. `/army` espone `effective_unlock_castle_level`, `required_research_name/_castle_level`; tab Esercito mostra "disponibile dal Castello N".
+- **Rarità**: fasce drop divise a ogni sblocco (1-9 / 10-24 / 25-49 / …), nessuna fascia elenca rarità bloccate; `gear.drop_filter_rule` con eccezioni (boss traguardo, Pass Evento, giorno 7, Rovine Antiche).
+- **Dominio**: 100 caselle esatte allo stage 200: `min(100, 1 + max(0, floor((stage−4)/2)+1))` (`first_extra_tile_stage=4`).
+- **Arrotondamenti** espliciti in `document.rounding`; il PDF scrive floor()/ceil() (il font non ha ⌊⌋⌈⌉).
+- **Riforgiatura**: documentato il comportamento reale (affisso ritirato NON protetto; statistiche/rarità/livello/Forgia/altri affissi invariati).
+- **Missioni**: testi italiani nei template + alternative (Forgia al massimo → riforgia/smantella; ricerca al massimo → potenziamento edificio; anche edifici al massimo → reclutamento). `progress.quest_alternatives/alt_quest_progress`. Hook `_test/grant` accetta `forge`.
+- **Perdite in guerra** (`wars.lane_casualties/apply_casualties`): r = min/max potenze di corsia; vincitore 5%+20%·r, sconfitto 30%+30%·(1−r); difensore ×0,85; categoria regolari 1 / bestie 0,9 / assedio 0,8 / mitiche 0,6; cadute = floor(schierate×tasso) → almeno un superstite per tipo; corsie vuote nessuna perdita; NPC nulla da perdere. Applicate una sola volta (ledger `war_losses:<war>:<pid>`), formazione ridotta ai superstiti, snapshot intoccato. `result.casualties[pid]`, `GET /wars/{id}` → `my_casualties`, `team_casualties`; alert chat con cadute/superstiti; UI `war-casualties`.
+- Regolamento PDF rigenerato (43 pagine; nuovi capitoli 11.3 con tabella tassi ed esempi). Test: `tests/test_canon_v15.py` (8), `tests/test_canon_v15_it18.py` (live, 14).
