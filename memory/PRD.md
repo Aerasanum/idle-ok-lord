@@ -141,3 +141,4 @@ Lingua utente: **italiano**.
 - Regolamento PDF rigenerato (43 pagine; nuovi capitoli 11.3 con tabella tassi ed esempi). Test: `tests/test_canon_v15.py` (8), `tests/test_canon_v15_it18.py` (live, 14).
 
 - **Imprese con testi** (18b): titolo per metrica + numerale di tier, descrizione, stato (riscattata / completata: ritira N / cosa manca per N Rubini), categorie in italiano (`liveops.ACH_METRIC_IT`).
+- **Avviso Imprese** (18c): pallino rosso con conteggio sulla tab Eventi (`tab-events-dot`) + toast alla prima comparsa di un'impresa riscattabile (`useAchievementAlerts`, set notificato persistito per giocatore; il backlog iniziale non genera toast).

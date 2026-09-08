@@ -70,6 +70,7 @@ export function useAction(method: "post" | "put" | "patch", path: string, invali
     onSuccess: (d) => {
       invalidate.forEach((k) => qc.invalidateQueries({ queryKey: k as any }));
       qc.invalidateQueries({ queryKey: QK.profile });
+      qc.invalidateQueries({ queryKey: QK.achievements }); // progress may have unlocked an achievement (toast + Eventi dot)
       const msg = opts?.success?.(d);
       if (msg) toast.show(msg, "success");
     },

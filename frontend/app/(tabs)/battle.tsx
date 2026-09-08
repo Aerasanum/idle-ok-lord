@@ -83,6 +83,7 @@ export default function BattleTab() {
         setAttempt(null);
         qc.invalidateQueries({ queryKey: QK.profile });
         qc.invalidateQueries({ queryKey: QK.inventory });
+        qc.invalidateQueries({ queryKey: QK.achievements });
         if (r.gear?.found?.length) toast.show(`Trovato: ${r.gear.found.map((g: any) => RARITY_LABEL[g.rarity]).join(", ")}`, "success");
         if (r.levels_gained) toast.show(`Il Lord sale al livello ${r.hero_level}!`, "success");
         if (auto) {

@@ -1,7 +1,8 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, Text, View } from "react-native";
 
+import { useAchievementAlerts } from "@/src/achievements/useAchievementAlerts";
 import { useProfile } from "@/src/api/hooks";
 import { setActiveSkins } from "@/src/art";
 import { fonts, useTheme } from "@/src/theme";
@@ -20,6 +21,7 @@ export default function TabsLayout() {
   const { colors } = useTheme();
   const { data: profile } = useProfile();
   setActiveSkins(profile?.cosmetics); // keep Lord/Castle skin lookups in sync with the server profile
+  const claimable = useAchievementAlerts(profile?.id); // toast on new claimable achievements + dot on the Eventi tab
   const iosVersion = Platform.OS === "ios" ? parseInt(String(Platform.Version), 10) : 0;
   if (Platform.OS === "ios" && iosVersion >= 26) {
     // Liquid-glass native tabs on iOS 26+
@@ -48,7 +50,24 @@ export default function TabsLayout() {
       }}
     >
       {TABS.map((t) => (
-        <Tabs.Screen key={t.name} name={t.name} options={{ title: t.title, tabBarIcon: ({ color, size }) => <Icon name={t.icon} size={size} color={String(color)} />, tabBarButtonTestID: `tab-${t.name}` }} />
+        <Tabs.Screen
+          key={t.name}
+          name={t.name}
+          options={{
+            title: t.title,
+            tabBarIcon: ({ color, size }) => (
+              <View>
+                <Icon name={t.icon} size={size} color={String(color)} />
+                {t.name === "events" && claimable > 0 ? (
+                  <View style={{ position: "absolute", top: -3, right: -6, minWidth: 14, height: 14, paddingHorizontal: 3, borderRadius: 7, backgroundColor: colors.error, borderWidth: 1, borderColor: colors.goldBright, alignItems: "center", justifyContent: "center" }} testID="tab-events-dot">
+                    <Text style={{ color: colors.onBrandPrimary, fontSize: 9, fontFamily: fonts.bodyBold, lineHeight: 11 }}>{claimable > 9 ? "9+" : claimable}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ),
+            tabBarButtonTestID: `tab-${t.name}`,
+          }}
+        />
       ))}
     </Tabs>
   );
