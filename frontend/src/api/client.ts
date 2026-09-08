@@ -60,11 +60,45 @@ async function refresh(): Promise<boolean> {
   return true;
 }
 
+/** Italian fallbacks for server error codes (the server message wins when it is already Italian). */
+const IT: Record<string, string> = {
+  officer_required: "Solo il leader e gli ufficiali possono farlo",
+  displaced: "L'alleanza si sta ricollocando dopo aver perso il castello: attendi 12 ore",
+  min_members: "Servono almeno 10 membri per attaccare",
+  attack_cooldown: "Un solo attacco ogni 24 ore per alleanza",
+  war_active: "La tua alleanza è già impegnata in una guerra",
+  node_not_found: "Nodo non trovato",
+  own_node: "Questo nodo è già tuo",
+  not_adjacent: "Puoi attaccare solo nodi adiacenti al tuo territorio",
+  node_contested: "Su questo nodo c'è già una guerra in corso",
+  defender_busy: "L'alleanza difensore è già impegnata in un'altra guerra",
+  not_in_alliance: "Non sei in un'alleanza",
+  war_not_open: "La guerra non è più in preparazione",
+  roster_locked: "Schieramento bloccato: mancano meno di 30 minuti alla risoluzione",
+  not_in_war: "La tua alleanza non partecipa a questa guerra",
+  insufficient: "Risorse insufficienti",
+  insufficient_rubies: "Rubini insufficienti",
+  queue_full: "Coda piena",
+  max_level: "Livello massimo raggiunto",
+  unit_locked: "Unità non ancora sbloccata",
+  stage_locked: "Stage non ancora sbloccato",
+  castle_gate: "Serve un Castello di livello superiore",
+  forge_max: "Forgia già al massimo",
+  rate_limited: "Troppe richieste: riprova tra poco",
+  chat_rate_limit: "Stai scrivendo troppo in fretta",
+};
+const looksEnglish = (m: string) => /\b(must|already|need|not|per|cannot|invalid|only)\b/i.test(m) && !/[àèéìòù]/.test(m);
+
 function parseError(status: number, body: any): ApiError {
   const d = body?.detail;
-  if (d && typeof d === "object") return new ApiError(status, d.code ?? "error", d.message ?? d.code ?? "Error");
-  if (typeof d === "string") return new ApiError(status, "error", d);
+  if (d && typeof d === "object") {
+    const code = d.code ?? "error";
+    const msg = d.message && !looksEnglish(d.message) ? d.message : IT[code] ?? d.message ?? code;
+    return new ApiError(status, code, msg);
+  }
+  if (typeof d === "string") return new ApiError(status, "error", IT[d] ?? d);
   if (Array.isArray(d)) return new ApiError(status, "validation", d.map((x: any) => x.msg).join(", "));
+  if (status === 429) return new ApiError(status, "rate_limited", IT.rate_limited);
   return new ApiError(status, "error", body?.error ?? `HTTP ${status}`);
 }
 

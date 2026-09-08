@@ -117,11 +117,38 @@ async def map_view(p: dict) -> dict:
     als = {x["_id"]: x for x in await db.alliances.find({"_id": {"$in": list(owners)}}, {"name": 1, "tag": 1, "season_points": 1, "home_node": 1}).to_list(100)}
     wars = await db.alliance_wars.find({"shard_id": shard_id, "status": {"$in": ["prep", "locked"]}}).to_list(100)
     start, end = season_bounds()
+    # v1.5: tell the client up-front why the alliance cannot attack (and which nodes are valid targets) so the UI can explain in Italian
+    attack_state: dict = {"can_attack": False, "reason": None, "cooldown_ends_at": None, "attackable_node_ids": []}
+    if a:
+        aw = canon()["alliance_war"]
+        members = await db.alliance_members.count_documents({"alliance_id": a["_id"]})
+        last = await db.alliance_wars.find_one({"attacker_id": a["_id"], "declared_at": {"$gte": now() - timedelta(hours=aw["attack_limit_per_alliance_hours"])}}, sort=[("declared_at", -1)])
+        mine_active = next((w for w in wars if a["_id"] in (w["attacker_id"], w.get("defender_id"))), None)
+        if role_rank(me["role"]) < 2:
+            attack_state["reason"] = "officer_required"
+        elif a.get("displaced_until") and aware(a["displaced_until"]) > now():
+            attack_state["reason"] = "displaced"
+        elif members < canon()["alliances"]["minimum_members_to_attack"]:
+            attack_state["reason"] = "min_members"
+        elif last:
+            attack_state["reason"] = "attack_cooldown"
+            attack_state["cooldown_ends_at"] = (aware(last["declared_at"]) + timedelta(hours=aw["attack_limit_per_alliance_hours"])).isoformat()
+        elif mine_active:
+            attack_state["reason"] = "war_active"
+            attack_state["active_war_id"] = mine_active["_id"]
+        else:
+            attack_state["can_attack"] = True
+        owned = {n["node_id"] for n in nodes if n["owner_alliance_id"] == a["_id"]}
+        contested = {w["node_id"] for w in wars}
+        busy = {w["attacker_id"] for w in wars} | {w.get("defender_id") for w in wars}
+        attack_state["attackable_node_ids"] = [n["node_id"] for n in nodes if n["owner_alliance_id"] != a["_id"] and n["node_id"] not in contested
+                                              and any(nb in owned for nb in neighbors(n["node_id"])) and (not n["owner_alliance_id"] or n["owner_alliance_id"] not in busy)]
+        attack_state["members"] = members
     return {
         "shard_id": shard_id, "size": N, "season": {"key": season_key(), "starts_at": start.isoformat(), "ends_at": end.isoformat()},
         "nodes": [{"node_id": n["node_id"], "x": n["x"], "y": n["y"], "type": n["type"], "owner": n["owner_alliance_id"], "bonus": n["bonus"]} for n in nodes],
         "alliances": {k: {"name": v["name"], "tag": v["tag"], "season_points": v.get("season_points", 0), "home_node": v.get("home_node")} for k, v in als.items()},
-        "my_alliance_id": a["_id"] if a else None, "my_home": a.get("home_node") if a else None,
+        "my_alliance_id": a["_id"] if a else None, "my_home": a.get("home_node") if a else None, "attack_state": attack_state,
         "active_wars": [clean(w) for w in wars], "territory_bonus": await territory_bonus(a["_id"] if a else None, shard_id),
         "rules": {**{k: canon()["alliance_war"][k] for k in ("prep_hours", "roster_lock_minutes_before_resolution", "attack_roster_size", "defense_roster_size", "attack_limit_per_alliance_hours", "rewards", "tie_break", "target_rule")},
                   "minimum_members_to_attack": canon()["alliances"]["minimum_members_to_attack"]},
@@ -133,30 +160,30 @@ async def declare(p: dict, node_id: int) -> dict:
     aw = canon()["alliance_war"]
     me = await membership(p["_id"])
     if not me or role_rank(me["role"]) < 2:
-        raise fail(403, "officer_required")
+        raise fail(403, "officer_required", "Solo il leader e gli ufficiali possono farlo")
     a = await ensure_alliance_on_map(await db.alliances.find_one({"_id": me["alliance_id"]}))
     if a.get("displaced_until") and aware(a["displaced_until"]) > now():
-        raise fail(409, "displaced", "Alliance is relocating after losing its home castle")
+        raise fail(409, "displaced", "L'alleanza si sta ricollocando dopo aver perso il castello: attendi 12 ore")
     if await db.alliance_members.count_documents({"alliance_id": a["_id"]}) < canon()["alliances"]["minimum_members_to_attack"]:
-        raise fail(403, "min_members", f"Need {canon()['alliances']['minimum_members_to_attack']} members to attack")
+        raise fail(403, "min_members", f"Servono almeno {canon()['alliances']['minimum_members_to_attack']} membri per attaccare")
     last = await db.alliance_wars.find_one({"attacker_id": a["_id"], "declared_at": {"$gte": now() - timedelta(hours=aw["attack_limit_per_alliance_hours"])}})
     if last:
-        raise fail(409, "attack_cooldown", "One attack per 24h per alliance")
+        raise fail(409, "attack_cooldown", "Un solo attacco ogni 24 ore per alleanza")
     if await db.alliance_wars.find_one({"status": {"$in": ["prep", "locked"]}, "$or": [{"attacker_id": a["_id"]}, {"defender_id": a["_id"]}]}):
-        raise fail(409, "war_active", "Alliance already involved in an active war")
+        raise fail(409, "war_active", "La tua alleanza è già impegnata in una guerra (in preparazione o bloccata)")
     node = await db.alliance_map_nodes.find_one({"shard_id": a["shard_id"], "node_id": node_id})
     if not node:
-        raise fail(404, "node_not_found")
+        raise fail(404, "node_not_found", "Nodo non trovato")
     if node["owner_alliance_id"] == a["_id"]:
-        raise fail(400, "own_node")
+        raise fail(400, "own_node", "Questo nodo è già tuo")
     owned = {n["node_id"] for n in await db.alliance_map_nodes.find({"shard_id": a["shard_id"], "owner_alliance_id": a["_id"]}, {"node_id": 1}).to_list(400)}
     if not any(nb in owned for nb in neighbors(node_id)):
-        raise fail(400, "not_adjacent", "Target must be adjacent to owned territory")
+        raise fail(400, "not_adjacent", "Puoi attaccare solo nodi adiacenti al tuo territorio")
     if await db.alliance_wars.find_one({"shard_id": a["shard_id"], "node_id": node_id, "status": {"$in": ["prep", "locked"]}}):
-        raise fail(409, "node_contested")
+        raise fail(409, "node_contested", "Su questo nodo c'è già una guerra in corso")
     defender_id = node["owner_alliance_id"]
     if defender_id and await db.alliance_wars.find_one({"status": {"$in": ["prep", "locked"]}, "$or": [{"attacker_id": defender_id}, {"defender_id": defender_id}]}):
-        raise fail(409, "defender_busy", "Defender already in an active war")
+        raise fail(409, "defender_busy", "L'alleanza difensore è già impegnata in un'altra guerra")
     resolves = now() + timedelta(hours=aw["prep_hours"])
     war = {"_id": new_id("war_"), "shard_id": a["shard_id"], "node_id": node_id, "node_type": node["type"], "attacker_id": a["_id"], "defender_id": defender_id, "declared_by": p["_id"],
            "declared_at": now(), "resolves_at": resolves, "lock_at": resolves - timedelta(minutes=aw["roster_lock_minutes_before_resolution"]), "status": "prep",
@@ -178,15 +205,15 @@ async def _war_side(p: dict, war_id: str) -> tuple[dict, dict, str, int]:
     aw = canon()["alliance_war"]
     me = await membership(p["_id"])
     if not me:
-        raise fail(403, "not_in_alliance")
+        raise fail(403, "not_in_alliance", "Non sei in un'alleanza")
     w = await db.alliance_wars.find_one({"_id": war_id})
     if not w or w["status"] != "prep":
-        raise fail(409, "war_not_open")
+        raise fail(409, "war_not_open", "La guerra non è più in preparazione")
     if aware(w["lock_at"]) <= now():
-        raise fail(409, "roster_locked")
+        raise fail(409, "roster_locked", "Schieramento bloccato: mancano meno di 30 minuti alla risoluzione")
     side = "attack_roster" if w["attacker_id"] == me["alliance_id"] else "defense_roster" if w.get("defender_id") == me["alliance_id"] else None
     if not side:
-        raise fail(403, "not_in_war")
+        raise fail(403, "not_in_war", "La tua alleanza non partecipa a questa guerra")
     return me, w, side, aw["attack_roster_size"] if side == "attack_roster" else aw["defense_roster_size"]
 
 
@@ -221,7 +248,7 @@ async def withdraw(p: dict, war_id: str) -> dict:
         w = await db.alliance_wars.find_one({"_id": war_id})
         return {"war_id": war_id, side: w[side], reserve: w.get(reserve, []), "enlisted": False, "reserve": False}
     if p["_id"] not in w[side]:
-        raise fail(409, "not_enlisted")
+        raise fail(409, "not_enlisted", "Non sei arruolato in questa guerra")
     await db.alliance_wars.update_one({"_id": war_id, "status": "prep"}, {"$pull": {side: p["_id"]}})
     promoted = None
     for cand in w.get(reserve, []):
@@ -245,22 +272,22 @@ async def set_roster(p: dict, war_id: str, player_ids: list[str]) -> dict:
     aw = canon()["alliance_war"]
     me = await membership(p["_id"])
     if not me or role_rank(me["role"]) < 2:
-        raise fail(403, "officer_required")
+        raise fail(403, "officer_required", "Solo il leader e gli ufficiali possono farlo")
     w = await db.alliance_wars.find_one({"_id": war_id})
     if not w or w["status"] != "prep":
-        raise fail(409, "war_not_open")
+        raise fail(409, "war_not_open", "La guerra non è più in preparazione")
     if aware(w["lock_at"]) <= now():
-        raise fail(409, "roster_locked")
+        raise fail(409, "roster_locked", "Schieramento bloccato: mancano meno di 30 minuti alla risoluzione")
     side = "attack_roster" if w["attacker_id"] == me["alliance_id"] else "defense_roster" if w.get("defender_id") == me["alliance_id"] else None
     if not side:
-        raise fail(403, "not_in_war")
+        raise fail(403, "not_in_war", "La tua alleanza non partecipa a questa guerra")
     size = aw["attack_roster_size"] if side == "attack_roster" else aw["defense_roster_size"]
     ids = list(dict.fromkeys(player_ids))
     if len(ids) > size:
         raise fail(400, "roster_size", f"Max {size} players")
     members = {m["player_id"] for m in await db.alliance_members.find({"alliance_id": me["alliance_id"]}).to_list(40)}
     if any(i not in members for i in ids):
-        raise fail(400, "not_members")
+        raise fail(400, "not_members", "Alcuni giocatori scelti non sono membri dell'alleanza")
     await db.alliance_wars.update_one({"_id": war_id, "status": "prep"}, {"$set": {side: ids}})
     await alliance_alert(me["alliance_id"], f"📜 {p['display_name']} ha salvato il roster di {'attacco' if side == 'attack_roster' else 'difesa'} per il nodo {w['node_id']}: {len(ids)}/{size} guerrieri.")
     return {"war_id": war_id, side: ids}
@@ -497,7 +524,7 @@ async def tick_wars() -> dict:
 async def war_detail(p: dict, war_id: str) -> dict:
     w = await db.alliance_wars.find_one({"_id": war_id})
     if not w:
-        raise fail(404, "war_not_found")
+        raise fail(404, "war_not_found", "Guerra non trovata")
     snap = await db.war_snapshots.find_one({"war_id": war_id}) if w.get("snapshot_id") else None
     names = {}
     for aid in filter(None, (w["attacker_id"], w.get("defender_id"))):
@@ -577,11 +604,11 @@ async def start_boss(p: dict, tier: int) -> dict:
     ab = canon()["events"]["alliance_boss"]
     me = await membership(p["_id"])
     if not me or role_rank(me["role"]) < 2:
-        raise fail(403, "officer_required")
+        raise fail(403, "officer_required", "Solo il leader e gli ufficiali possono farlo")
     if not (ab["tier_range"][0] <= tier <= ab["tier_range"][1]):
-        raise fail(400, "bad_tier")
+        raise fail(400, "bad_tier", "Livello del Titano non valido")
     if await db.alliance_boss_runs.find_one({"alliance_id": me["alliance_id"], "status": "active", "ends_at": {"$gt": now()}}):
-        raise fail(409, "boss_active")
+        raise fail(409, "boss_active", "C'è già una caccia al Titano attiva")
     run = {"_id": new_id("boss_"), "alliance_id": me["alliance_id"], "tier": tier, "hp_max": F.boss_hp(tier), "hp": F.boss_hp(tier), "started_at": now(), "ends_at": now() + timedelta(hours=ab["duration_hours"]),
            "status": "active", "attacks": {}, "thresholds_hit": [], "participants": []}
     await db.alliance_boss_runs.insert_one(run)
@@ -596,7 +623,7 @@ async def attack_boss(p: dict) -> dict:
         raise fail(404, "not_member")
     run = await db.alliance_boss_runs.find_one({"alliance_id": me["alliance_id"], "status": "active", "ends_at": {"$gt": now()}})
     if not run:
-        raise fail(404, "no_active_boss")
+        raise fail(404, "no_active_boss", "Nessuna caccia al Titano attiva")
     today = now().strftime("%Y-%m-%d")
     mine = {"free": 0, "paid": 0, **run.get("attacks", {}).get(p["_id"], {}).get(today, {})}
     paid = False
@@ -606,7 +633,7 @@ async def attack_boss(p: dict) -> dict:
         field = f"attacks.{p['_id']}.{today}.paid"
         paid = True
     else:
-        raise fail(409, "no_attacks_left")
+        raise fail(409, "no_attacks_left", "Hai esaurito gli attacchi di oggi")
     prof = await combat_profile(p)
     dmg = F.boss_attack_damage(prof["total_power"])
     attack_id = new_id("batk_")

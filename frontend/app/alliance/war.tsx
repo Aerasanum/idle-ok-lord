@@ -13,6 +13,14 @@ import { WarReplay } from "@/src/war/WarReplay";
 
 const STATUS_LABEL: Record<string, string> = { prep: "Preparazione", locking: "Blocco roster", locked: "Roster bloccato", resolving: "Risoluzione", resolved: "Risolta", cancelled: "Annullata" };
 
+const ATTACK_REASON: Record<string, string> = {
+  officer_required: "Solo il leader e gli ufficiali possono dichiarare guerra.",
+  displaced: "L'alleanza si sta ricollocando dopo aver perso il castello: attendi 12 ore.",
+  min_members: "Servono almeno 10 membri per attaccare.",
+  attack_cooldown: "Un solo attacco ogni 24 ore per alleanza.",
+  war_active: "La tua alleanza è già impegnata in una guerra: aspetta che si risolva.",
+};
+
 export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
   const { colors } = useTheme();
   const params = useLocalSearchParams<{ section?: string }>();
@@ -40,7 +48,7 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
       {!a ? <Txt v="small" color={colors.warning}>Entra in un&apos;alleanza (scheda Alleanza, Castello 8) per partecipare alle guerre. La mappa è visibile a tutti.</Txt> : null}
       {!rosterOnly ? (
         <>
-          <WarMap nodes={m.nodes} myAlliance={m.my_alliance_id} selected={sel?.node_id} contested={contested} alliances={m.alliances} onSelect={(n) => { setSel(n); sheet.current?.present(); }} />
+          <WarMap nodes={m.nodes} myAlliance={m.my_alliance_id} selected={sel?.node_id} contested={contested} alliances={m.alliances} attackable={new Set<number>(m.attack_state?.attackable_node_ids ?? [])} onSelect={(n) => { setSel(n); sheet.current?.present(); }} />
           <Panel testID="territory-bonus">
             <Txt v="h3">Bonus territorio della tua alleanza</Txt>
             {Object.keys(m.territory_bonus).length ? Object.entries(m.territory_bonus).map(([k, v]) => <Txt key={k} v="small">{k.replace(/_/g, " ")}: +{Number(v).toFixed(1)}%</Txt>) : <Txt v="small" color={colors.muted}>Nessun nodo con bonus conquistato.</Txt>}
@@ -113,7 +121,18 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
             <Row><View style={{ width: 14, height: 14, backgroundColor: allianceColor(sel.owner, m.my_alliance_id), borderWidth: 1, borderColor: colors.gold }} /><Txt v="body">{sel.owner ? `Controllato da [${m.alliances[sel.owner]?.tag}] ${m.alliances[sel.owner]?.name}` : "Neutrale (guarnigione)"}</Txt></Row>
             {sel.bonus ? <Txt v="small" color={colors.muted}>Bonus: {Object.entries(sel.bonus).map(([k, v]) => `${k.replace(/_/g, " ")} +${v}%`).join(", ")}</Txt> : <Txt v="small" color={colors.muted}>Nessun bonus.</Txt>}
             {contested.has(sel.node_id) ? <Txt v="small" color={colors.error}>Guerra in corso su questo nodo.</Txt> : null}
-            {officer && sel.owner !== m.my_alliance_id ? <Btn title="Dichiara guerra" icon="sword-cross" loading={declare.isPending} onPress={() => declare.mutate({ node_id: sel.node_id }, { onSuccess: () => sheet.current?.dismiss() })} testID="declare-war-button" /> : null}
+            {officer && sel.owner !== m.my_alliance_id ? (() => {
+              const st = m.attack_state ?? {};
+              const attackable = (st.attackable_node_ids ?? []).includes(sel.node_id);
+              const reason = !st.can_attack ? ATTACK_REASON[st.reason] ?? st.reason : !attackable ? (contested.has(sel.node_id) ? "Su questo nodo c'è già una guerra in corso." : "Puoi attaccare solo i nodi adiacenti al tuo territorio (bordo dorato) il cui proprietario non è già in guerra.") : null;
+              const cd = st.reason === "attack_cooldown" && st.cooldown_ends_at ? ` Prossimo attacco tra ${fmtDuration((new Date(st.cooldown_ends_at).getTime() - Date.now()) / 1000)}.` : "";
+              return (
+                <View style={{ gap: 6 }}>
+                  {reason ? <Txt v="small" color={colors.warning} testID="declare-blocked-reason">⚠ {reason}{cd}</Txt> : <Txt v="small" color={colors.success}>Bersaglio valido: preparazione 8 ore, poi 10 corsie 1v1.</Txt>}
+                  <Btn title="Dichiara guerra" icon="sword-cross" disabled={!!reason} loading={declare.isPending} onPress={() => declare.mutate({ node_id: sel.node_id }, { onSuccess: () => sheet.current?.dismiss() })} testID="declare-war-button" />
+                </View>
+              );
+            })() : null}
             {!officer ? <Txt v="small" color={colors.muted}>Solo leader e ufficiali dichiarano guerra.</Txt> : null}
           </View>
         ) : null}

@@ -25,7 +25,7 @@ export function allianceColor(id: string | null | undefined, mine: string | null
 
 type Node = { node_id: number; x: number; y: number; type: string; owner: string | null };
 
-export function WarMap({ nodes, myAlliance, onSelect, selected, contested, alliances }: { nodes: Node[]; myAlliance: string | null; onSelect: (n: any) => void; selected?: number | null; contested: Set<number>; alliances?: Record<string, { name: string; tag: string; home_node?: number | null }> }) {
+export function WarMap({ nodes, myAlliance, onSelect, selected, contested, alliances, attackable }: { nodes: Node[]; myAlliance: string | null; onSelect: (n: any) => void; selected?: number | null; contested: Set<number>; alliances?: Record<string, { name: string; tag: string; home_node?: number | null }>; attackable?: Set<number> }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const { data: profile } = useProfile();
@@ -46,7 +46,7 @@ export function WarMap({ nodes, myAlliance, onSelect, selected, contested, allia
       <View style={{ borderWidth: 3, borderColor: colors.gold, borderRadius: 8, overflow: "hidden", backgroundColor: "#141a12", alignSelf: "center" }}>
         <ZoomPan ref={zoom} width={vw} height={vh} contentWidth={size} contentHeight={size} maxScale={3.2} dpad testID="war-zoom">
           <View style={{ width: size, height: size, backgroundColor: "#2a3a26" }} testID="war-map">
-            {nodes.map((n) => <Tile key={n.node_id} n={n} mine={myAlliance} selected={selected === n.node_id} contested={contested.has(n.node_id)} onSelect={onSelect} tag={n.owner ? alliances?.[n.owner]?.tag : undefined} banner={n.owner === myAlliance ? banner : undefined} />)}
+            {nodes.map((n) => <Tile key={n.node_id} n={n} mine={myAlliance} selected={selected === n.node_id} contested={contested.has(n.node_id)} attackable={!!attackable?.has(n.node_id)} onSelect={onSelect} tag={n.owner ? alliances?.[n.owner]?.tag : undefined} banner={n.owner === myAlliance ? banner : undefined} />)}
           </View>
         </ZoomPan>
         {myAlliance && centroid ? (
@@ -59,6 +59,7 @@ export function WarMap({ nodes, myAlliance, onSelect, selected, contested, allia
         {myAlliance ? <Legend color={OWN} label={`Tuo territorio · ${mine.length} nodi`} /> : null}
         {rivals.length ? <Legend color={RIVAL} label={`Rivali: ${rivals.map(([, a]) => `[${a.tag}]`).join(" ")}`} /> : null}
         <Legend color="transparent" border={WAR} label="Guerra in corso" />
+        {attackable?.size ? <Legend color="transparent" border={colors.goldBright} label="Attaccabile" /> : null}
         <Legend color="transparent" border={colors.parchment} label="Libero" />
       </View>
       <Txt v="caption" color={colors.muted}>Trascina o usa le frecce per muoverti · pizzica o usa +/− per lo zoom · tocca un nodo per i dettagli</Txt>
@@ -66,7 +67,7 @@ export function WarMap({ nodes, myAlliance, onSelect, selected, contested, allia
   );
 }
 
-function Tile({ n, mine, selected, contested, onSelect, tag, banner }: { n: Node; mine: string | null; selected: boolean; contested: boolean; onSelect: (n: any) => void; tag?: string; banner?: number }) {
+function Tile({ n, mine, selected, contested, attackable, onSelect, tag, banner }: { n: Node; mine: string | null; selected: boolean; contested: boolean; attackable?: boolean; onSelect: (n: any) => void; tag?: string; banner?: number }) {
   const { colors } = useTheme();
   const variants = TILE_FOR[n.type] ?? TILE_FOR.wilderness;
   const tile = n.type === "home_castle" && !n.owner ? "ruins" : variants[hashStr(`${n.node_id}`) % variants.length];
@@ -92,6 +93,7 @@ function Tile({ n, mine, selected, contested, onSelect, tag, banner }: { n: Node
         )
       ) : null}
       {contested ? <WarRing /> : null}
+      {attackable && !contested ? <View pointerEvents="none" style={{ position: "absolute", width: CELL - 2, height: CELL - 2, margin: 1, borderWidth: 2, borderStyle: "dashed", borderColor: colors.goldBright, borderRadius: 3 }} testID={`war-attackable-${n.node_id}`} /> : null}
       {selected ? <View style={{ position: "absolute", width: CELL, height: CELL, borderWidth: 2.5, borderColor: "#FFFFFF" }} /> : null}
     </Pressable>
   );
