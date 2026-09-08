@@ -382,13 +382,37 @@ async def claim_login(p: dict) -> dict:
 
 
 # ---- achievements / codex ------------------------------------------------------------------------------------
+ACH_METRIC_IT = {
+    "campaign_stage_reached": ("Conquistatore", "Supera lo stage {t} della Campagna", "stage superati", "Supera ancora {d} stage"),
+    "hero_level_reached": ("Veterano", "Porta il Lord al livello {t}", "livello del Lord", "Ti mancano {d} livelli del Lord"),
+    "legendary_or_higher_items_found": ("Cercatore di reliquie", "Trova {t} oggetti Leggendari o superiori", "oggetti Leggendari+ trovati", "Trova ancora {d} oggetti Leggendari o superiori"),
+    "castle_level_reached": ("Signore del Castello", "Porta il Castello al livello {t}", "livello del Castello", "Ti mancano {d} livelli di Castello"),
+    "units_recruited_total": ("Reclutatore", "Recluta {t} unità in totale", "unità reclutate", "Recluta ancora {d} unità"),
+    "domain_tiles_owned": ("Signore del Dominio", "Possiedi {t} caselle del Dominio", "caselle possedute", "Ti mancano {d} caselle (una ogni 2 stage pari dal 4)"),
+    "event_deployments_completed": ("Esploratore", "Completa {t} spedizioni evento", "spedizioni completate", "Completa ancora {d} spedizioni evento"),
+    "alliance_war_lanes_or_boss_attacks": ("Fratello d'armi", "Combatti {t} corsie di guerra o attacchi al Titano", "corsie/attacchi", "Ancora {d} corsie di guerra o attacchi al Titano"),
+}
+ACH_CATEGORY_IT = {"campaign": "Campagna", "hero": "Eroe", "gear": "Equipaggiamento", "kingdom": "Regno", "army": "Esercito", "domain": "Dominio", "events": "Eventi", "alliance": "Alleanza"}
+
+
 def achievements_view(p: dict) -> dict:
     m = achievement_metrics(p)
     out = []
+    by_metric: dict = {}
+    for a in canon()["achievements"]["catalog"]:
+        by_metric.setdefault(a["metric"], []).append(a)
     for a in canon()["achievements"]["catalog"]:
         val = m[a["metric"]]
-        out.append({**a, "value": val, "unlocked": val >= a["threshold"], "claimed": a["key"] in p.get("achievements_claimed", [])})
-    return {"achievements": out, "total_rubies": canon()["achievements"]["total_rubies_across_all"], "categories": canon()["achievements"]["categories"]}
+        tier = by_metric[a["metric"]].index(a) + 1
+        title_base, desc, unit, missing = ACH_METRIC_IT[a["metric"]]
+        unlocked = val >= a["threshold"]
+        claimed = a["key"] in p.get("achievements_claimed", [])
+        t = f"{a['threshold']:,}".replace(",", ".")
+        d = f"{max(0, a['threshold'] - val):,}".replace(",", ".")
+        status = (f"Riscattata: +{a['rubies']} Rubini" if claimed else f"Completata! Ritira {a['rubies']} Rubini" if unlocked else missing.format(d=d) + f" per ottenere {a['rubies']} Rubini")
+        out.append({**a, "value": val, "unlocked": unlocked, "claimed": claimed, "title": f"{title_base} {'I' * tier if tier <= 3 else ['IV', 'V', 'VI', 'VII'][tier - 4]}",
+                    "description": desc.format(t=t), "unit_label": unit, "status": status, "category_label": ACH_CATEGORY_IT.get(a["category"], a["category"])})
+    return {"achievements": out, "total_rubies": canon()["achievements"]["total_rubies_across_all"], "categories": canon()["achievements"]["categories"], "category_labels": ACH_CATEGORY_IT}
 
 
 async def claim_achievement(p: dict, key: str) -> dict:
