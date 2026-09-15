@@ -12,13 +12,13 @@ export function HubTile({ art, icon, title, subtitle, badge, onPress, testID, wi
 }) {
   const { colors } = useTheme();
   const scale = useSharedValue(1);
-  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
   return (
     <Animated.View style={[{ width: wide ? "100%" : "48%", flexGrow: 1 }, anim]}>
       <Pressable
         onPress={onPress}
-        onPressIn={() => { scale.value = withSpring(0.97, { damping: 18, stiffness: 300 }); }}
-        onPressOut={() => { scale.value = withSpring(1, { damping: 14, stiffness: 220 }); }}
+        onPressIn={() => { scale.set(withSpring(0.97, { damping: 18, stiffness: 300 })); }}
+        onPressOut={() => { scale.set(withSpring(1, { damping: 14, stiffness: 220 })); }}
         testID={testID}
         style={{ height, borderRadius: 10, overflow: "hidden", borderWidth: 1.5, borderColor: colors.gold, backgroundColor: colors.surfaceSecondary }}
       >

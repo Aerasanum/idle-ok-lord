@@ -8,7 +8,7 @@ import { UnitProxy } from "@/src/battle/sprites";
 import { useTheme } from "@/src/theme";
 import { Btn, Chip, ChipRow, Icon, Loading, Panel, Progress, Res, ResourceBar, Row, Txt, fmt, fmtDuration } from "@/src/ui";
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
-import { useCountdown } from "@/src/ui/useCountdown";
+import { useCountdown, useNow } from "@/src/ui/useCountdown";
 
 const CATS = [["all", "Tutte"], ["regular", "Regolari"], ["siege", "Assedio"], ["beast", "Bestie"], ["mythic", "Mitiche"]];
 
@@ -58,11 +58,7 @@ export default function ArmyTab() {
           ) : (
             <Btn title="Area Formazione · schiera e suggerimenti" small icon="chess-rook" variant="gold" onPress={() => router.push("/army/formation")} testID="open-formation-button" style={{ marginTop: 8 }} />
           )}
-          {profile?.army?.infirmary?.length ? (
-            <Txt v="small" color={colors.success} style={{ marginTop: 6 }} testID="army-infirmary">
-              🏥 Infermeria: {profile.army.infirmary.map((e: any) => `${fmt(Object.values(e.units).reduce((x: number, y: any) => x + Number(y), 0))} unità tra ${fmtDuration(Math.max(0, (new Date(e.ready_at).getTime() - Date.now()) / 1000))}`).join(" · ")}
-            </Txt>
-          ) : null}
+          {profile?.army?.infirmary?.length ? <InfirmaryLine entries={profile.army.infirmary} /> : null}
         </Panel>
         {a.queue.length ? (
           <Panel variant="wood" testID="recruit-queue">
@@ -142,6 +138,13 @@ export default function ArmyTab() {
       </Sheet>
     </View>
   );
+}
+
+function InfirmaryLine({ entries }: { entries: any[] }) {
+  const { colors } = useTheme();
+  const now = useNow();
+  const text = entries.map((e: any) => `${fmt(Object.values(e.units).reduce((x: number, y: any) => x + Number(y), 0))} unità tra ${fmtDuration(Math.max(0, (new Date(e.ready_at).getTime() - now) / 1000))}`).join(" · ");
+  return <Txt v="small" color={colors.success} style={{ marginTop: 6 }} testID="army-infirmary">🏥 Infermeria: {text}</Txt>;
 }
 
 function QueueLine({ q, serverTime }: { q: any; serverTime: string }) {

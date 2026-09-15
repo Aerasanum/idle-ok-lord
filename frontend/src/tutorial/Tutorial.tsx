@@ -26,9 +26,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 type Rect = { x: number; y: number; w: number; h: number };
-type Ctx = { active: boolean; index: number; step: TutorialStep | null; targets: Record<string, Rect>; start: () => void; next: () => void; skip: () => void; report: (id: string, r: Rect) => void; autoStarted: boolean; markAutoStarted: () => void };
+// `hasAutoStarted` is a getter, not a flag: the auto-start happens once per app session and
+// is only ever read from an effect, so it must not force a re-render of the whole tree.
+type Ctx = { active: boolean; index: number; step: TutorialStep | null; targets: Record<string, Rect>; start: () => void; next: () => void; skip: () => void; report: (id: string, r: Rect) => void; hasAutoStarted: () => boolean; markAutoStarted: () => void };
 
-const TutorialCtx = createContext<Ctx>({ active: false, index: 0, step: null, targets: {}, start: () => {}, next: () => {}, skip: () => {}, report: () => {}, autoStarted: false, markAutoStarted: () => {} });
+const TutorialCtx = createContext<Ctx>({ active: false, index: 0, step: null, targets: {}, start: () => {}, next: () => {}, skip: () => {}, report: () => {}, hasAutoStarted: () => false, markAutoStarted: () => {} });
 
 export function useTutorial() {
   return useContext(TutorialCtx);
@@ -66,7 +68,7 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const value = useMemo<Ctx>(() => ({ active, index, step: active ? TUTORIAL_STEPS[index] : null, targets, start, next, skip: finish, report, autoStarted: autoStarted.current, markAutoStarted: () => { autoStarted.current = true; } }), [active, index, targets, start, next, finish, report]);
+  const value = useMemo<Ctx>(() => ({ active, index, step: active ? TUTORIAL_STEPS[index] : null, targets, start, next, skip: finish, report, hasAutoStarted: () => autoStarted.current, markAutoStarted: () => { autoStarted.current = true; } }), [active, index, targets, start, next, finish, report]);
   return <TutorialCtx.Provider value={value}>{children}</TutorialCtx.Provider>;
 }
 

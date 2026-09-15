@@ -23,6 +23,18 @@ type Result = any;
 
 const CLASS_LABEL: Record<string, string> = { umanoidi: "Umanoidi", bestie: "Bestie", giganti: "Giganti", corazzati: "Corazzati", volanti: "Volanti", spiriti: "Spiriti", draghi: "Draghi" };
 
+/** The server answers 425 until the attempt's duration has elapsed, so wait it out. */
+async function claimWhenReady(attemptId: string): Promise<any> {
+  for (;;) {
+    try {
+      return await api.post("/battle/claim", { attempt_id: attemptId });
+    } catch (e: any) {
+      if (e.status !== 425) throw e;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+}
+
 export default function BattleTab() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -78,7 +90,7 @@ export default function BattleTab() {
   const onFinished = useCallback(
     async (id: string) => {
       try {
-        const r = await api.post("/battle/claim", { attempt_id: id });
+        const r = await claimWhenReady(id);
         setResult(r);
         setAttempt(null);
         qc.invalidateQueries({ queryKey: QK.profile });
@@ -92,21 +104,24 @@ export default function BattleTab() {
           setTimeout(() => start(next), 1200);
         }
       } catch (e: any) {
-        if (e.status === 425) setTimeout(() => onFinished(id), 1000);
-        else toast.show(e.message, "error");
+        toast.show(e.message, "error");
       }
     },
     [auto, attempt, qc, start, toast],
   );
 
+  // Auto-battle opens the first attempt as soon as the account is loaded. The request is
+  // fired right after the paint so its loading state does not cascade a second render.
   useEffect(() => {
-    if (profile && !attempt && auto && !result && !busy) start(curStage);
+    if (!profile || attempt || !auto || result || busy) return;
+    const t = setTimeout(() => start(curStage), 0);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
   // first-play tutorial: once per account (settings.tutorial_done), once per app session
   useEffect(() => {
-    if (!profile || tut.active || tut.autoStarted || profile.settings?.tutorial_done === true) return;
+    if (!profile || tut.active || tut.hasAutoStarted() || profile.settings?.tutorial_done === true) return;
     tut.markAutoStarted();
     const t = setTimeout(() => tut.start(), 900);
     return () => clearTimeout(t);

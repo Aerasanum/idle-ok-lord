@@ -1,11 +1,12 @@
 // Fixed premium 2.5D kingdom view. Seven canonical visual tiers drive walls, density, banners and landmarks.
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import { Image, Pressable, Text, View, useWindowDimensions } from "react-native";
 
 import { buildingArt, kingdomGround } from "@/src/art";
 import { fonts, useTheme } from "@/src/theme";
 import { Icon, IconName } from "@/src/ui";
+import { useServerNow } from "@/src/ui/useCountdown";
 import { ConstructionSite, Flag, Peasant, Smoke } from "./life";
 import { ZoomPan } from "@/src/ui/ZoomPan";
 
@@ -20,16 +21,10 @@ export function KingdomScene({ buildings, castleLevel, tier, heraldicColor, onSe
   const h = Math.min(400, width * 0.95);
   const t = tier.tier;
   // construction progress ticks once per second on server-anchored time
-  const offset = useMemo(() => (serverTime ? new Date(serverTime).getTime() - Date.now() : 0), [serverTime]);
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!Object.keys(queued).length) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [queued]);
+  const now = useServerNow(serverTime);
   const progressOf = (q: any) => {
     const a = new Date(q.started_at).getTime(), b = new Date(q.ends_at).getTime();
-    return b > a ? Math.max(0, Math.min(1, (now + offset - a) / (b - a))) : 1;
+    return b > a ? Math.max(0, Math.min(1, (now - a) / (b - a))) : 1;
   };
   const peasants = 2 + Math.min(7, t + Math.floor(castleLevel / 3));
   const wallColor = t <= 1 ? colors.wood : t <= 2 ? colors.woodDark : t <= 4 ? colors.iron : t <= 6 ? "#7C8592" : "#E6D8B8";
