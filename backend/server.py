@@ -84,7 +84,8 @@ async def root():
     return {"project": "IDLE 1", "version": "1.1", "status": "ok", "canon": validation_report()}
 
 
-@app.get(f"{API}/health")
+@app.api_route(f"{API}/health", methods=["GET", "HEAD"])
 async def health():
+    """HEAD is accepted so uptime probes and load balancers can use it without a body."""
     await db.db.command("ping")
     return {"ok": True, "env": settings.ENV}

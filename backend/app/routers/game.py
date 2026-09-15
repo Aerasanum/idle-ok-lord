@@ -155,7 +155,7 @@ async def inventory(p: Principal = Depends(current_user)):
     items = await G.list_inventory(pl)
     return {"items": [clean(i) for i in items], "capacity": pl.get("inventory_capacity"), "count": len([i for i in items if not i["equipped_slot"]]), "equipped": pl["equipped"], "forge": pl["forge"],
             "auto_salvage": pl.get("auto_salvage"), "auto_salvage_unlocked": pl["campaign"]["highest_cleared"] >= canon()["gear"]["inventory"]["auto_salvage_unlock_stage"],
-            "forge_costs": {s: (None if not pl["equipped"].get(s) else None) for s in pl["forge"]}, "expansions": canon()["gear"]["inventory"]["expansions"]}
+            "expansions": canon()["gear"]["inventory"]["expansions"]}
 
 
 @router.post("/gear/equip")
