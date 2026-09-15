@@ -32,6 +32,7 @@ sys.path.insert(0, str(BACKEND_ROOT))
 
 from qa_fixtures import (  # noqa: E402
     LORD_TESTER,
+    MAX_ALLIANCE,
     MAX_LORD,
     ORS_ALLIANCE,
     ORS_BOTS,
@@ -122,7 +123,10 @@ def ensure_alliance(api: Client, leader: dict, spec: dict) -> dict:
         if mine["tag"] != spec["tag"]:
             raise RuntimeError(f"{leader['email']} already leads [{mine['tag']}], expected [{spec['tag']}]")
         return mine
-    api.grant(leader, castle_level=8, resources={"gold": 20000})
+    # Founding an alliance needs castle 8 and gold; never lower an already higher castle.
+    if api.get(leader, "/profile").json()["kingdom"]["castle_level"] < 8:
+        api.grant(leader, castle_level=8)
+    api.grant(leader, resources={"gold": 20000})
     r = api.post(leader, "/alliances", json={**spec, "join_mode": "open"})
     if r.status_code >= 400:
         raise RuntimeError(f"could not create [{spec['tag']}]: {r.status_code} {r.text[:200]}")
@@ -180,23 +184,34 @@ def owned_nodes(api: Client, acc: dict, alliance_id: str) -> set[int]:
     return {n["node_id"] for n in mp["nodes"] if n.get("owner") == alliance_id}
 
 
-def ensure_adjacency(api: Client, qa: dict, qa_members: list[dict], qa_id: str, ors_id: str) -> bool:
-    """Make sure [QAT] owns a node next to an [ORS]-owned node, conquering the gap if needed."""
+def ensure_adjacency(api: Client, qa: dict, ors: dict, ors_members: list[dict], qa_id: str, ors_id: str) -> bool:
+    """Give [ORS] a non-home node bordering [QAT], so [QAT] always has something to declare on.
+
+    The bridge is deliberately held by the defender and is never a home castle: the war
+    suites capture their target, and letting them take a home castle would permanently
+    reshape the map for every later run.
+    """
     mp = api.get(qa, "/wars/map").json()
-    owner_of = {n["node_id"]: n.get("owner") for n in mp["nodes"]}
-    mine = {n for n, o in owner_of.items() if o == qa_id}
-    theirs = {n for n, o in owner_of.items() if o == ors_id}
-    if any(nb in theirs for n in mine for nb in neighbours(n)):
-        print("  [QAT] already borders [ORS]")
+    node = {n["node_id"]: n for n in mp["nodes"]}
+    mine = {n for n, v in node.items() if v.get("owner") == qa_id}
+    theirs = {n for n, v in node.items() if v.get("owner") == ors_id}
+
+    def usable(nid: int) -> bool:
+        return node[nid]["type"] != "home_castle"
+
+    if any(nb in theirs and usable(nb) for n in mine for nb in neighbours(n)):
+        print("  [ORS] already holds a non-home node bordering [QAT]")
         return True
-    gaps = [n for n, o in owner_of.items() if o is None
-            and any(nb in mine for nb in neighbours(n))
-            and any(nb in theirs for nb in neighbours(n))]
-    if not gaps:
-        print("  no neutral node bridges [QAT] and [ORS]; war suites will skip")
+
+    bridges = sorted(n for n, v in node.items()
+                     if usable(n) and v.get("owner") != ors_id
+                     and any(nb in mine for nb in neighbours(n))
+                     and any(nb in theirs for nb in neighbours(n)))
+    if not bridges:
+        print("  no node bridges [QAT] and [ORS]; war suites will skip")
         return False
-    clear_war_cooldown(api, qa)
-    return conquer(api, qa, qa_members, sorted(gaps)[0])
+    clear_war_cooldown(api, ors)
+    return conquer(api, ors, ors_members, bridges[0])
 
 
 def decorate_showcase(api: Client, acc: dict) -> None:
@@ -207,12 +222,12 @@ def decorate_showcase(api: Client, acc: dict) -> None:
     """
     api.patch(acc, "/account/settings", json={"lord_name": SHOWCASE["lord_name"]})
     api.grant(acc, resources={"rubies": 5000})
-    for key in (SHOWCASE["lord_skin"], SHOWCASE["army_skin"]):
+    for kind in ("lord", "castle", "army"):
+        key = SHOWCASE[f"{kind}_skin"]
         r = api.post(acc, "/store/cosmetics/buy", json={"key": key})
         if r.status_code >= 400 and "already_owned" not in r.text:
             raise RuntimeError(f"could not buy {key}: {r.status_code} {r.text[:160]}")
-    api.post(acc, "/store/cosmetics/equip", json={"kind": "lord", "key": SHOWCASE["lord_skin"]})
-    api.post(acc, "/store/cosmetics/equip", json={"kind": "army", "key": SHOWCASE["army_skin"]})
+        api.post(acc, "/store/cosmetics/equip", json={"kind": kind, "key": key})
 
     # Gear only drops on a first clear, so the campaign is rewound a few stages and
     # then replayed up to QA_LORD_STAGE with the suggested formation deployed.
@@ -248,14 +263,23 @@ def seed_max_lord(api: Client, spec: dict) -> None:
     units = {u["key"]: 500 for u in canon["units"]["catalog"]}
 
     acc = api.account(spec)
-    leave_all_alliances(api, acc)
     api.grant(acc, highest_cleared=200, hero_level=canon["hero"]["max_level"], castle_level=buildings["castle"],
               buildings=buildings, research=research, forge=forge, units=units,
               resources={k: 2_000_000 for k in ("grain", "wood", "clay", "iron", "gold")})
     api.grant(acc, resources={"rubies": 50_000, "forge_dust": 200_000, "reforge_stone": 500, "war_coins": 20_000})
+    # Units only contribute power once deployed, and stage 200 is unbeatable without them.
+    suggested = api.get(acc, "/army/suggest").json().get("formation") or {}
+    if suggested:
+        api.put(acc, "/army/formation", json={"formation": suggested})
+    api.post(acc, "/gear/auto-equip")
+    ensure_alliance(api, acc, MAX_ALLIANCE)
+    place_on_map(api, acc)
     prof = api.get(acc, "/profile").json()
+    stage200 = api.get(acc, "/battle/stage/200").json()
     print(f"  {spec['email']}: stage {prof['campaign']['highest_cleared']}, castle {prof['kingdom']['castle_level']}, "
-          f"hero {prof['hero']['level']}, domain {prof['domain']['owned']}")
+          f"hero {prof['hero']['level']}, domain {prof['domain']['owned']}, "
+          f"power {stage200['player_power']} vs {stage200['required_power']} required at stage 200, "
+          f"can_win={stage200['can_win']}")
 
 
 def main() -> int:
@@ -306,13 +330,13 @@ def main() -> int:
     leave_all_alliances(api, outsider)
     print(f"  {OUTSIDER['email']}: no alliance")
 
-    print("Territory")
-    ensure_adjacency(api, qa, qa_members, qa_alliance["id"], ors_alliance["id"])
-    clear_war_cooldown(api, qa)
-    clear_war_cooldown(api, ors)
-
     print("End-game account")
     seed_max_lord(api, MAX_LORD)
+
+    print("Territory")
+    ensure_adjacency(api, qa, ors, ors_members, qa_alliance["id"], ors_alliance["id"])
+    clear_war_cooldown(api, qa)
+    clear_war_cooldown(api, ors)
 
     mp = api.get(qa, "/wars/map").json()
     print(f"Done. [{qa_alliance['tag']}] home {mp['my_home']} · "

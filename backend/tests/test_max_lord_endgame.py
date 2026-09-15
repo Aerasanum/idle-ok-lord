@@ -6,42 +6,21 @@ account are limited to the ones explicitly listed in the review request
 (battle attempt/claim, army recruit, alliance join). Forge/research/kingdom
 upgrade are only probed to assert the 400 max-level responses (no state change).
 """
-import os
-import re
 import time
 import pytest
 import requests
-from pathlib import Path
 
+from live_env import API as BASE, token
+from qa_fixtures import MAX_LORD
 
-def _load_backend_url() -> str:
-    # Prefer EXPO_PUBLIC_BACKEND_URL from /app/frontend/.env
-    env_path = Path("/app/frontend/.env")
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            m = re.match(r"\s*EXPO_PUBLIC_BACKEND_URL\s*=\s*\"?([^\"\s]+)\"?", line)
-            if m:
-                return m.group(1).rstrip("/")
-    v = os.environ.get("EXPO_PUBLIC_BACKEND_URL") or os.environ.get("EXPO_BACKEND_URL")
-    if not v:
-        raise RuntimeError("EXPO_PUBLIC_BACKEND_URL not set")
-    return v.rstrip("/")
-
-
-BASE = _load_backend_url() + "/api"
-EMAIL = "max.lord@idle1.app"
-PASSWORD = "MaxLord!2026"
+EMAIL = MAX_LORD["email"]
+PASSWORD = MAX_LORD["password"]
 
 
 @pytest.fixture(scope="module")
 def sess():
     s = requests.Session()
-    s.headers.update({"Content-Type": "application/json"})
-    r = s.post(f"{BASE}/auth/login", json={"email": EMAIL, "password": PASSWORD}, timeout=30)
-    assert r.status_code == 200, f"login failed: {r.status_code} {r.text[:300]}"
-    tok = r.json().get("access_token") or r.json().get("token")
-    assert tok, r.json()
-    s.headers.update({"Authorization": f"Bearer {tok}"})
+    s.headers.update({"Content-Type": "application/json", "Authorization": f"Bearer {token(MAX_LORD)}"})
     return s
 
 

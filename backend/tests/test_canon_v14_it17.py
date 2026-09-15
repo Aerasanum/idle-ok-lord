@@ -4,25 +4,18 @@ Covers: canon VERSION 1.4, unit catalog rebalance, enemy power curve bosses,
         /army/suggest greedy fill, apply formation, recruit, rulebook PDF.
 """
 import io
-import os
 import pytest
 import requests
 
-BASE_URL = ""
-with open("/app/frontend/.env") as f:
-    for line in f:
-        if line.startswith("EXPO_PUBLIC_BACKEND_URL"):
-            BASE_URL = line.split("=", 1)[1].strip().rstrip("/")
-API = BASE_URL + "/api"
+from live_env import API, BASE_URL, token
+from qa_fixtures import QA_BOTS, QA_LORD as QA_LORD_SPEC
 
-QA_LORD = ("qa.lord@example.com", "QaLordPass!2026")
-QA_BOT3 = ("qa.bot3@idle1.app", "QaBot!2026")
+QA_LORD = (QA_LORD_SPEC["email"], QA_LORD_SPEC["password"])
+QA_BOT3 = (QA_BOTS[2]["email"], QA_BOTS[2]["password"])
 
 
 def _login(email, password):
-    r = requests.post(f"{API}/auth/login", json={"email": email, "password": password}, timeout=20)
-    assert r.status_code == 200, f"login failed for {email}: {r.status_code} {r.text}"
-    return r.json()["access_token"]
+    return token(email, password)
 
 
 @pytest.fixture(scope="module")

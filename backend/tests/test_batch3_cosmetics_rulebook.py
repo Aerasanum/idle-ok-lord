@@ -8,35 +8,25 @@ Covers:
 - POST /api/store/cosmetics/equip — equip owned, 403 not-owned, unequip castle=null
 - GET /api/docs/regolamento.pdf — public, pdf, > 100KB
 """
-import os
+from collections import Counter
+
 import pytest
 import requests
 
-BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL") or os.environ.get("EXPO_BACKEND_URL")
-if not BASE_URL:
-    # fallback to frontend .env
-    with open("/app/frontend/.env") as f:
-        for line in f:
-            if line.startswith("EXPO_PUBLIC_BACKEND_URL="):
-                BASE_URL = line.split("=", 1)[1].strip()
-                break
-API = f"{BASE_URL.rstrip('/')}/api"
+from live_env import API, token
+from qa_fixtures import QA_LORD, SHOWCASE
 
-QA_EMAIL = "qa.lord@example.com"
-QA_PASS = "QaLordPass!2026"
-CANON_LORD_NAME = "Sir Aldric"
-CANON_LORD_SKIN = "lord_frost_warden"
-CANON_CASTLE_SKIN = "castle_dragon_keep"
+QA_EMAIL = QA_LORD["email"]
+QA_PASS = QA_LORD["password"]
+CANON_LORD_NAME = SHOWCASE["lord_name"]
+CANON_LORD_SKIN = SHOWCASE["lord_skin"]
+CANON_CASTLE_SKIN = SHOWCASE["castle_skin"]
 
 
 @pytest.fixture(scope="module")
 def session():
     s = requests.Session()
-    s.headers.update({"Content-Type": "application/json"})
-    r = s.post(f"{API}/auth/login", json={"email": QA_EMAIL, "password": QA_PASS}, timeout=30)
-    assert r.status_code == 200, f"login failed: {r.status_code} {r.text}"
-    token = r.json()["access_token"]
-    s.headers.update({"Authorization": f"Bearer {token}"})
+    s.headers.update({"Content-Type": "application/json", "Authorization": f"Bearer {token(QA_LORD)}"})
     yield s
     # cleanup: restore lord name + equip canonical skins
     try:
@@ -95,11 +85,9 @@ def test_cosmetics_catalog(session):
     assert isinstance(data["rubies"], int)
     items = data.get("catalog") or data.get("items") or data.get("skins")
     assert items, f"no catalog key in response: {list(data.keys())}"
-    assert len(items) == 10, f"expected 10 skins, got {len(items)}"
-    lords = [it for it in items if it["kind"] == "lord"]
-    castles = [it for it in items if it["kind"] == "castle"]
-    assert len(lords) == 6, f"expected 6 lord skins, got {len(lords)}"
-    assert len(castles) == 4, f"expected 4 castle skins, got {len(castles)}"
+    kinds = Counter(it["kind"] for it in items)
+    assert kinds == {"lord": 6, "castle": 4, "army": 4}, f"catalog composition changed: {dict(kinds)}"
+    assert len(items) == 14, f"expected 14 skins, got {len(items)}"
     for it in items:
         for f in ["key", "name", "rubies", "rarity", "owned", "equipped"]:
             assert f in it, f"missing field {f} in item {it.get('key')}"

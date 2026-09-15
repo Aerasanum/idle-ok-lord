@@ -36,10 +36,21 @@ MAX_LORD = {"email": "max.lord@idle1.app", "password": "MaxLord!2026", "display_
 QA_ALLIANCE = {"name": "Lupi del Nord", "tag": "QAT", "description": "Alleanza QA", "language": "it"}
 ORS_ALLIANCE = {"name": "Orsi Neri", "tag": "ORS", "description": "Rivali della QA", "language": "it"}
 
+# The end-game suite posts this alliance and tolerates "already_member". Seeding it
+# up front keeps it from being created and disbanded on every run, which would hand
+# out a different home castle each time and break the [QAT]/[ORS] border.
+MAX_ALLIANCE = {"name": "Maximus Guard", "tag": "MAX", "description": "End-game QA", "language": "it"}
+
 # Campaign progress given to the QA lord and the bots. High enough that stage 50 is
 # unlocked (boss timing test) and that army suggestions return a non-empty formation.
 QA_LORD_STAGE = 60
 QA_BOT_STAGE = 30
 
 # Decoration applied to the QA lord so the public showcase has something to expose.
-SHOWCASE = {"lord_name": "Sir Aldric", "lord_skin": "lord_frost_warden", "army_skin": "army_crimson_legion"}
+# lord_golden_emperor is deliberately left unowned, to exercise "not_owned" on equip.
+SHOWCASE = {
+    "lord_name": "Sir Aldric",
+    "lord_skin": "lord_frost_warden",
+    "castle_skin": "castle_dragon_keep",
+    "army_skin": "army_crimson_legion",
+}

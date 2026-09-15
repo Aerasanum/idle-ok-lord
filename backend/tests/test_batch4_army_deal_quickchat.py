@@ -8,38 +8,25 @@ Restores QA state at teardown (lord_frost_warden / castle_dragon_keep / army_cri
 """
 from __future__ import annotations
 
-import os
-import re
 from datetime import datetime, timezone
 
 import pytest
 import requests
 
-_env = "/app/frontend/.env"
-if not os.environ.get("EXPO_PUBLIC_BACKEND_URL"):
-    try:
-        for line in open(_env):
-            m = re.match(r"^EXPO_PUBLIC_BACKEND_URL\s*=\s*(.+)$", line.strip())
-            if m:
-                os.environ["EXPO_PUBLIC_BACKEND_URL"] = m.group(1).strip('"').strip("'")
-                break
-    except FileNotFoundError:
-        pass
+from live_env import API as BASE, token
+from qa_fixtures import QA_LORD, SHOWCASE
 
-BASE = (os.environ["EXPO_PUBLIC_BACKEND_URL"]).rstrip("/") + "/api"
-QA_EMAIL = "qa.lord@example.com"
-QA_PASS = "QaLordPass!2026"
+QA_EMAIL = QA_LORD["email"]
+QA_PASS = QA_LORD["password"]
 
-CANON_LORD = "lord_frost_warden"
-CANON_CASTLE = "castle_dragon_keep"
-CANON_ARMY = "army_crimson_legion"
+CANON_LORD = SHOWCASE["lord_skin"]
+CANON_CASTLE = SHOWCASE["castle_skin"]
+CANON_ARMY = SHOWCASE["army_skin"]
 
 
 @pytest.fixture(scope="module")
 def h() -> dict:
-    r = requests.post(f"{BASE}/auth/login", json={"email": QA_EMAIL, "password": QA_PASS}, timeout=20)
-    assert r.status_code == 200, f"login failed: {r.status_code} {r.text}"
-    tok = r.json()["access_token"]
+    tok = token(QA_LORD)
     yield {"Authorization": f"Bearer {tok}"}
     # teardown: restore canonical skins
     for kind, key in (("lord", CANON_LORD), ("castle", CANON_CASTLE), ("army", CANON_ARMY)):
