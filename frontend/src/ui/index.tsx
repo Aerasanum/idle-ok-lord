@@ -107,7 +107,15 @@ export function Btn({ title, onPress, variant = "primary", icon, disabled, loadi
   const { colors } = useTheme();
   const textColor = variant === "gold" ? colors.onBrandSecondary : variant === "ghost" ? colors.goldBright : colors.onBrandPrimary;
   return (
-    <Pressable testID={testID} onPress={onPress} disabled={disabled || loading} style={({ pressed }) => [s.base, s[variant], small && s.small, (disabled || loading) && s.disabled, pressed && s.pressed, style]}>
+    <Pressable
+      testID={testID}
+      onPress={onPress}
+      disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }}
+      style={({ pressed }) => [s.base, s[variant], small && s.small, (disabled || loading) && s.disabled, pressed && s.pressed, style]}
+    >
       {loading ? <ActivityIndicator color={textColor} /> : (
         <>
           {icon ? <Icon name={icon} size={small ? 14 : 18} color={textColor} /> : null}
@@ -150,7 +158,7 @@ const useInput = makeStyles((c) => ({
 export function Chip({ label, selected, onPress, testID }: { label: string; selected?: boolean; onPress?: () => void; testID?: string }) {
   const s = useChip();
   return (
-    <Pressable testID={testID} onPress={onPress} style={[s.chip, selected && s.selected]}>
+    <Pressable testID={testID} onPress={onPress} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: !!selected }} style={[s.chip, selected && s.selected]}>
       <Text style={[s.text, selected && s.textSel]}>{label}</Text>
     </Pressable>
   );
@@ -174,7 +182,7 @@ export function Progress({ value, max, color, height = 10, label, testID }: { va
   const { colors } = useTheme();
   const pct = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
   return (
-    <View testID={testID} style={{ gap: 3 }}>
+    <View testID={testID} style={{ gap: 3 }} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: Math.max(0, max), now: Math.round(value), text: label }}>
       <View style={{ height, backgroundColor: colors.surfaceTertiary, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.wood, overflow: "hidden" }}>
         <LinearGradient colors={[color ?? colors.gold, color ?? colors.goldBright]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ width: `${pct * 100}%`, height: "100%" }} />
       </View>
@@ -199,7 +207,7 @@ export function Res({ kind, value, size = 14, testID, art: withArt }: { kind: st
   const { colors } = useTheme();
   const img = withArt ? resourceArt(kind) : undefined;
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }} testID={testID}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }} testID={testID} accessible accessibilityLabel={`${RES_LABEL[kind] ?? kind} ${typeof value === "number" ? fmt(value) : value}`}>
       {img ? <Image source={img} style={{ width: size * 1.6, height: size * 1.6 }} resizeMode="contain" testID={testID ? `${testID}-art` : undefined} /> : <Icon name={RES_ICON[kind] ?? "circle"} size={size} color={resourceColor(colors, kind)} />}
       <Text style={{ fontFamily: fonts.displaySemi, fontSize: size + 1, color: colors.onSurface }}>{typeof value === "number" ? fmt(value) : value}</Text>
     </View>

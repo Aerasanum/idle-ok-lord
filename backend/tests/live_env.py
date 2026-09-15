@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 from functools import lru_cache
 from pathlib import Path
 
@@ -64,17 +65,32 @@ def hdr(token: str) -> dict:
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
 
+_TOKENS: dict[str, str] = {}
+
+
 def token(spec_or_email, password: str | None = None) -> str:
-    """Log in a fixture account, skipping the suite when the QA world has not been seeded."""
+    """Log in a fixture account, skipping the suite when the QA world has not been seeded.
+
+    Tokens are cached per account: the suites log the same handful of fixtures in over and
+    over, and /auth/login is rate limited. A 429 is still waited out, so the suites also run
+    against a server that keeps its limits on.
+    """
     if isinstance(spec_or_email, dict):
         email, password = spec_or_email["email"], spec_or_email["password"]
     else:
         email = spec_or_email
-    r = requests.post(f"{API}/auth/login", json={"email": email, "password": password}, timeout=TIMEOUT)
-    if r.status_code == 401:
-        pytest.skip(f"fixture account {email} is missing; run backend/scripts/seed_qa.py against {BASE_URL}")
+    if email in _TOKENS:
+        return _TOKENS[email]
+    for attempt in range(6):
+        r = requests.post(f"{API}/auth/login", json={"email": email, "password": password}, timeout=TIMEOUT)
+        if r.status_code == 401:
+            pytest.skip(f"fixture account {email} is missing; run backend/scripts/seed_qa.py against {BASE_URL}")
+        if r.status_code != 429:
+            break
+        time.sleep(2 ** attempt)
     assert r.status_code == 200, f"login {email}: {r.status_code} {r.text[:200]}"
-    return r.json()["access_token"]
+    _TOKENS[email] = r.json()["access_token"]
+    return _TOKENS[email]
 
 
 def session(spec_or_email, password: str | None = None) -> dict:
