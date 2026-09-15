@@ -140,11 +140,19 @@ export default function ArmyTab() {
   );
 }
 
+/** One line for the whole infirmary: every war adds a batch, so listing them all is unreadable. */
 function InfirmaryLine({ entries }: { entries: any[] }) {
   const { colors } = useTheme();
   const now = useNow();
-  const text = entries.map((e: any) => `${fmt(Object.values(e.units).reduce((x: number, y: any) => x + Number(y), 0))} unità tra ${fmtDuration(Math.max(0, (new Date(e.ready_at).getTime() - now) / 1000))}`).join(" · ");
-  return <Txt v="small" color={colors.success} style={{ marginTop: 6 }} testID="army-infirmary">🏥 Infermeria: {text}</Txt>;
+  const count = (e: any) => Object.values(e.units).reduce((x: number, y: any) => x + Number(y), 0);
+  const total = entries.reduce((s: number, e: any) => s + count(e), 0);
+  const next = entries.reduce((a: any, b: any) => (new Date(a.ready_at).getTime() <= new Date(b.ready_at).getTime() ? a : b));
+  const left = Math.max(0, (new Date(next.ready_at).getTime() - now) / 1000);
+  return (
+    <Txt v="small" color={colors.success} style={{ marginTop: 6 }} testID="army-infirmary">
+      🏥 Infermeria: {fmt(total)} unità in cura{entries.length > 1 ? ` in ${entries.length} scaglioni` : ""} · le prime {fmt(count(next))} rientrano tra {fmtDuration(left)}
+    </Txt>
+  );
 }
 
 function QueueLine({ q, serverTime }: { q: any; serverTime: string }) {
