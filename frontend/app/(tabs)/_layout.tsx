@@ -25,7 +25,9 @@ export default function TabsLayout() {
   const claimable = useAchievementAlerts(profile?.id); // toast on new claimable achievements + dot on the Eventi tab
   const iosVersion = Platform.OS === "ios" ? parseInt(String(Platform.Version), 10) : 0;
   if (Platform.OS === "ios" && iosVersion >= 26) {
-    // Liquid-glass native tabs on iOS 26+
+    // Liquid-glass native tabs on iOS 26+. Loaded lazily because the module is
+    // unavailable on the other platforms, so a static import would break them.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { NativeTabs, Icon: NIcon, Label } = require("expo-router/unstable-native-tabs");
     return (
       <NativeTabs>

@@ -6,17 +6,16 @@ import time
 import pytest
 import requests
 
-BASE = [l.split("=", 1)[1].strip() for l in open("/app/frontend/.env") if l.startswith("EXPO_PUBLIC_BACKEND_URL")][0] + "/api"
+from live_env import API as BASE, restore_enemy_border, spec, token
+from qa_fixtures import ORS_ALLIANCE, ORS_LEADER as ORS_LEADER_SPEC, QA_BOTS, QA_LORD
 
-QA = ("qa.lord@example.com", "QaLordPass!2026")
-ORS_LEADER = ("orsi.leader@idle1.app", "QaBot!2026")
-BOT4 = ("qa.bot4@idle1.app", "QaBot!2026")
+QA = (QA_LORD["email"], QA_LORD["password"])
+ORS_LEADER = (ORS_LEADER_SPEC["email"], ORS_LEADER_SPEC["password"])
+BOT4 = (QA_BOTS[3]["email"], QA_BOTS[3]["password"])
 
 
 def _login(email, pw):
-    r = requests.post(f"{BASE}/auth/login", json={"email": email, "password": pw}, timeout=20).json()
-    tok = r.get("access_token") or r["tokens"]["access_token"]
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Authorization": f"Bearer {token(email, pw)}"}
 
 
 @pytest.fixture(scope="module")
@@ -128,10 +127,19 @@ def test_quests_italian_text_and_alt_active(qa_h):
 
 
 # -------- (6) Quest alternative when forge maxed --------
-def test_quest_alternative_forge_maxed_unsupported():
-    # Grant endpoint does NOT support forge fields (see /app/backend/app/routers/test_hooks.py GrantIn schema).
-    # Cannot force forge_all_max via /_test/grant; skip and record.
-    pytest.skip("_test/grant does not support forge state; cannot force forge_all_max via test hook (see GrantIn schema)")
+def test_quest_alternative_when_forge_maxed(qa_h):
+    """With every slot at the forge cap, the forge quest must offer its alternative."""
+    forge = spec()["gear"]["forge"]
+    slots = spec()["gear"]["slots"]
+    before = requests.get(f"{BASE}/gear/inventory", headers=qa_h, timeout=15).json()["forge"]
+    r = requests.post(f"{BASE}/_test/grant",
+                      json={"forge": {s: forge["max_level_per_slot"] for s in slots}}, headers=qa_h, timeout=15)
+    assert r.status_code == 200, r.text[:200]
+    try:
+        templates = {t["key"]: t for t in requests.get(f"{BASE}/quests", headers=qa_h, timeout=15).json()["daily"]["templates"]}
+        assert templates["forge_upgrade"]["alt_active"] is True, templates["forge_upgrade"]
+    finally:
+        requests.post(f"{BASE}/_test/grant", json={"forge": before}, headers=qa_h, timeout=15)
 
 
 # -------- (7) War casualties full flow (MAIN) --------
@@ -141,30 +149,18 @@ def war_result(qa_h, ors_h):
     requests.post(f"{BASE}/_test/war-shift", json={"seconds": 100000, "include_resolved": True}, headers=qa_h, timeout=15)
     requests.post(f"{BASE}/_test/tick", headers=qa_h, timeout=60)
 
-    m = requests.get(f"{BASE}/wars/map", headers=qa_h, timeout=15).json()
-    own = {n["node_id"] for n in m["nodes"] if n.get("owner") == m["my_alliance_id"]}
-    # Prefer ORS-owned adjacent nodes so PvP casualties actually apply
-    ors_id = None
-    if isinstance(m.get("alliances"), dict):
-        for a in m["alliances"]:
-            if a != m["my_alliance_id"]:
-                ors_id = a
-                break
-    cands = []
-    for n in m["nodes"]:
-        if n["node_id"] in own:
-            continue
-        if any(abs(n["x"] - o["x"]) + abs(n["y"] - o["y"]) == 1 for o in m["nodes"] if o["node_id"] in own):
-            cands.append(n)
-    cands.sort(key=lambda n: (n.get("owner") != ors_id, n["node_id"]))
-    war_id = None
-    for n in cands:
-        r = requests.post(f"{BASE}/wars/declare", json={"node_id": n["node_id"]}, headers=qa_h, timeout=15)
-        if r.status_code in (200, 201):
-            body = r.json()
-            war_id = body.get("id") or body.get("war", {}).get("id")
-            break
+    # The target must belong to [ORS] specifically: other alliances share the shard and
+    # a neutral or third-party node would be defended by the NPC garrison, leaving no
+    # contested lane and therefore no PvP casualties to assert on.
+    target = restore_enemy_border({"headers": qa_h}, {"headers": ors_h})
+    if target is None:
+        pytest.skip(f"[QAT] and [{ORS_ALLIANCE['tag']}] share no border; run backend/scripts/seed_qa.py")
+    r = requests.post(f"{BASE}/wars/declare", json={"node_id": target}, headers=qa_h, timeout=15)
+    assert r.status_code in (200, 201), f"declare on {target}: {r.status_code} {r.text[:200]}"
+    body = r.json()
+    war_id = body.get("id") or body.get("war", {}).get("id")
     assert war_id, "could not declare"
+    m = requests.get(f"{BASE}/wars/map", headers=qa_h, timeout=15).json()
 
     # Record BEFORE
     army_before = requests.get(f"{BASE}/army", headers=qa_h, timeout=15).json()
@@ -292,6 +288,8 @@ def test_war_result_chat_alert(qa_h, war_result):
 
 # -------- (8) PvE unchanged: campaign attempt/claim should not deduct units --------
 def test_pve_units_unchanged(qa_h):
+    # The time-shift below also completes any pending recruitment, so the rule under
+    # test is that PvE never *reduces* a unit count, not that counts stay identical.
     army0 = requests.get(f"{BASE}/army", headers=qa_h, timeout=15).json()
     u0 = {u["key"]: u["owned"] for u in army0["units"]}
     prof = requests.get(f"{BASE}/profile", headers=qa_h, timeout=15).json()
@@ -310,7 +308,8 @@ def test_pve_units_unchanged(qa_h):
     assert c.status_code in (200, 201), c.text
     army1 = requests.get(f"{BASE}/army", headers=qa_h, timeout=15).json()
     u1 = {u["key"]: u["owned"] for u in army1["units"]}
-    assert u1 == u0, ("PvE deducted units", u0, u1)
+    lost = {k: (u0[k], u1[k]) for k in u0 if u1.get(k, 0) < u0[k]}
+    assert not lost, ("PvE deducted units", lost)
 
 
 # -------- (9) Rulebook PDF --------
@@ -332,5 +331,7 @@ def test_rulebook_pdf():
             text += p.extract_text() or ""
         except Exception:
             pass
-    for needle in ("spec v1.5", "Perdite permanenti", "Disponibile dal", "floor("):
+    # The rulebook is generated from the canonical spec, so it must carry the
+    # version currently pinned in canon rather than the one live when this was written.
+    for needle in (f"spec v{spec()['document']['version']}", "Perdite permanenti", "Disponibile dal", "floor("):
         assert needle in text, f"missing '{needle}'"

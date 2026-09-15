@@ -8,35 +8,26 @@ Covers:
 - POST /api/store/cosmetics/equip — equip owned, 403 not-owned, unequip castle=null
 - GET /api/docs/regolamento.pdf — public, pdf, > 100KB
 """
-import os
+from collections import Counter
+
 import pytest
 import requests
 
-BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL") or os.environ.get("EXPO_BACKEND_URL")
-if not BASE_URL:
-    # fallback to frontend .env
-    with open("/app/frontend/.env") as f:
-        for line in f:
-            if line.startswith("EXPO_PUBLIC_BACKEND_URL="):
-                BASE_URL = line.split("=", 1)[1].strip()
-                break
-API = f"{BASE_URL.rstrip('/')}/api"
+from live_env import API, token
+from qa_fixtures import QA_LORD, SHOWCASE
 
-QA_EMAIL = "qa.lord@example.com"
-QA_PASS = "QaLordPass!2026"
-CANON_LORD_NAME = "Sir Aldric"
-CANON_LORD_SKIN = "lord_frost_warden"
-CANON_CASTLE_SKIN = "castle_dragon_keep"
+QA_EMAIL = QA_LORD["email"]
+QA_PASS = QA_LORD["password"]
+CANON_LORD_NAME = SHOWCASE["lord_name"]
+CANON_LORD_SKIN = SHOWCASE["lord_skin"]
+CANON_CASTLE_SKIN = SHOWCASE["castle_skin"]
+BUYABLE_LORD_SKIN = "lord_golden_emperor"  # not part of the seeded set: bought and given back here
 
 
 @pytest.fixture(scope="module")
 def session():
     s = requests.Session()
-    s.headers.update({"Content-Type": "application/json"})
-    r = s.post(f"{API}/auth/login", json={"email": QA_EMAIL, "password": QA_PASS}, timeout=30)
-    assert r.status_code == 200, f"login failed: {r.status_code} {r.text}"
-    token = r.json()["access_token"]
-    s.headers.update({"Authorization": f"Bearer {token}"})
+    s.headers.update({"Content-Type": "application/json", "Authorization": f"Bearer {token(QA_LORD)}"})
     yield s
     # cleanup: restore lord name + equip canonical skins
     try:
@@ -95,11 +86,9 @@ def test_cosmetics_catalog(session):
     assert isinstance(data["rubies"], int)
     items = data.get("catalog") or data.get("items") or data.get("skins")
     assert items, f"no catalog key in response: {list(data.keys())}"
-    assert len(items) == 10, f"expected 10 skins, got {len(items)}"
-    lords = [it for it in items if it["kind"] == "lord"]
-    castles = [it for it in items if it["kind"] == "castle"]
-    assert len(lords) == 6, f"expected 6 lord skins, got {len(lords)}"
-    assert len(castles) == 4, f"expected 4 castle skins, got {len(castles)}"
+    kinds = Counter(it["kind"] for it in items)
+    assert kinds == {"lord": 6, "castle": 4, "army": 4}, f"catalog composition changed: {dict(kinds)}"
+    assert len(items) == 14, f"expected 14 skins, got {len(items)}"
     for it in items:
         for f in ["key", "name", "rubies", "rarity", "owned", "equipped"]:
             assert f in it, f"missing field {f} in item {it.get('key')}"
@@ -120,26 +109,27 @@ def test_buy_already_owned_and_unknown_and_new(session):
     r_unk = session.post(f"{API}/store/cosmetics/buy", json={"key": "lord_does_not_exist_zzz"}, timeout=15)
     assert r_unk.status_code == 404, f"expected 404 unknown, got {r_unk.status_code} {r_unk.text}"
 
-    # top up rubies if needed
-    session.post(f"{API}/_test/grant", json={"resources": {"rubies": 500}}, timeout=15)
+    session.post(f"{API}/_test/grant", json={"resources": {"rubies": 2000}}, timeout=15)
 
-    # buy lord_forest_ranger (300 rubies)
+    # A purchase is permanent, so buying whatever happens to be unowned made the QA lord
+    # collect the whole catalog run after run. The target is un-owned first and restored
+    # afterwards, which keeps the seeded ownership set stable.
+    session.post(f"{API}/_test/grant", json={"revoke_cosmetics": [BUYABLE_LORD_SKIN]}, timeout=15)
     before = session.get(f"{API}/store/cosmetics", timeout=15).json()
     before_rubies = before["rubies"]
-    target = next((it for it in (before.get("catalog") or before.get("items") or before.get("skins")) if it["key"] == "lord_forest_ranger"), None)
-    if target and not target["owned"]:
-        cost = target["rubies"]
-        r_buy = session.post(f"{API}/store/cosmetics/buy", json={"key": "lord_forest_ranger"}, timeout=15)
-        assert r_buy.status_code == 200, r_buy.text
-        body = r_buy.json()
-        # spec: {bought, equipped:true}
-        assert body.get("bought") is True or body.get("ok") is True or "bought" in body, body
-        after = session.get(f"{API}/store/cosmetics", timeout=15).json()
-        assert after["rubies"] == before_rubies - cost, f"rubies decreased incorrectly: {before_rubies} → {after['rubies']} (cost {cost})"
-        prof = session.get(f"{API}/profile", timeout=15).json()
-        assert prof["cosmetics"]["lord_skin"] == "lord_forest_ranger"
-    else:
-        pytest.skip("lord_forest_ranger already owned; skipping buy flow")
+    target = next(it for it in before["catalog"] if it["key"] == BUYABLE_LORD_SKIN)
+    assert not target["owned"], target
+    cost = target["rubies_now"]
+    r_buy = session.post(f"{API}/store/cosmetics/buy", json={"key": target["key"]}, timeout=15)
+    assert r_buy.status_code == 200, r_buy.text
+    assert r_buy.json().get("bought") == target["key"], r_buy.json()
+    after = session.get(f"{API}/store/cosmetics", timeout=15).json()
+    assert after["rubies"] == before_rubies - cost, f"rubies decreased incorrectly: {before_rubies} → {after['rubies']} (cost {cost})"
+    prof = session.get(f"{API}/profile", timeout=15).json()
+    assert prof["cosmetics"]["lord_skin"] == target["key"], "buying a skin equips it"
+
+    session.post(f"{API}/_test/grant", json={"revoke_cosmetics": [BUYABLE_LORD_SKIN]}, timeout=15)
+    session.post(f"{API}/store/cosmetics/equip", json={"kind": "lord", "key": CANON_LORD_SKIN}, timeout=15)
 
 
 # ---- POST /store/cosmetics/equip ----
@@ -150,8 +140,9 @@ def test_equip_owned_and_not_owned_and_null(session):
     prof = session.get(f"{API}/profile", timeout=15).json()
     assert prof["cosmetics"]["lord_skin"] == CANON_LORD_SKIN
 
-    # equip a not-owned key → 403
-    r_no = session.post(f"{API}/store/cosmetics/equip", json={"kind": "lord", "key": "lord_golden_emperor"}, timeout=15)
+    # equip a not-owned key → 403 (the skin is a daily-deal candidate, so make sure of it)
+    session.post(f"{API}/_test/grant", json={"revoke_cosmetics": [BUYABLE_LORD_SKIN]}, timeout=15)
+    r_no = session.post(f"{API}/store/cosmetics/equip", json={"kind": "lord", "key": BUYABLE_LORD_SKIN}, timeout=15)
     assert r_no.status_code == 403, f"expected 403 not_owned, got {r_no.status_code} {r_no.text}"
 
     # unequip castle (null)

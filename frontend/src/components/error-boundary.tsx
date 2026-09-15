@@ -49,8 +49,8 @@ function ErrorFallback({ error, resetError }: { error: Error; resetError: () => 
   return (
     <View style={styles.container} testID="error-fallback">
       <View style={styles.content}>
-        <Text style={styles.title}>Something went wrong</Text>
-        <Text style={styles.message}>Please reload the app to continue.</Text>
+        <Text accessibilityRole="header" style={styles.title}>Qualcosa è andato storto</Text>
+        <Text style={styles.message}>Ricarica l&apos;app per continuare. I progressi sono salvati sul server.</Text>
         {__DEV__ ? <Text style={styles.devMessage}>{error.message}</Text> : null}
         <Pressable
           onPress={handleReload}
@@ -58,11 +58,11 @@ function ErrorFallback({ error, resetError }: { error: Error; resetError: () => 
           accessibilityRole="button"
           style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
         >
-          <Text style={styles.buttonText}>Reload app</Text>
+          <Text style={styles.buttonText}>Ricarica l&apos;app</Text>
         </Pressable>
         {__DEV__ ? (
           <Pressable onPress={() => setShowDetails((v) => !v)} accessibilityRole="button" hitSlop={8}>
-            <Text style={styles.detailsToggle}>{showDetails ? "Hide details" : "Show details"}</Text>
+            <Text style={styles.detailsToggle}>{showDetails ? "Nascondi dettagli" : "Mostra dettagli"}</Text>
           </Pressable>
         ) : null}
       </View>

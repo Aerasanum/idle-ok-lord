@@ -20,7 +20,7 @@ export function WarReplay({ lanes, attackerName, defenderName, attackerWon, poin
   const { width } = useWindowDimensions();
   const W = Math.min(width - 56, 420), H = 210;
   const [step, setStep] = useState(0);
-  const [phase, setPhase] = useState<"idle" | "enter" | "clash" | "result" | "summary">("idle");
+  const [phase, setPhase] = useState<"running" | "result" | "summary">("running");
   const [playing, setPlaying] = useState(true);
   const [fx, setFx] = useState<Fx[]>([]);
   const fxId = useRef(0);
@@ -54,20 +54,18 @@ export function WarReplay({ lanes, attackerName, defenderName, attackerWon, poin
   const playLane = useCallback((i: number) => {
     const l = lanes[i];
     if (!l) return;
-    setPhase("enter");
-    ax.value = -W * 0.6; dx.value = W * 0.6; aOp.value = 1; dOp.value = 1; aRot.value = 0; dRot.value = 0; aScale.value = 1; dScale.value = 1;
-    ax.value = withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) });
-    dx.value = withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) });
+    ax.set(-W * 0.6); dx.set(W * 0.6); aOp.set(1); dOp.set(1); aRot.set(0); dRot.set(0); aScale.set(1); dScale.set(1);
+    ax.set(withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) }));
+    dx.set(withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) }));
     later(() => {
-      setPhase("clash");
       const reach = cx - lordSize / 2 - aHome - 8;
-      ax.value = withSequence(withTiming(reach, { duration: 220, easing: Easing.in(Easing.quad) }), withTiming(reach - 30, { duration: 160 }), withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) }));
-      dx.value = withSequence(withTiming(-reach, { duration: 220, easing: Easing.in(Easing.quad) }), withTiming(-reach + 30, { duration: 160 }), withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) }));
-      aRot.value = withSequence(withTiming(-14, { duration: 220 }), withTiming(0, { duration: 500 }));
-      dRot.value = withSequence(withTiming(14, { duration: 220 }), withTiming(0, { duration: 500 }));
+      ax.set(withSequence(withTiming(reach, { duration: 220, easing: Easing.in(Easing.quad) }), withTiming(reach - 30, { duration: 160 }), withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) })));
+      dx.set(withSequence(withTiming(-reach, { duration: 220, easing: Easing.in(Easing.quad) }), withTiming(-reach + 30, { duration: 160 }), withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) })));
+      aRot.set(withSequence(withTiming(-14, { duration: 220 }), withTiming(0, { duration: 500 })));
+      dRot.set(withSequence(withTiming(14, { duration: 220 }), withTiming(0, { duration: 500 })));
       later(() => {
-        shake.value = withSequence(withTiming(8, { duration: 40 }), withTiming(-8, { duration: 60 }), withTiming(4, { duration: 60 }), withTiming(0, { duration: 80 }));
-        flash.value = 0.7; flash.value = withTiming(0, { duration: 320 });
+        shake.set(withSequence(withTiming(8, { duration: 40 }), withTiming(-8, { duration: 60 }), withTiming(4, { duration: 60 }), withTiming(0, { duration: 80 })));
+        flash.set(0.7); flash.set(withTiming(0, { duration: 320 }));
         spawn([
           { kind: "flare", x: cx, y: groundY - lordSize * 0.55, size: 90 },
           { kind: "speed", x: cx, y: groundY - lordSize * 0.55, color: colors.goldBright },
@@ -81,43 +79,44 @@ export function WarReplay({ lanes, attackerName, defenderName, attackerWon, poin
       later(() => {
         setPhase("result");
         if (l.attacker_wins) {
-          dx.value = withTiming(W * 0.28, { duration: 420, easing: Easing.out(Easing.quad) });
-          dRot.value = withTiming(70, { duration: 420 }); dOp.value = withTiming(0.15, { duration: 520 });
-          aScale.value = withSequence(withTiming(1.18, { duration: 220 }), withTiming(1.08, { duration: 300 }));
+          dx.set(withTiming(W * 0.28, { duration: 420, easing: Easing.out(Easing.quad) }));
+          dRot.set(withTiming(70, { duration: 420 })); dOp.set(withTiming(0.15, { duration: 520 }));
+          aScale.set(withSequence(withTiming(1.18, { duration: 220 }), withTiming(1.08, { duration: 300 })));
         } else {
-          ax.value = withTiming(-W * 0.28, { duration: 420, easing: Easing.out(Easing.quad) });
-          aRot.value = withTiming(-70, { duration: 420 }); aOp.value = withTiming(0.15, { duration: 520 });
-          dScale.value = withSequence(withTiming(1.18, { duration: 220 }), withTiming(1.08, { duration: 300 }));
+          ax.set(withTiming(-W * 0.28, { duration: 420, easing: Easing.out(Easing.quad) }));
+          aRot.set(withTiming(-70, { duration: 420 })); aOp.set(withTiming(0.15, { duration: 520 }));
+          dScale.set(withSequence(withTiming(1.18, { duration: 220 }), withTiming(1.08, { duration: 300 })));
         }
         spawn([{ kind: "shock", x: l.attacker_wins ? W * 0.78 : W * 0.22, y: groundY - 6, color: l.attacker_wins ? colors.error : colors.error }], 800);
       }, 520);
     }, 460);
   }, [lanes, W, cx, aHome, lordSize, groundY, colors, ax, dx, aRot, dRot, aOp, dOp, aScale, dScale, shake, flash, spawn, later]);
 
-  // sequencer
+  // One pass per lane: the animation runs, then hands the phase over to "result".
+  // `playLane` is left out of the deps on purpose — it changes with the theme and the
+  // window size, and replaying the lane from the start on a resize would be worse.
   useEffect(() => {
-    if (!playing || phase === "summary") return;
-    if (phase === "idle") {
-      playLane(step);
-      return;
-    }
-    if (phase === "result") {
-      const t = setTimeout(() => {
-        if (step + 1 >= lanes.length) setPhase("summary");
-        else { setStep(step + 1); playLane(step + 1); }
-      }, LANE_MS - 1200);
-      timers.current.push(t);
-    }
-  }, [playing, phase, step]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (phase === "running") playLane(step);
+  }, [phase, step]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pausing stops the replay at the end of the current lane; resuming picks it up again.
+  useEffect(() => {
+    if (!playing || phase !== "result") return;
+    const t = setTimeout(() => {
+      if (step + 1 >= lanes.length) setPhase("summary");
+      else { setStep(step + 1); setPhase("running"); }
+    }, LANE_MS - 1200);
+    timers.current.push(t);
+  }, [playing, phase, step, lanes.length]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  const restart = () => { timers.current.forEach(clearTimeout); timers.current = []; setFx([]); setStep(0); setPhase("idle"); setPlaying(true); };
+  const restart = () => { timers.current.forEach(clearTimeout); timers.current = []; setFx([]); setStep(0); setPhase("running"); setPlaying(true); };
   const skip = () => { timers.current.forEach(clearTimeout); timers.current = []; setFx([]); setPhase("summary"); };
 
-  const aStyle = useAnimatedStyle(() => ({ opacity: aOp.value, transform: [{ translateX: ax.value }, { rotate: `${aRot.value}deg` }, { scale: aScale.value }] }));
-  const dStyle = useAnimatedStyle(() => ({ opacity: dOp.value, transform: [{ translateX: dx.value }, { rotate: `${dRot.value}deg` }, { scale: dScale.value }, { scaleX: -1 }] }));
-  const camStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
-  const flashStyle = useAnimatedStyle(() => ({ opacity: flash.value }));
+  const aStyle = useAnimatedStyle(() => ({ opacity: aOp.get(), transform: [{ translateX: ax.get() }, { rotate: `${aRot.get()}deg` }, { scale: aScale.get() }] }));
+  const dStyle = useAnimatedStyle(() => ({ opacity: dOp.get(), transform: [{ translateX: dx.get() }, { rotate: `${dRot.get()}deg` }, { scale: dScale.get() }, { scaleX: -1 }] }));
+  const camStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.get() }] }));
+  const flashStyle = useAnimatedStyle(() => ({ opacity: flash.get() }));
   const mineWon = mineIsAttacker === null ? null : mineIsAttacker === attackerWon;
 
   return (

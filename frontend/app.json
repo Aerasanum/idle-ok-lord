@@ -55,7 +55,8 @@
           "defaultChannel": "default"
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

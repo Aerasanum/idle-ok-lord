@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, View } from "react-native";
 
@@ -6,7 +6,7 @@ import { QK, useAction, useMyAlliance, useWar, useWarMap, useWars } from "@/src/
 import { useTheme } from "@/src/theme";
 import { Btn, Icon, Loading, Panel, Row, Screen, Txt, fmt, fmtDuration } from "@/src/ui";
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
-import { useCountdown } from "@/src/ui/useCountdown";
+import { useCountdown, useSecondsUntil } from "@/src/ui/useCountdown";
 import { NODE_LABEL, WarMap, allianceColor } from "@/src/war/WarMap";
 import { WarEnlist } from "@/src/war/WarEnlist";
 import { WarReplay } from "@/src/war/WarReplay";
@@ -37,14 +37,23 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
   const [picked, setPicked] = useState<string[]>([]);
   const myId = mine?.alliance?.id;
   const currentRoster: string[] | undefined = detail ? (detail.war.attacker_id === myId ? detail.war.attack_roster : detail.war.defense_roster) : undefined;
-  useEffect(() => { setPicked(currentRoster ?? []); }, [detail?.war?.id, currentRoster?.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Opening another war, or the server returning a different roster, discards the picks
+  // in progress. Adjusting here rather than in an effect avoids rendering the stale list once.
+  const rosterKey = `${detail?.war?.id ?? ""}:${currentRoster?.length ?? 0}`;
+  const [syncedRoster, setSyncedRoster] = useState(rosterKey);
+  if (syncedRoster !== rosterKey) {
+    setSyncedRoster(rosterKey);
+    setPicked(currentRoster ?? []);
+  }
+  const seasonEnds = useSecondsUntil(m?.season?.ends_at);
+  const infirmaryIn = useSecondsUntil(detail?.my_casualties?.infirmary?.ready_at);
+  const attackCooldownIn = useSecondsUntil(m?.attack_state?.cooldown_ends_at);
   if (isLoading || !m) return <Loading label="Carico la mappa del territorio..." />;
   const a = mine?.alliance;
   const officer = a?.my_role === "leader" || a?.my_role === "officer";
   const contested = new Set<number>(m.active_wars.map((w: any) => w.node_id));
-  const seasonEnds = new Date(m.season.ends_at).getTime() - Date.now();
   return (
-    <Screen title={rosterOnly ? "Guerra 10v10" : "Territori"} back={!inTab} subtitle={`Stagione ${m.season.key} · termina in ${fmtDuration(seasonEnds / 1000)} · shard ${m.shard_id.slice(-6)}`} testID="war-screen">
+    <Screen title={rosterOnly ? "Guerra 10v10" : "Territori"} back={!inTab} subtitle={`Stagione ${m.season.key} · termina in ${fmtDuration(seasonEnds)} · shard ${m.shard_id.slice(-6)}`} testID="war-screen">
       {!a ? <Txt v="small" color={colors.warning}>Entra in un&apos;alleanza (scheda Alleanza, Castello 8) per partecipare alle guerre. La mappa è visibile a tutti.</Txt> : null}
       {!rosterOnly ? (
         <>
@@ -108,7 +117,7 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
                   ) : null}
                   {detail.my_casualties?.infirmary?.total ? (
                     <Txt v="small" color={colors.success} testID="war-infirmary">
-                      🏥 Infermeria: {fmt(detail.my_casualties.infirmary.total)} unità tornano {new Date(detail.my_casualties.infirmary.ready_at).getTime() > Date.now() ? `tra ${fmtDuration((new Date(detail.my_casualties.infirmary.ready_at).getTime() - Date.now()) / 1000)}` : "(già rientrate)"} · {Object.entries(detail.my_casualties.infirmary.units).map(([k, v]: any) => `${k} +${fmt(v)}`).join(" · ")}
+                      🏥 Infermeria: {fmt(detail.my_casualties.infirmary.total)} unità tornano {infirmaryIn > 0 ? `tra ${fmtDuration(infirmaryIn)}` : "(già rientrate)"} · {Object.entries(detail.my_casualties.infirmary.units).map(([k, v]: any) => `${k} +${fmt(v)}`).join(" · ")}
                     </Txt>
                   ) : null}
                   <Txt v="small" color={colors.muted}>Regola v1.5: vincitore 5% + 20%×r, sconfitto 30% + 30%×(1−r); difensore ×0,85; bestie ×0,9, assedio ×0,8, mitiche ×0,6. Almeno un superstite per tipo; l&apos;Infermeria restituisce il 40% dei caduti dopo 8 ore. Il PvE non causa perdite.</Txt>
@@ -127,23 +136,28 @@ export default function WarScreen({ inTab = false }: { inTab?: boolean }) {
             {!sel.owner && m.attack_state?.garrison_lane_power ? <Txt v="small" color={colors.muted} testID="garrison-power">Guarnigione: 10 difensori NPC da ~{fmt(m.attack_state.garrison_lane_power)} potenza ciascuno ({m.attack_state.garrison_pct_of_median}% della potenza mediana dei tuoi membri).</Txt> : null}
             {sel.bonus ? <Txt v="small" color={colors.muted}>Bonus: {Object.entries(sel.bonus).map(([k, v]) => `${k.replace(/_/g, " ")} +${v}%`).join(", ")}</Txt> : <Txt v="small" color={colors.muted}>Nessun bonus.</Txt>}
             {contested.has(sel.node_id) ? <Txt v="small" color={colors.error}>Guerra in corso su questo nodo.</Txt> : null}
-            {officer && sel.owner !== m.my_alliance_id ? (() => {
-              const st = m.attack_state ?? {};
-              const attackable = (st.attackable_node_ids ?? []).includes(sel.node_id);
-              const reason = !st.can_attack ? ATTACK_REASON[st.reason] ?? st.reason : !attackable ? (contested.has(sel.node_id) ? "Su questo nodo c'è già una guerra in corso." : "Puoi attaccare solo i nodi adiacenti al tuo territorio (bordo dorato) il cui proprietario non è già in guerra.") : null;
-              const cd = st.reason === "attack_cooldown" && st.cooldown_ends_at ? ` Prossimo attacco tra ${fmtDuration((new Date(st.cooldown_ends_at).getTime() - Date.now()) / 1000)}.` : "";
-              return (
-                <View style={{ gap: 6 }}>
-                  {reason ? <Txt v="small" color={colors.warning} testID="declare-blocked-reason">⚠ {reason}{cd}</Txt> : <Txt v="small" color={colors.success}>Bersaglio valido: preparazione 8 ore, poi 10 corsie 1v1.</Txt>}
-                  <Btn title="Dichiara guerra" icon="sword-cross" disabled={!!reason} loading={declare.isPending} onPress={() => declare.mutate({ node_id: sel.node_id }, { onSuccess: () => sheet.current?.dismiss() })} testID="declare-war-button" />
-                </View>
-              );
-            })() : null}
+            {officer && sel.owner !== m.my_alliance_id ? (
+              <DeclareBlock attackState={m.attack_state ?? {}} nodeId={sel.node_id} contested={contested.has(sel.node_id)} cooldownIn={attackCooldownIn} declare={declare} onDeclared={() => sheet.current?.dismiss()} />
+            ) : null}
             {!officer ? <Txt v="small" color={colors.muted}>Solo leader e ufficiali dichiarano guerra.</Txt> : null}
           </View>
         ) : null}
       </Sheet>
     </Screen>
+  );
+}
+
+function DeclareBlock({ attackState, nodeId, contested, cooldownIn, declare, onDeclared }: { attackState: any; nodeId: number; contested: boolean; cooldownIn: number; declare: any; onDeclared: () => void }) {
+  const { colors } = useTheme();
+  const st = attackState;
+  const attackable = (st.attackable_node_ids ?? []).includes(nodeId);
+  const reason = !st.can_attack ? ATTACK_REASON[st.reason] ?? st.reason : !attackable ? (contested ? "Su questo nodo c'è già una guerra in corso." : "Puoi attaccare solo i nodi adiacenti al tuo territorio (bordo dorato) il cui proprietario non è già in guerra.") : null;
+  const cd = st.reason === "attack_cooldown" && st.cooldown_ends_at ? ` Prossimo attacco tra ${fmtDuration(cooldownIn)}.` : "";
+  return (
+    <View style={{ gap: 6 }}>
+      {reason ? <Txt v="small" color={colors.warning} testID="declare-blocked-reason">⚠ {reason}{cd}</Txt> : <Txt v="small" color={colors.success}>Bersaglio valido: preparazione 8 ore, poi 10 corsie 1v1.</Txt>}
+      <Btn title="Dichiara guerra" icon="sword-cross" disabled={!!reason} loading={declare.isPending} onPress={() => declare.mutate({ node_id: nodeId }, { onSuccess: onDeclared })} testID="declare-war-button" />
+    </View>
   );
 }
 

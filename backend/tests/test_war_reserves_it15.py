@@ -1,72 +1,82 @@
 """Iteration 15 — Alliance war RESERVES + promotion + reserve withdraw.
 
-War: war_0b2db37c91bb4cd8b4ca6e933ca8509d (QAT → ORS, node 22, prep).
-Initial expected state: attack_roster 10 (qa.lord + qa.bot1..8 + lord.tester at slot 10),
-                       attack_reserve [qa.bot9].
-Do NOT lock/resolve/cancel this war.
+The suite builds its own [QAT] -> [ORS] war and fills the attack side to exactly ten,
+with qa.bot9 pushed into the reserve queue, then exercises promotion on withdrawal.
+[QAT] is seeded with eleven members precisely so the eleventh enlistment overflows.
+
+Does not lock, resolve or cancel the war.
 """
 from __future__ import annotations
-import os
 import pytest
 import requests
 
-BASE = os.environ["EXPO_PUBLIC_BACKEND_URL"].rstrip("/") + "/api"
-WAR_ID = "war_0b2db37c91bb4cd8b4ca6e933ca8509d"
-
-
-def hdr(tok: str) -> dict:
-    return {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
+from live_env import (
+    API as BASE,
+    declare_fresh_war,
+    hdr,
+    restore_enemy_border,
+    session,
+    token,
+)
+from qa_fixtures import LORD_TESTER, ORS_BOTS, ORS_LEADER, QA_BOTS, QA_LORD
 
 
 def login(email: str, pw: str) -> str:
-    r = requests.post(f"{BASE}/auth/login", json={"email": email, "password": pw}, timeout=15)
-    assert r.status_code == 200, f"login {email}: {r.status_code} {r.text[:200]}"
-    return r.json()["access_token"]
+    return token(email, pw)
 
 
-def get_me(tok: str) -> dict:
-    r = requests.get(f"{BASE}/profile", headers=hdr(tok), timeout=15)
+def get_war(tok: str, war_id: str) -> dict:
+    r = requests.get(f"{BASE}/wars/{war_id}", headers=hdr(tok), timeout=15)
     assert r.status_code == 200, r.text[:200]
     return r.json()
 
 
-def get_war(tok: str) -> dict:
-    r = requests.get(f"{BASE}/wars/{WAR_ID}", headers=hdr(tok), timeout=15)
-    assert r.status_code == 200, r.text[:200]
-    return r.json()
+def enlist(tok: str, war_id: str) -> requests.Response:
+    return requests.post(f"{BASE}/wars/{war_id}/enlist", headers=hdr(tok), timeout=15)
 
 
-def enlist(tok: str) -> requests.Response:
-    return requests.post(f"{BASE}/wars/{WAR_ID}/enlist", headers=hdr(tok), timeout=15)
-
-
-def withdraw(tok: str) -> requests.Response:
-    return requests.post(f"{BASE}/wars/{WAR_ID}/withdraw", headers=hdr(tok), timeout=15)
+def withdraw(tok: str, war_id: str) -> requests.Response:
+    return requests.post(f"{BASE}/wars/{war_id}/withdraw", headers=hdr(tok), timeout=15)
 
 
 @pytest.fixture(scope="module")
 def ctx():
-    toks = {
-        "qa_lord": login("qa.lord@example.com", "QaLordPass!2026"),
-        "qa_bot9": login("qa.bot9@idle1.app", "QaBot!2026"),
-        "orsi_bot1": login("orsi.bot1@idle1.app", "QaBot!2026"),
-        "lord_tester": login("lord.tester@idle1.app", "Idle1Lord!2026"),
-    }
-    pids = {
-        "qa_lord": get_me(toks["qa_lord"])["id"],
-        "qa_bot9": get_me(toks["qa_bot9"])["id"],
-        "orsi_bot1": get_me(toks["orsi_bot1"])["id"],
-        "lord_tester": get_me(toks["lord_tester"])["id"],
-    }
-    return {"toks": toks, "pids": pids}
+    """Declare the war, then enlist qa.bot1..8 and lord.tester to fill the ten slots.
+
+    qa.bot9 enlists last, so it lands in the reserve queue: that is the state the
+    promotion assertions below start from.
+    """
+    qa = session(QA_LORD)
+    target = restore_enemy_border(qa, session(ORS_LEADER))
+    if target is None:
+        pytest.skip("[QAT] and [ORS] share no border; run backend/scripts/seed_qa.py")
+    war_id = declare_fresh_war(qa, target)
+
+    sessions = {"qa_lord": qa, "orsi_bot1": session(ORS_BOTS[0])}
+    for spec in QA_BOTS[:8]:
+        r = enlist(token(spec), war_id)
+        assert r.status_code == 200, f"{spec['email']} enlist: {r.status_code} {r.text[:160]}"
+    sessions["lord_tester"] = session(LORD_TESTER)
+    r = enlist(sessions["lord_tester"]["token"], war_id)
+    assert r.status_code == 200, r.text[:200]
+    assert r.json()["reserve"] is False, "lord.tester should take the tenth slot, not the reserve"
+
+    sessions["qa_bot9"] = session(QA_BOTS[8])
+    r = enlist(sessions["qa_bot9"]["token"], war_id)
+    assert r.status_code == 200, r.text[:200]
+    assert r.json()["reserve"] is True, "qa.bot9 should overflow into the reserve"
+
+    return {"war_id": war_id,
+            "toks": {k: v["token"] for k, v in sessions.items()},
+            "pids": {k: v["player_id"] for k, v in sessions.items()}}
 
 
 class TestInitialState:
     def test_01_war_prep_and_state(self, ctx):
-        d = get_war(ctx["toks"]["qa_lord"])
+        d = get_war(ctx["toks"]["qa_lord"], ctx["war_id"])
         w = d["war"]
         assert w["status"] == "prep", f"war status={w['status']}"
-        assert w["node_id"] == 22
+        assert w["defender_id"], "target should be alliance-held, not an NPC garrison"
         assert len(w["attack_roster"]) == 10, f"attack_roster={w['attack_roster']}"
         assert ctx["pids"]["lord_tester"] in w["attack_roster"], f"lord.tester not in roster: {w['attack_roster']}"
         assert w.get("attack_reserve", []) == [ctx["pids"]["qa_bot9"]], f"attack_reserve={w.get('attack_reserve')}"
@@ -74,29 +84,29 @@ class TestInitialState:
 
 class TestReserveAndPromotion:
     def test_02_bot9_enlist_again_returns_409_already_reserve(self, ctx):
-        r = enlist(ctx["toks"]["qa_bot9"])
+        r = enlist(ctx["toks"]["qa_bot9"], ctx["war_id"])
         assert r.status_code == 409, f"expected 409, got {r.status_code} {r.text[:200]}"
         assert "already_reserve" in r.text, r.text[:200]
 
     def test_03_orsi_bot1_enlist_defense_side(self, ctx):
         # If already enlisted from previous run, first withdraw so we can verify the enlist path.
-        w0 = get_war(ctx["toks"]["qa_lord"])["war"]
+        w0 = get_war(ctx["toks"]["qa_lord"], ctx["war_id"])["war"]
         if ctx["pids"]["orsi_bot1"] in w0.get("defense_roster", []):
-            wr = withdraw(ctx["toks"]["orsi_bot1"])
+            wr = withdraw(ctx["toks"]["orsi_bot1"], ctx["war_id"])
             assert wr.status_code == 200, wr.text[:200]
-        r = enlist(ctx["toks"]["orsi_bot1"])
+        r = enlist(ctx["toks"]["orsi_bot1"], ctx["war_id"])
         assert r.status_code == 200, f"expected 200, got {r.status_code} {r.text[:200]}"
         body = r.json()
         assert body.get("enlisted") is True, body
         assert body.get("reserve") is False, body
         assert ctx["pids"]["orsi_bot1"] in body.get("defense_roster", []), body
         # attack roster must not change
-        w = get_war(ctx["toks"]["qa_lord"])["war"]
+        w = get_war(ctx["toks"]["qa_lord"], ctx["war_id"])["war"]
         assert len(w["attack_roster"]) == 10
         assert ctx["pids"]["lord_tester"] in w["attack_roster"]
 
     def test_04_lord_tester_withdraw_promotes_bot9(self, ctx):
-        r = withdraw(ctx["toks"]["lord_tester"])
+        r = withdraw(ctx["toks"]["lord_tester"], ctx["war_id"])
         assert r.status_code == 200, f"expected 200, got {r.status_code} {r.text[:200]}"
         body = r.json()
         assert body.get("promoted") == ctx["pids"]["qa_bot9"], f"promoted={body.get('promoted')} expected {ctx['pids']['qa_bot9']}: {body}"
@@ -106,18 +116,18 @@ class TestReserveAndPromotion:
         assert body.get("attack_reserve", []) == [], f"attack_reserve should be empty: {body}"
 
     def test_05_lord_tester_reenlists_goes_to_reserve(self, ctx):
-        r = enlist(ctx["toks"]["lord_tester"])
+        r = enlist(ctx["toks"]["lord_tester"], ctx["war_id"])
         assert r.status_code == 200, f"expected 200, got {r.status_code} {r.text[:200]}"
         body = r.json()
         assert body.get("reserve") is True, body
         assert body.get("enlisted") is False, body
         assert body.get("reserve_position") == 1, f"reserve_position={body.get('reserve_position')}: {body}"
-        w = get_war(ctx["toks"]["qa_lord"])["war"]
+        w = get_war(ctx["toks"]["qa_lord"], ctx["war_id"])["war"]
         assert ctx["pids"]["lord_tester"] in w.get("attack_reserve", [])
         assert len(w["attack_roster"]) == 10
 
     def test_06_lord_tester_withdraws_from_reserve(self, ctx):
-        r = withdraw(ctx["toks"]["lord_tester"])
+        r = withdraw(ctx["toks"]["lord_tester"], ctx["war_id"])
         assert r.status_code == 200, f"expected 200, got {r.status_code} {r.text[:200]}"
         body = r.json()
         assert body.get("attack_reserve", []) == [], f"reserve should be empty: {body}"
@@ -126,7 +136,7 @@ class TestReserveAndPromotion:
         assert body.get("promoted") in (None,), f"unexpected promotion: {body.get('promoted')}"
 
     def test_07_war_detail_roster_players_contains_names(self, ctx):
-        d = get_war(ctx["toks"]["qa_lord"])
+        d = get_war(ctx["toks"]["qa_lord"], ctx["war_id"])
         w = d["war"]
         rp = d.get("roster_players", {})
         # every player in roster + reserve on both sides must have a display_name
@@ -141,7 +151,7 @@ class TestReserveAndPromotion:
 class TestFinalState:
     def test_99_final_state_qa_bot9_in_roster_lord_tester_out(self, ctx):
         """Cleanup verification: the war ends with roster 10 (qa.lord + qa.bot1..9) and lord.tester OUT."""
-        w = get_war(ctx["toks"]["qa_lord"])["war"]
+        w = get_war(ctx["toks"]["qa_lord"], ctx["war_id"])["war"]
         assert w["status"] == "prep", f"war must remain in prep: {w['status']}"
         assert len(w["attack_roster"]) == 10
         assert ctx["pids"]["qa_bot9"] in w["attack_roster"], "qa.bot9 must end up in attack_roster"

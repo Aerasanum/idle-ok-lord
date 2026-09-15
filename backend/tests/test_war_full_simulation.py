@@ -12,31 +12,27 @@ Scenario per review request:
 9. GET /chat/messages?channel=alliance:<id> → system messages posted.
 10. GET /wars → resolved war present in list.
 """
-import os
 import time
 import pytest
 import requests
 
-BASE = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://idle1-v11-build.preview.emergentagent.com").rstrip("/") + "/api"
+from live_env import API as BASE, session
+from qa_fixtures import ORS_BOTS, ORS_LEADER, QA_ALLIANCE, QA_LORD
 
-QA_EMAIL = "qa.lord@example.com"
-QA_PASS = "QaLordPass!2026"
-ORS_LEADER_EMAIL = "orsi.leader@idle1.app"
-ORS_BOT1_EMAIL = "orsi.bot1@idle1.app"
-ORS_PASS = "QaBot!2026"
+QA_EMAIL = QA_LORD["email"]
+QA_PASS = QA_LORD["password"]
+ORS_LEADER_EMAIL = ORS_LEADER["email"]
+ORS_BOT1_EMAIL = ORS_BOTS[0]["email"]
+ORS_PASS = ORS_LEADER["password"]
 
 
 def _login(email: str, pw: str) -> dict:
-    r = requests.post(f"{BASE}/auth/login", json={"email": email, "password": pw}, timeout=15)
-    assert r.status_code == 200, f"login {email} failed: {r.status_code} {r.text[:200]}"
-    d = r.json()
-    d["headers"] = {"Authorization": f"Bearer {d['access_token']}"}
-    return d
+    return session(email, pw)
 
 
 @pytest.fixture(scope="module")
 def qa():
-    return _login(QA_EMAIL, QA_PASS)
+    return session(QA_LORD)
 
 
 @pytest.fixture(scope="module")
@@ -51,9 +47,8 @@ def _map(qa):
     return requests.get(f"{BASE}/wars/map", headers=qa["headers"], timeout=15).json()
 
 
-def _adjacent_candidates(home_x: int, home_y: int, own_nodes: set[int]):
+def _adjacent_candidates(own_nodes: set[int]):
     """Return candidate node_ids that are 4-neighbours of any own node, in grid 19x19."""
-    from itertools import product
     def nid(x, y):
         return y * 19 + x
     cand = set()
@@ -94,19 +89,19 @@ class TestFullWarSimulation:
         assert j.get("my_alliance_id"), j
         my_alliance_id = j["my_alliance_id"]
         home = j.get("my_home")
-        assert home == 20, f"expected QAT home 20, got {home}"
+        assert home is not None, "expected a home castle for QAT"
         nodes = j["nodes"]
         node_by_id = {n["node_id"]: n for n in nodes}
         own_nodes = {n["node_id"] for n in nodes if n.get("owner") == my_alliance_id}
-        assert 20 in own_nodes, own_nodes
+        assert home in own_nodes, own_nodes
         # ------------ Clean up any existing prep/locked war ------------
         _clear_cooldown(qa, 100000)
         _tick(qa)
-        # ------------ Choose target ------------
-        candidates = _adjacent_candidates(1, 1, own_nodes)
-        # Also try the ones explicitly named by the review request
-        priority = [22, 39, 40, 2, 3]
-        candidates = [c for c in priority if c in candidates] + [c for c in candidates if c not in priority]
+        # ------------ Choose target: enemy-held borders first, so defenders are real ------------
+        # Home castles are skipped: capturing one displaces the loser for 12h and moves
+        # it elsewhere, which would break the border the other war suites rely on.
+        candidates = [c for c in _adjacent_candidates(own_nodes) if node_by_id[c]["type"] != "home_castle"]
+        candidates.sort(key=lambda c: (node_by_id[c].get("owner") is None, c))
         war_id = None
         chosen = None
         errs = []
@@ -189,7 +184,7 @@ class TestFullWarSimulation:
         if attacker_won:
             assert new_owner == my_alliance_id, f"attacker won but node {chosen} owner={new_owner} != QAT {my_alliance_id}"
         # season_points: winner alliance should have >0
-        qat_row = next((r for r in j2["leaderboard"] if r.get("alliance_id") == my_alliance_id or r.get("tag") == "QAT"), None)
+        qat_row = next((r for r in j2["leaderboard"] if r.get("alliance_id") == my_alliance_id or r.get("tag") == QA_ALLIANCE["tag"]), None)
         assert qat_row is not None
         print(f"POST-WAR: node {chosen} owner={new_owner} attacker_won={attacker_won} winner_alliance={winner_alliance_id} QAT sp={qat_row.get('season_points')}")
 

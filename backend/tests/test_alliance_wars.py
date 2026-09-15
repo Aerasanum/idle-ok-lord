@@ -7,43 +7,32 @@ Covers the review request scope:
 - Snapshot after resolution (10 attackers/10 defenders NPC Garrison, 10 lanes)
 - Reward idempotency across a second tick (war_coins granted once)
 """
-import os
-import time
-
 import pytest
 import requests
 
-BASE = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://idle1-v11-build.preview.emergentagent.com").rstrip("/") + "/api"
-
-QA_EMAIL = "qa.lord@example.com"
-QA_PASS = "QaLordPass!2026"
-ORS_EMAIL = "orsi.leader@idle1.app"
-ORS_PASS = "QaBot!2026"
-BOT_EMAILS = [f"qa.bot{i}@idle1.app" for i in range(1, 10)]
-BOT_PASS = "QaBot!2026"
-
-
-def _login(email: str, pw: str) -> dict:
-    r = requests.post(f"{BASE}/auth/login", json={"email": email, "password": pw}, timeout=15)
-    assert r.status_code == 200, f"login {email} failed: {r.status_code} {r.text[:200]}"
-    d = r.json()
-    d["headers"] = {"Authorization": f"Bearer {d['access_token']}"}
-    return d
+from live_env import API as BASE, alliance_of, border_nodes, clear_war_cooldown, session, war_map
+from qa_fixtures import ORS_ALLIANCE, ORS_LEADER, QA_ALLIANCE, QA_BOTS, QA_LORD
 
 
 @pytest.fixture(scope="module")
 def qa():
-    return _login(QA_EMAIL, QA_PASS)
+    return session(QA_LORD)
 
 
 @pytest.fixture(scope="module")
 def ors():
-    return _login(ORS_EMAIL, ORS_PASS)
+    return session(ORS_LEADER)
 
 
 @pytest.fixture(scope="module")
 def bot1():
-    return _login(BOT_EMAILS[0], BOT_PASS)
+    return session(QA_BOTS[0])
+
+
+@pytest.fixture(scope="module")
+def home(qa):
+    """The home castle the server assigned to [QAT]; it is not a fixed node id."""
+    return war_map(qa["headers"])["my_home"]
 
 
 # ------------------------ WAR MAP ------------------------
@@ -57,19 +46,22 @@ class TestWarMap:
         # Both QAT (leader = qa.lord) and ORS should have alliances entries with home nodes
         als = j["alliances"]
         tags = {v["tag"] for v in als.values()}
-        assert "QAT" in tags, f"QAT not on map. tags={tags}"
-        assert "ORS" in tags, f"ORS not on map. tags={tags}"
+        assert QA_ALLIANCE["tag"] in tags, f"{QA_ALLIANCE['tag']} not on map. tags={tags}"
+        assert ORS_ALLIANCE["tag"] in tags, f"{ORS_ALLIANCE['tag']} not on map. tags={tags}"
         assert j["my_alliance_id"], "expected my_alliance_id for qa.lord"
         assert j["my_home"] is not None, "expected my_home node for QAT"
         lb = j["leaderboard"]
         assert isinstance(lb, list) and len(lb) >= 2
-        ors_row = next((r for r in lb if r["tag"] == "ORS"), None)
+        ors_row = next((r for r in lb if r["tag"] == ORS_ALLIANCE["tag"]), None)
         assert ors_row is not None
         assert ors_row["season_points"] >= 100, f"ORS should have >=100 season points, got {ors_row['season_points']}"
 
-    def test_home_node_20_for_qat(self, qa):
-        j = requests.get(f"{BASE}/wars/map", headers=qa["headers"], timeout=15).json()
-        assert j["my_home"] == 20, f"QAT home expected 20, got {j['my_home']}"
+    def test_home_node_is_an_owned_home_castle(self, qa, home):
+        """Home castles are handed out from a lattice in join order, so the id is not fixed."""
+        j = war_map(qa["headers"])
+        node = next(n for n in j["nodes"] if n["node_id"] == home)
+        assert node["type"] == "home_castle", node
+        assert node["owner"] == j["my_alliance_id"], node
 
     def test_leaderboard_has_scores(self, qa):
         j = requests.get(f"{BASE}/wars/map", headers=qa["headers"], timeout=15).json()
@@ -90,16 +82,16 @@ class TestWarsList:
 # ------------------------ DECLARE VALIDATION ------------------------
 
 class TestDeclareValidation:
-    def test_declare_own_node_400(self, qa):
-        # node 20 is QAT home; 409 when QAT is in cooldown/active war (checked before node validation)
-        r = requests.post(f"{BASE}/wars/declare", json={"node_id": 20}, headers=qa["headers"], timeout=15)
+    def test_declare_own_node_400(self, qa, home):
+        # 409 when QAT is in cooldown/active war (checked before node validation)
+        r = requests.post(f"{BASE}/wars/declare", json={"node_id": home}, headers=qa["headers"], timeout=15)
         assert r.status_code in (400, 409), f"expected 400/409, got {r.status_code} {r.text[:200]}"
         if r.status_code == 400:
             assert "own_node" in r.text or "own" in r.text.lower()
 
-    def test_declare_non_adjacent_400(self, qa):
-        # node 360 (bottom-right corner) is very far from home node 20 → not adjacent
-        r = requests.post(f"{BASE}/wars/declare", json={"node_id": 360}, headers=qa["headers"], timeout=15)
+    def test_declare_non_adjacent_400(self, qa, home):
+        far = max(range(361), key=lambda n: abs(n % 19 - home % 19) + abs(n // 19 - home // 19))
+        r = requests.post(f"{BASE}/wars/declare", json={"node_id": far}, headers=qa["headers"], timeout=15)
         # 400 not_adjacent OR 409 if QAT is already in a war/cooldown/contested
         assert r.status_code in (400, 409), f"expected 400/409, got {r.status_code} {r.text[:200]}"
         if r.status_code == 400:
@@ -112,24 +104,27 @@ class TestDeclareValidation:
 
 # ------------------------ ROSTER VALIDATION ------------------------
 
+@pytest.fixture(scope="module")
+def prep_war(qa, home):
+    """A war in prep declared by [QAT], created here so roster validation never skips."""
+    clear_war_cooldown(qa["headers"])
+    targets = border_nodes(qa["headers"], alliance_of(qa["headers"])["id"])
+    for node_id in [n["node_id"] for n in targets]:
+        r = requests.post(f"{BASE}/wars/declare", json={"node_id": node_id}, headers=qa["headers"], timeout=15)
+        if r.status_code == 200:
+            return r.json()["id"]
+    pytest.skip(f"could not declare on any node bordering {home}")
+
+
 class TestRosterValidation:
-    def test_roster_too_many_ids_400(self, qa):
-        # find any war involving QAT if present, otherwise skip
-        wars = requests.get(f"{BASE}/wars", headers=qa["headers"], timeout=15).json()["wars"]
-        war = next((w for w in wars if w.get("status") == "prep"), None)
-        if not war:
-            pytest.skip("no prep war to test roster on")
-        r = requests.post(f"{BASE}/wars/roster", json={"war_id": war["id"], "player_ids": [f"p{i}" for i in range(11)]}, headers=qa["headers"], timeout=15)
+    def test_roster_too_many_ids_400(self, qa, prep_war):
+        r = requests.post(f"{BASE}/wars/roster", json={"war_id": prep_war, "player_ids": [f"p{i}" for i in range(11)]}, headers=qa["headers"], timeout=15)
         assert r.status_code == 400, f"expected 400 roster_size, got {r.status_code} {r.text[:200]}"
         assert "roster_size" in r.text.lower() or "max" in r.text.lower()
 
-    def test_roster_non_officer_403(self, bot1):
+    def test_roster_non_officer_403(self, bot1, prep_war):
         # bot1 is a member but NOT officer/leader of QAT → should get 403 officer_required
-        wars = requests.get(f"{BASE}/wars", headers=bot1["headers"], timeout=15).json()["wars"]
-        war = next((w for w in wars if w.get("status") == "prep"), None)
-        if not war:
-            pytest.skip("no prep war to test non-officer on")
-        r = requests.post(f"{BASE}/wars/roster", json={"war_id": war["id"], "player_ids": []}, headers=bot1["headers"], timeout=15)
+        r = requests.post(f"{BASE}/wars/roster", json={"war_id": prep_war, "player_ids": []}, headers=bot1["headers"], timeout=15)
         assert r.status_code == 403, f"expected 403 officer_required, got {r.status_code} {r.text[:200]}"
 
 
@@ -138,26 +133,11 @@ class TestRosterValidation:
 class TestWarE2E:
     """End-to-end: declare (if possible) → set roster → war-shift → tick → verify snapshot & rewards idempotent."""
 
-    def test_full_flow(self, qa, bot1):
-        wars = requests.get(f"{BASE}/wars", headers=qa["headers"], timeout=15).json()["wars"]
-        active = next((w for w in wars if w.get("status") in ("prep", "locked")), None)
-        war_id = None
-        if active:
-            war_id = active["id"]
-        else:
-            # attempt to declare on node 21 (adjacent to home 20)
-            r = requests.post(f"{BASE}/wars/declare", json={"node_id": 21}, headers=qa["headers"], timeout=15)
-            if r.status_code == 200:
-                war_id = r.json()["id"]
-            elif r.status_code == 409 or (r.status_code == 400 and "own_node" in r.text):
-                # cooldown / node_contested / attack_cooldown / node already conquered in a previous run → live state, not a bug
-                pytest.skip(f"declare 21 blocked: {r.text[:200]}")
-            else:
-                pytest.fail(f"declare failed: {r.status_code} {r.text[:200]}")
-        assert war_id, "no war id"
+    def test_full_flow(self, qa, bot1, prep_war):
+        war_id = prep_war
 
         # get bot player_ids from alliance mine
-        mine = requests.get(f"{BASE}/alliances/mine", headers=qa["headers"], timeout=15).json()["alliance"]
+        mine = alliance_of(qa["headers"])
         members = mine.get("members", [])
         assert len(members) >= 10, f"expected >=10 QAT members, got {len(members)}"
         pids = [m.get("player_id") or m.get("id") for m in members[:10]]

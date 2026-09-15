@@ -6,26 +6,27 @@ Does NOT lock/resolve/cancel any war.
 from __future__ import annotations
 
 import io
-import json
-import os
 
 import pytest
 import requests
 
-BASE = "https://idle1-v11-build.preview.emergentagent.com/api"
-CANON_PATH = "/app/backend/canon/IDLE_1_v1.1_CANONICAL_SPEC.json"
-WAR_ID = "war_0b2db37c91bb4cd8b4ca6e933ca8509d"
+from live_env import (
+    API as BASE,
+    declare_fresh_war,
+    enlist,
+    hdr,
+    restore_enemy_border,
+    session,
+    spec,
+    token,
+)
+from qa_fixtures import LORD_TESTER, ORS_BOTS, ORS_LEADER, QA_BOTS, QA_LORD
+
 RES = ["grain", "wood", "clay", "iron", "gold"]
 
 
-def hdr(tok: str) -> dict:
-    return {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
-
-
 def login(email: str, pw: str) -> str:
-    r = requests.post(f"{BASE}/auth/login", json={"email": email, "password": pw}, timeout=15)
-    assert r.status_code == 200, f"login {email}: {r.status_code} {r.text[:200]}"
-    return r.json()["access_token"]
+    return token(email, pw)
 
 
 # ---------- CANON v1.3 endpoint + invariant ----------
@@ -45,8 +46,7 @@ def test_02_canon_validation_version_is_1_3():
 
 
 def _load_spec() -> dict:
-    with open(CANON_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return spec()
 
 
 def test_03_spec_version_and_warehouse_rule_present():
@@ -144,11 +144,11 @@ def test_08_no_cost_exceeds_L20_capacity():
 # ---------- Progress preservation for qa.lord ----------
 @pytest.fixture(scope="module")
 def qa_tok():
-    return login("qa.lord@example.com", "QaLordPass!2026")
+    return login(QA_LORD["email"], QA_LORD["password"])
 
 
 def test_09_qa_lord_kingdom_warehouse_matches_canon_L():
-    tok = login("qa.lord@example.com", "QaLordPass!2026")
+    tok = login(QA_LORD["email"], QA_LORD["password"])
     r = requests.get(f"{BASE}/kingdom", headers=hdr(tok), timeout=15)
     assert r.status_code == 200, r.text[:200]
     k = r.json()
@@ -171,8 +171,12 @@ def test_09_qa_lord_kingdom_warehouse_matches_canon_L():
 
 def test_10_castle_next_cost_fits_canon_warehouse_at_castle_level():
     """Per the v1.3 rule: at castle level L, castle L->L+1 cost must fit in canon warehouse cap at level L.
-    (The player still has to upgrade their warehouse to reach that capacity; the canon guarantees it is possible.)"""
-    tok = login("qa.lord@example.com", "QaLordPass!2026")
+    (The player still has to upgrade their warehouse to reach that capacity; the canon guarantees it is possible.)
+
+    Uses a bot rather than the QA lord, whose castle is already at the cap and therefore
+    has no next level to price.
+    """
+    tok = login(QA_BOTS[0]["email"], QA_BOTS[0]["password"])
     r = requests.get(f"{BASE}/kingdom", headers=hdr(tok), timeout=15)
     assert r.status_code == 200
     k = r.json()
@@ -209,15 +213,30 @@ def test_11_regolamento_pdf_v1_3():
 
 
 # ---------- War roster power ----------
-def _get_war(tok: str) -> dict:
-    r = requests.get(f"{BASE}/wars/{WAR_ID}", headers=hdr(tok), timeout=15)
+@pytest.fixture(scope="module")
+def war_id() -> str:
+    """A fresh [QAT] -> [ORS] war in prep, with attackers and defenders enlisted on both sides."""
+    qa = session(QA_LORD)
+    target = restore_enemy_border(qa, session(ORS_LEADER))
+    if target is None:
+        pytest.skip("[QAT] and [ORS] share no border; run backend/scripts/seed_qa.py")
+    wid = declare_fresh_war(qa, target)
+    for spec_ in (LORD_TESTER, QA_BOTS[0]):
+        enlist(hdr(token(spec_)), wid)
+    for spec_ in (ORS_LEADER, ORS_BOTS[0]):
+        enlist(hdr(token(spec_)), wid)
+    return wid
+
+
+def _get_war(tok: str, wid: str) -> dict:
+    r = requests.get(f"{BASE}/wars/{wid}", headers=hdr(tok), timeout=15)
     assert r.status_code == 200, r.text[:200]
     return r.json()
 
 
-def test_12_war_power_qa_lord_attacker():
-    tok = login("qa.lord@example.com", "QaLordPass!2026")
-    d = _get_war(tok)
+def test_12_war_power_qa_lord_attacker(war_id):
+    tok = login(QA_LORD["email"], QA_LORD["password"])
+    d = _get_war(tok, war_id)
     assert d["my_side"] == "attack"
     w = d["war"]
     rp = d["roster_players"]
@@ -239,9 +258,9 @@ def test_12_war_power_qa_lord_attacker():
     assert d["team_power"] > 0
 
 
-def test_13_war_power_orsi_bot1_defender():
-    tok = login("orsi.bot1@idle1.app", "QaBot!2026")
-    d = _get_war(tok)
+def test_13_war_power_orsi_bot1_defender(war_id):
+    tok = login(ORS_BOTS[0]["email"], ORS_BOTS[0]["password"])
+    d = _get_war(tok, war_id)
     assert d["my_side"] == "defense"
     w = d["war"]
     rp = d["roster_players"]
@@ -258,9 +277,9 @@ def test_13_war_power_orsi_bot1_defender():
     assert d["team_power"] == expected_team
 
 
-def test_14_war_power_lord_tester_qat_member():
-    tok = login("lord.tester@idle1.app", "Idle1Lord!2026")
-    d = _get_war(tok)
+def test_14_war_power_lord_tester_qat_member(war_id):
+    tok = login(LORD_TESTER["email"], LORD_TESTER["password"])
+    d = _get_war(tok, war_id)
     assert d["my_side"] == "attack"
     w = d["war"]
     rp = d["roster_players"]

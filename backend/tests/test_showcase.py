@@ -1,24 +1,16 @@
 """Vetrina Profilo — public player showcase endpoint tests (qa.lord)."""
-import os
 import re
 import pytest
 import requests
 
-BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://idle1-v11-build.preview.emergentagent.com").rstrip("/")
-API = f"{BASE_URL}/api"
-
-QA_EMAIL = "qa.lord@example.com"
-QA_PASSWORD = "QaLordPass!2026"
+from live_env import API, token
+from qa_fixtures import QA_ALLIANCE, QA_LORD, SHOWCASE
 
 
 @pytest.fixture(scope="module")
 def qa_session():
     s = requests.Session()
-    s.headers.update({"Content-Type": "application/json"})
-    r = s.post(f"{API}/auth/login", json={"email": QA_EMAIL, "password": QA_PASSWORD})
-    assert r.status_code == 200, f"login failed: {r.status_code} {r.text}"
-    tok = r.json()["access_token"]
-    s.headers.update({"Authorization": f"Bearer {tok}"})
+    s.headers.update({"Content-Type": "application/json", "Authorization": f"Bearer {token(QA_LORD)}"})
     return s
 
 
@@ -48,14 +40,14 @@ def test_own_showcase_shape(qa_session, qa_ids):
 
     assert s["is_me"] is True
     assert s["player_id"] == pid
-    assert s["hero"]["name"] == "Sir Aldric", f"hero.name = {s['hero'].get('name')}"
+    assert s["hero"]["name"] == SHOWCASE["lord_name"], f"hero.name = {s['hero'].get('name')}"
     assert isinstance(s["hero"]["level"], int) and s["hero"]["level"] >= 1
 
     assert isinstance(s["power"]["total"], (int, float)) and s["power"]["total"] > 0
     assert "hero" in s["power"] and "army" in s["power"]
 
     cos = s["cosmetics"]
-    assert cos.get("lord_skin") == "lord_frost_warden", f"lord_skin = {cos.get('lord_skin')}"
+    assert cos.get("lord_skin") == SHOWCASE["lord_skin"], f"lord_skin = {cos.get('lord_skin')}"
     assert isinstance(cos.get("army"), dict), f"army = {cos.get('army')}"
     assert cos["army"].get("color") and re.match(r"^#[0-9A-Fa-f]{6}$", cos["army"]["color"])
     assert cos["army"].get("glow") and re.match(r"^#[0-9A-Fa-f]{6}$", cos["army"]["glow"])
@@ -64,7 +56,7 @@ def test_own_showcase_shape(qa_session, qa_ids):
     for g in s["gear"]:
         assert "slot" in g and "rarity" in g
 
-    assert isinstance(s["alliance"], dict) and s["alliance"].get("tag") == "QAT", f"alliance = {s.get('alliance')}"
+    assert isinstance(s["alliance"], dict) and s["alliance"].get("tag") == QA_ALLIANCE["tag"], f"alliance = {s.get('alliance')}"
     assert isinstance(s["campaign"]["highest_cleared"], int) and s["campaign"]["highest_cleared"] >= 1
     assert isinstance(s["castle_level"], int) and s["castle_level"] >= 1
 
@@ -86,7 +78,7 @@ def test_showcase_other_member_is_not_me(qa_session, qa_ids):
     assert s["player_id"] == other["player_id"]
     assert isinstance(s["display_name"], str) and s["display_name"]
     # Same alliance → same tag
-    assert s["alliance"] and s["alliance"]["tag"] == "QAT"
+    assert s["alliance"] and s["alliance"]["tag"] == QA_ALLIANCE["tag"]
     # Public power should still be a positive number
     assert s["power"]["total"] > 0
 

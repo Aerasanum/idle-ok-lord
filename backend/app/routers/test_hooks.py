@@ -21,6 +21,8 @@ class GrantIn(BaseModel):
     research: dict[str, int] | None = None
     email_verified: bool | None = None
     forge: dict[str, int] | None = None  # slot -> forge level (QA: exercise the v1.5 quest alternatives)
+    buildings: dict[str, int] | None = None  # building key -> level (QA: seed the maxed end-game account)
+    revoke_cosmetics: list[str] | None = None  # skin keys to un-own (QA: replay a purchase on the same account)
 
 
 class ShiftIn(BaseModel):
@@ -52,6 +54,11 @@ async def grant(body: GrantIn, p: Principal = Depends(current_user)):
     if body.castle_level is not None:
         sets["kingdom.castle_level"] = body.castle_level
         sets["kingdom.buildings.castle"] = body.castle_level
+    if body.buildings:
+        for k, v in body.buildings.items():
+            sets[f"kingdom.buildings.{k}"] = v
+            if k == "castle":
+                sets["kingdom.castle_level"] = v
     if body.hero_level is not None:
         sets["hero.level"] = body.hero_level
         sets["hero.xp"] = 0
@@ -65,6 +72,15 @@ async def grant(body: GrantIn, p: Principal = Depends(current_user)):
         cur = (await db.players.find_one({"_id": p.player_id}, {"research": 1}))["research"]
         sets["research"] = {**cur, **body.research}  # node keys contain dots: never use them as Mongo paths
     upd = {"$inc": incs}
+    if body.revoke_cosmetics:
+        cur = (await db.players.find_one({"_id": p.player_id}, {"cosmetics": 1}) or {}).get("cosmetics") or {}
+        for kind in ("lord", "castle", "army"):
+            if cur.get(f"{kind}_skin") in body.revoke_cosmetics:
+                sets[f"cosmetics.{kind}_skin"] = None
+        upd["$pull"] = {"cosmetics.owned": {"$in": body.revoke_cosmetics}}
+        # the spend ledger is keyed per player+skin, so the row has to go too or the skin
+        # can never be bought again on this account
+        await db.purchases.delete_many({"transaction_key": {"$in": [f"skin:{p.player_id}:{k}" for k in body.revoke_cosmetics]}})
     if sets:
         upd["$set"] = sets
     await db.players.update_one({"_id": p.player_id}, upd)
@@ -101,11 +117,17 @@ async def war_shift(body: ShiftIn, p: Principal = Depends(current_user)):
     async for w in db.alliance_wars.find({"status": {"$in": ["prep", "locked"]}}):
         await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"lock_at": aware(w["lock_at"]) - d, "resolves_at": aware(w["resolves_at"]) - d, "declared_at": aware(w["declared_at"]) - d}})
         n += 1
+    displaced = 0
     if body.include_resolved:
         async for w in db.alliance_wars.find({"status": {"$in": ["resolved", "cancelled"]}}):
             await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"declared_at": aware(w["declared_at"]) - d}})
             n += 1
-    return {"wars_shifted": n}
+        # An alliance that lost its home castle is barred from declaring for 12h. Ageing
+        # that clock too is what lets QA restore a shard after a war suite has run.
+        async for a in db.alliances.find({"displaced_until": {"$ne": None}}):
+            await db.alliances.update_one({"_id": a["_id"]}, {"$set": {"displaced_until": aware(a["displaced_until"]) - d}})
+            displaced += 1
+    return {"wars_shifted": n, "alliances_unshifted_displacement": displaced}
 
 
 @router.post("/tick")

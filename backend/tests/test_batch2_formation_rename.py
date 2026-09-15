@@ -2,25 +2,21 @@
 Iteration_8 batch: formation suggest/apply, display_name rename, boss battle timing.
 Runs against the LIVE preview backend.
 """
-import os
 import time
 import pytest
 import requests
 
-BASE = os.environ.get("EXPO_BACKEND_URL", "https://idle1-v11-build.preview.emergentagent.com").rstrip("/")
-API = f"{BASE}/api"
+from live_env import API, token
+from qa_fixtures import ORS_BOTS, QA_LORD
 
-QA_EMAIL = "qa.lord@example.com"
-QA_PASSWORD = "QaLordPass!2026"
-ORS_EMAIL = "orsi.bot1@idle1.app"
-ORS_PASSWORD = "QaBot!2026"
+QA_EMAIL = QA_LORD["email"]
+QA_PASSWORD = QA_LORD["password"]
+ORS_EMAIL = ORS_BOTS[0]["email"]
+ORS_PASSWORD = ORS_BOTS[0]["password"]
 
 
 def _login(email: str, password: str) -> dict:
-    r = requests.post(f"{API}/auth/login", json={"email": email, "password": password}, timeout=20)
-    assert r.status_code == 200, f"login failed for {email}: {r.status_code} {r.text}"
-    tok = r.json()["access_token"]
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Authorization": f"Bearer {token(email, password)}"}
 
 
 @pytest.fixture(scope="module")
@@ -112,15 +108,15 @@ class TestAccountRename:
 
 # -------- battle timing: boss wave is last 35% of duration --------
 class TestBossBattleTiming:
-    def test_boss_wave_last_35pct(self, ors_headers):
-        # Ensure orsi.bot1 attempts stage 50 (boss)
-        # Verify stage 50 is boss for this account
-        st = requests.get(f"{API}/battle/stage/50", headers=ors_headers, timeout=15)
+    def test_boss_wave_last_35pct(self, qa_headers):
+        # The QA lord is used because the bots have not cleared stage 50, and a locked
+        # stage cannot be attempted at all.
+        st = requests.get(f"{API}/battle/stage/50", headers=qa_headers, timeout=15)
         assert st.status_code == 200, st.text
         assert st.json().get("kind") == "boss", f"stage 50 not boss: {st.json().get('kind')}"
 
         # POST /battle/attempt with stage=50 returns the attempt (with timeline) directly
-        r = requests.post(f"{API}/battle/attempt", headers=ors_headers,
+        r = requests.post(f"{API}/battle/attempt", headers=qa_headers,
                           json={"stage": 50}, timeout=20)
         assert r.status_code == 200, f"attempt failed: {r.status_code} {r.text}"
         data = r.json()
