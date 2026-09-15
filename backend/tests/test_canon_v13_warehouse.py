@@ -12,11 +12,10 @@ import requests
 
 from live_env import (
     API as BASE,
-    alliance_of,
     declare_fresh_war,
-    enemy_target_node,
     enlist,
     hdr,
+    restore_enemy_border,
     session,
     spec,
     token,
@@ -172,8 +171,12 @@ def test_09_qa_lord_kingdom_warehouse_matches_canon_L():
 
 def test_10_castle_next_cost_fits_canon_warehouse_at_castle_level():
     """Per the v1.3 rule: at castle level L, castle L->L+1 cost must fit in canon warehouse cap at level L.
-    (The player still has to upgrade their warehouse to reach that capacity; the canon guarantees it is possible.)"""
-    tok = login(QA_LORD["email"], QA_LORD["password"])
+    (The player still has to upgrade their warehouse to reach that capacity; the canon guarantees it is possible.)
+
+    Uses a bot rather than the QA lord, whose castle is already at the cap and therefore
+    has no next level to price.
+    """
+    tok = login(QA_BOTS[0]["email"], QA_BOTS[0]["password"])
     r = requests.get(f"{BASE}/kingdom", headers=hdr(tok), timeout=15)
     assert r.status_code == 200
     k = r.json()
@@ -214,10 +217,9 @@ def test_11_regolamento_pdf_v1_3():
 def war_id() -> str:
     """A fresh [QAT] -> [ORS] war in prep, with attackers and defenders enlisted on both sides."""
     qa = session(QA_LORD)
-    ors = session(ORS_LEADER)
-    target = enemy_target_node(qa["headers"], alliance_of(qa["headers"])["id"], alliance_of(ors["headers"])["id"])
+    target = restore_enemy_border(qa, session(ORS_LEADER))
     if target is None:
-        pytest.skip("no [ORS]-held node borders [QAT]; run backend/scripts/seed_qa.py")
+        pytest.skip("[QAT] and [ORS] share no border; run backend/scripts/seed_qa.py")
     wid = declare_fresh_war(qa, target)
     for spec_ in (LORD_TESTER, QA_BOTS[0]):
         enlist(hdr(token(spec_)), wid)

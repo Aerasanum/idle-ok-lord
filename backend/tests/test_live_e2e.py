@@ -3,7 +3,6 @@
 Targets EXPO_PUBLIC_BACKEND_URL, exercising the flows requested in the review.
 Regression-friendly: all tests use fresh per-run random emails or the QA account.
 """
-import os
 import re
 import time
 import uuid
@@ -11,11 +10,11 @@ import uuid
 import pytest
 import requests
 
+from live_env import API as BASE
+from qa_fixtures import QA_LORD
 
-BASE = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://idle1-v11-build.preview.emergentagent.com").rstrip("/") + "/api"
-
-QA_EMAIL = "qa.lord@example.com"
-QA_PASSWORD = "QaLordPass!2026"
+QA_EMAIL = QA_LORD["email"]
+QA_PASSWORD = QA_LORD["password"]
 
 
 def _register(email: str | None = None, password: str = "StrongPass!2026", name: str | None = None) -> dict:

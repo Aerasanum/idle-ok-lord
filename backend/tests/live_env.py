@@ -130,25 +130,67 @@ def war_detail(headers: dict, war_id: str) -> dict:
     return r.json()
 
 
+def border_nodes(headers: dict, my_alliance_id: str) -> list[dict]:
+    """Nodes we may declare on: adjacent to our territory and not a home castle.
+
+    Home castles are excluded on purpose. Capturing one displaces the loser for twelve
+    hours and moves it elsewhere on the map, which would break the border every later
+    suite depends on.
+    """
+    mp = war_map(headers)
+    node = {n["node_id"]: n for n in mp["nodes"]}
+    mine = {n for n, v in node.items() if v.get("owner") == my_alliance_id}
+    return [node[n] for n in sorted({nb for m in mine for nb in neighbours(m)} - mine)
+            if node[n]["type"] != "home_castle"]
+
+
 def enemy_target_node(headers: dict, my_alliance_id: str, enemy_alliance_id: str) -> int | None:
     """An enemy-held node bordering our territory, i.e. one we are allowed to declare on."""
-    mp = war_map(headers)
-    owner_of = {n["node_id"]: n.get("owner") for n in mp["nodes"]}
-    mine = {n for n, o in owner_of.items() if o == my_alliance_id}
-    for node_id, owner in sorted(owner_of.items()):
-        if owner == enemy_alliance_id and any(nb in mine for nb in neighbours(node_id)):
-            return node_id
+    for n in border_nodes(headers, my_alliance_id):
+        if n.get("owner") == enemy_alliance_id:
+            return n["node_id"]
     return None
 
 
 def neutral_target_node(headers: dict, my_alliance_id: str) -> int | None:
-    mp = war_map(headers)
-    owner_of = {n["node_id"]: n.get("owner") for n in mp["nodes"]}
-    mine = {n for n, o in owner_of.items() if o == my_alliance_id}
-    for node_id, owner in sorted(owner_of.items()):
-        if owner is None and any(nb in mine for nb in neighbours(node_id)):
-            return node_id
+    for n in border_nodes(headers, my_alliance_id):
+        if n.get("owner") is None:
+            return n["node_id"]
     return None
+
+
+def conquer(attacker: dict, roster: list[str], node_id: int) -> bool:
+    """Run a whole war to completion so the attacker ends up owning node_id."""
+    war_id = declare_fresh_war(attacker, node_id)
+    requests.post(f"{API}/wars/roster", json={"war_id": war_id, "player_ids": roster[:10]},
+                  headers=attacker["headers"], timeout=TIMEOUT)
+    shift_wars(attacker["headers"], 9 * 3600)
+    tick(attacker["headers"])
+    return bool((war_detail(attacker["headers"], war_id)["war"].get("result") or {}).get("captured"))
+
+
+def restore_enemy_border(attacker: dict, defender: dict) -> int | None:
+    """Give the defender back a non-home node bordering the attacker, and return it.
+
+    The war suites capture their target, so after one has run the attacker may share no
+    border with the defender any more. Rather than depending on suite order, each war
+    fixture re-establishes the border it needs.
+    """
+    mine = alliance_of(attacker["headers"])["id"]
+    theirs = alliance_of(defender["headers"])["id"]
+    existing = enemy_target_node(attacker["headers"], mine, theirs)
+    if existing is not None:
+        return existing
+    attacker_owned = {n["node_id"] for n in war_map(attacker["headers"])["nodes"] if n.get("owner") == mine}
+    bridges = [n["node_id"] for n in border_nodes(defender["headers"], theirs)
+               if any(nb in attacker_owned for nb in neighbours(n["node_id"]))]
+    if not bridges:
+        return None
+    roster = [m["player_id"] for m in alliance_of(defender["headers"])["members"]]
+    if not conquer(defender, roster, bridges[0]):
+        return None
+    clear_war_cooldown(attacker["headers"])
+    return enemy_target_node(attacker["headers"], mine, theirs)
 
 
 def declare_fresh_war(attacker: dict, node_id: int) -> str:

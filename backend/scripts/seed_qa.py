@@ -158,6 +158,7 @@ def place_on_map(api: Client, leader: dict) -> int | None:
 
 
 def clear_war_cooldown(api: Client, acc: dict) -> None:
+    """Age every war clock, which also lapses the 12h displacement after a lost castle."""
     api.post(acc, "/_test/war-shift", json={"seconds": 200000, "include_resolved": True})
     api.post(acc, "/_test/tick")
 
@@ -334,6 +335,10 @@ def main() -> int:
     seed_max_lord(api, MAX_LORD)
 
     print("Territory")
+    # Previous test runs may have left [ORS] without a home castle and displaced; ageing
+    # the clocks lets the scheduler re-seat it before the border is rebuilt.
+    clear_war_cooldown(api, qa)
+    place_on_map(api, ors)
     ensure_adjacency(api, qa, ors, ors_members, qa_alliance["id"], ors_alliance["id"])
     clear_war_cooldown(api, qa)
     clear_war_cooldown(api, ors)

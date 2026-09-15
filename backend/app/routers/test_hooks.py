@@ -107,11 +107,17 @@ async def war_shift(body: ShiftIn, p: Principal = Depends(current_user)):
     async for w in db.alliance_wars.find({"status": {"$in": ["prep", "locked"]}}):
         await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"lock_at": aware(w["lock_at"]) - d, "resolves_at": aware(w["resolves_at"]) - d, "declared_at": aware(w["declared_at"]) - d}})
         n += 1
+    displaced = 0
     if body.include_resolved:
         async for w in db.alliance_wars.find({"status": {"$in": ["resolved", "cancelled"]}}):
             await db.alliance_wars.update_one({"_id": w["_id"]}, {"$set": {"declared_at": aware(w["declared_at"]) - d}})
             n += 1
-    return {"wars_shifted": n}
+        # An alliance that lost its home castle is barred from declaring for 12h. Ageing
+        # that clock too is what lets QA restore a shard after a war suite has run.
+        async for a in db.alliances.find({"displaced_until": {"$ne": None}}):
+            await db.alliances.update_one({"_id": a["_id"]}, {"$set": {"displaced_until": aware(a["displaced_until"]) - d}})
+            displaced += 1
+    return {"wars_shifted": n, "alliances_unshifted_displacement": displaced}
 
 
 @router.post("/tick")

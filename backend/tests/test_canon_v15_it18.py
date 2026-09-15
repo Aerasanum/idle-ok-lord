@@ -6,7 +6,7 @@ import time
 import pytest
 import requests
 
-from live_env import API as BASE, spec, token
+from live_env import API as BASE, restore_enemy_border, spec, token
 from qa_fixtures import ORS_ALLIANCE, ORS_LEADER as ORS_LEADER_SPEC, QA_BOTS, QA_LORD
 
 QA = (QA_LORD["email"], QA_LORD["password"])
@@ -127,10 +127,19 @@ def test_quests_italian_text_and_alt_active(qa_h):
 
 
 # -------- (6) Quest alternative when forge maxed --------
-def test_quest_alternative_forge_maxed_unsupported():
-    # Grant endpoint does NOT support forge fields (see /app/backend/app/routers/test_hooks.py GrantIn schema).
-    # Cannot force forge_all_max via /_test/grant; skip and record.
-    pytest.skip("_test/grant does not support forge state; cannot force forge_all_max via test hook (see GrantIn schema)")
+def test_quest_alternative_when_forge_maxed(qa_h):
+    """With every slot at the forge cap, the forge quest must offer its alternative."""
+    forge = spec()["gear"]["forge"]
+    slots = spec()["gear"]["slots"]
+    before = requests.get(f"{BASE}/gear/inventory", headers=qa_h, timeout=15).json()["forge"]
+    r = requests.post(f"{BASE}/_test/grant",
+                      json={"forge": {s: forge["max_level_per_slot"] for s in slots}}, headers=qa_h, timeout=15)
+    assert r.status_code == 200, r.text[:200]
+    try:
+        templates = {t["key"]: t for t in requests.get(f"{BASE}/quests", headers=qa_h, timeout=15).json()["daily"]["templates"]}
+        assert templates["forge_upgrade"]["alt_active"] is True, templates["forge_upgrade"]
+    finally:
+        requests.post(f"{BASE}/_test/grant", json={"forge": before}, headers=qa_h, timeout=15)
 
 
 # -------- (7) War casualties full flow (MAIN) --------
@@ -140,29 +149,18 @@ def war_result(qa_h, ors_h):
     requests.post(f"{BASE}/_test/war-shift", json={"seconds": 100000, "include_resolved": True}, headers=qa_h, timeout=15)
     requests.post(f"{BASE}/_test/tick", headers=qa_h, timeout=60)
 
-    m = requests.get(f"{BASE}/wars/map", headers=qa_h, timeout=15).json()
-    own = {n["node_id"] for n in m["nodes"] if n.get("owner") == m["my_alliance_id"]}
     # The target must belong to [ORS] specifically: other alliances share the shard and
     # a neutral or third-party node would be defended by the NPC garrison, leaving no
     # contested lane and therefore no PvP casualties to assert on.
-    ors_id = next((aid for aid, a in (m.get("alliances") or {}).items() if a.get("tag") == ORS_ALLIANCE["tag"]), None)
-    assert ors_id, f"[{ORS_ALLIANCE['tag']}] is not on the shard; run backend/scripts/seed_qa.py"
-    cands = []
-    for n in m["nodes"]:
-        if n["node_id"] in own:
-            continue
-        if any(abs(n["x"] - o["x"]) + abs(n["y"] - o["y"]) == 1 for o in m["nodes"] if o["node_id"] in own):
-            cands.append(n)
-    cands = [n for n in cands if n.get("owner") == ors_id]
-    assert cands, f"no [{ORS_ALLIANCE['tag']}] node borders us; run backend/scripts/seed_qa.py"
-    war_id = None
-    for n in cands:
-        r = requests.post(f"{BASE}/wars/declare", json={"node_id": n["node_id"]}, headers=qa_h, timeout=15)
-        if r.status_code in (200, 201):
-            body = r.json()
-            war_id = body.get("id") or body.get("war", {}).get("id")
-            break
+    target = restore_enemy_border({"headers": qa_h}, {"headers": ors_h})
+    if target is None:
+        pytest.skip(f"[QAT] and [{ORS_ALLIANCE['tag']}] share no border; run backend/scripts/seed_qa.py")
+    r = requests.post(f"{BASE}/wars/declare", json={"node_id": target}, headers=qa_h, timeout=15)
+    assert r.status_code in (200, 201), f"declare on {target}: {r.status_code} {r.text[:200]}"
+    body = r.json()
+    war_id = body.get("id") or body.get("war", {}).get("id")
     assert war_id, "could not declare"
+    m = requests.get(f"{BASE}/wars/map", headers=qa_h, timeout=15).json()
 
     # Record BEFORE
     army_before = requests.get(f"{BASE}/army", headers=qa_h, timeout=15).json()

@@ -108,26 +108,24 @@ def test_buy_already_owned_and_unknown_and_new(session):
     r_unk = session.post(f"{API}/store/cosmetics/buy", json={"key": "lord_does_not_exist_zzz"}, timeout=15)
     assert r_unk.status_code == 404, f"expected 404 unknown, got {r_unk.status_code} {r_unk.text}"
 
-    # top up rubies if needed
-    session.post(f"{API}/_test/grant", json={"resources": {"rubies": 500}}, timeout=15)
+    session.post(f"{API}/_test/grant", json={"resources": {"rubies": 2000}}, timeout=15)
 
-    # buy lord_forest_ranger (300 rubies)
+    # Buy any lord skin not yet owned. Pinning one key meant this skipped on every run
+    # after the first, because the purchase is permanent.
     before = session.get(f"{API}/store/cosmetics", timeout=15).json()
     before_rubies = before["rubies"]
-    target = next((it for it in (before.get("catalog") or before.get("items") or before.get("skins")) if it["key"] == "lord_forest_ranger"), None)
-    if target and not target["owned"]:
-        cost = target["rubies"]
-        r_buy = session.post(f"{API}/store/cosmetics/buy", json={"key": "lord_forest_ranger"}, timeout=15)
-        assert r_buy.status_code == 200, r_buy.text
-        body = r_buy.json()
-        # spec: {bought, equipped:true}
-        assert body.get("bought") is True or body.get("ok") is True or "bought" in body, body
-        after = session.get(f"{API}/store/cosmetics", timeout=15).json()
-        assert after["rubies"] == before_rubies - cost, f"rubies decreased incorrectly: {before_rubies} → {after['rubies']} (cost {cost})"
-        prof = session.get(f"{API}/profile", timeout=15).json()
-        assert prof["cosmetics"]["lord_skin"] == "lord_forest_ranger"
-    else:
-        pytest.skip("lord_forest_ranger already owned; skipping buy flow")
+    target = next((it for it in before["catalog"]
+                   if it["kind"] == "lord" and not it["owned"] and it["key"] != CANON_LORD_SKIN), None)
+    if not target:
+        pytest.skip("QA owns every lord skin; nothing left to buy")
+    cost = target["rubies_now"]
+    r_buy = session.post(f"{API}/store/cosmetics/buy", json={"key": target["key"]}, timeout=15)
+    assert r_buy.status_code == 200, r_buy.text
+    assert r_buy.json().get("bought") == target["key"], r_buy.json()
+    after = session.get(f"{API}/store/cosmetics", timeout=15).json()
+    assert after["rubies"] == before_rubies - cost, f"rubies decreased incorrectly: {before_rubies} → {after['rubies']} (cost {cost})"
+    prof = session.get(f"{API}/profile", timeout=15).json()
+    assert prof["cosmetics"]["lord_skin"] == target["key"], "buying a skin equips it"
 
 
 # ---- POST /store/cosmetics/equip ----

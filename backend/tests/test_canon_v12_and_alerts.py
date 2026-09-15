@@ -3,26 +3,39 @@
 Scoped to iteration_7 review request. All tests hit the live preview backend.
 """
 import math
-import os
 import time
 
 import pytest
 import requests
 
-BASE = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://idle1-v11-build.preview.emergentagent.com").rstrip("/") + "/api"
+from live_env import API as BASE, border_nodes, session, spec
+from qa_fixtures import ORS_LEADER, QA_LORD
 
-QA_EMAIL = "qa.lord@example.com"
-QA_PASS = "QaLordPass!2026"
-ORS_EMAIL = "orsi.leader@idle1.app"
-ORS_PASS = "QaBot!2026"
+QA_EMAIL = QA_LORD["email"]
+QA_PASS = QA_LORD["password"]
+ORS_EMAIL = ORS_LEADER["email"]
+ORS_PASS = ORS_LEADER["password"]
 
 
 def _login(email: str, pw: str) -> dict:
-    r = requests.post(f"{BASE}/auth/login", json={"email": email, "password": pw}, timeout=15)
-    assert r.status_code == 200, f"login {email}: {r.status_code} {r.text[:200]}"
-    d = r.json()
-    d["headers"] = {"Authorization": f"Bearer {d['access_token']}"}
-    return d
+    return session(email, pw)
+
+
+def _canon_required_power(stage: int) -> int:
+    """Rebuild the enemy power curve from the canonical parameters.
+
+    Deriving it here rather than pinning numbers means a canon rebalance shows up as a
+    mismatch between spec and server, not as a test that has to be edited by hand.
+    """
+    b = spec()["battle"]
+    ramp = b["difficulty_ramp"]
+    base = round(b["enemy_power_base"] * (b["enemy_power_growth"] ** (stage - 1))
+                 * (1 + ramp["per_stage"] * max(0, stage - ramp["start_stage"])))
+    if stage % b["boss_every_stages"] == 0:
+        return round(base * b["boss_power_multiplier"])
+    if stage % b["elite_every_stages"] == 0:
+        return round(base * b["elite_power_multiplier"])
+    return base
 
 
 @pytest.fixture(scope="module")
@@ -102,8 +115,7 @@ class TestBattleFormulas:
         j = self._fetch(qa, 60)
         rp = j.get("required_power")
         assert isinstance(rp, (int, float))
-        # 75 * 1.047^59 * (1 + 0.004*10) * 1.85 (boss)
-        expected = round(round(75 * (1.047 ** 59) * (1 + 0.004 * 10)) * 1.85)
+        expected = _canon_required_power(60)
         # allow small variance
         assert abs(rp - expected) <= max(2, expected * 0.005), f"stage60 rp={rp} expected≈{expected}"
 
@@ -111,8 +123,7 @@ class TestBattleFormulas:
         j = self._fetch(qa, 100)
         rp = j.get("required_power")
         assert isinstance(rp, (int, float))
-        # stage 100: 75*1.047^99*1.2 (elite? no — boss on stage%10==0) → boss 1.85
-        expected = round(round(75 * (1.047 ** 99) * 1.2) * 1.85)
+        expected = _canon_required_power(100)
         assert abs(rp - expected) <= max(2, expected * 0.005), f"stage100 rp={rp} expected≈{expected}"
 
 
@@ -165,31 +176,16 @@ class TestWarAlertsE2E:
         pids = [p for p in pids if p]
         assert len(pids) == 10
 
-        # 3) find a neutral node adjacent (manhattan 1) to any ORS-owned node
+        # 3) find a node ORS may declare on. Neutral is preferred, but the other suites
+        #    conquer as they run, so an unclaimed neighbour is not guaranteed to exist;
+        #    this test is about war alerts, which fire either way.
         mp = requests.get(f"{BASE}/wars/map", headers=ors["headers"], timeout=15).json()
-        nodes = mp["nodes"]
         my_al = mp.get("my_alliance_id")
         assert my_al == alliance_id, f"my_alliance mismatch: {my_al} vs {alliance_id}"
-        by_id = {n["node_id"]: n for n in nodes}
-        owned = [n for n in nodes if n.get("owner") == alliance_id]
-        assert owned, "ORS owns nothing?"
-
-        def neighbors(nid):
-            n = by_id[nid]
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nb = next((m for m in nodes if m["x"] == n["x"] + dx and m["y"] == n["y"] + dy), None)
-                if nb:
-                    yield nb
-
-        target = None
-        for o in owned:
-            for nb in neighbors(o["node_id"]):
-                if not nb.get("owner") and nb.get("type") not in ("home_castle", "castle"):
-                    target = nb["node_id"]
-                    break
-            if target is not None:
-                break
-        assert target is not None, "no neutral adjacent node to ORS"
+        candidates = border_nodes(ors["headers"], alliance_id)
+        assert candidates, "ORS has no free border"
+        candidates.sort(key=lambda n: n.get("owner") is not None)
+        target = candidates[0]["node_id"]
 
         # 4) declare
         dec = requests.post(f"{BASE}/wars/declare", json={"node_id": target}, headers=ors["headers"], timeout=15)
@@ -215,9 +211,12 @@ class TestWarAlertsE2E:
         assert rr.status_code == 200, f"roster failed: {rr.status_code} {rr.text[:200]}"
         time.sleep(1.0)
         msgs2 = requests.get(f"{BASE}/chat/messages", params={"channel": ch}, headers=ors["headers"], timeout=15).json().get("messages", [])
-        roster_msg = next((m for m in (msgs2[:5] + msgs2[-5:]) if m.get("system") and m.get("kind") == "war" and "roster" in (m.get("text") or "").lower()), None)
-        assert roster_msg is not None, "no roster save alert in chat"
-        assert "10/10" in (roster_msg.get("text") or "") or "10" in (roster_msg.get("text") or "")
+        # "roster" alone also matches the roster-lock herald of an earlier war, so match
+        # the save wording and then check the count it reports.
+        roster_msg = next((m for m in msgs2 if m.get("system") and m.get("kind") == "war"
+                           and "ha salvato il roster" in (m.get("text") or "")), None)
+        assert roster_msg is not None, f"no roster save alert in chat: {[(m.get('text') or '')[:60] for m in msgs2[-5:]]}"
+        assert f"{len(pids)}/10" in roster_msg["text"], roster_msg["text"]
 
         # 7) shift + tick → resolved
         s2 = requests.post(f"{BASE}/_test/war-shift", json={"seconds": 28860}, headers=ors["headers"], timeout=20)
