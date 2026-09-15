@@ -1,9 +1,15 @@
 import os
+import sys
 import uuid
+from pathlib import Path
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorClient
+
+# The suites import `server` and `qa_fixtures` from the backend root, which is only
+# on sys.path automatically when pytest is invoked as `python -m pytest` from there.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 os.environ["DB_NAME"] = "idle1_test"
 os.environ["TEST_HOOKS_ENABLED"] = "true"

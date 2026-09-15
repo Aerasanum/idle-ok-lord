@@ -21,6 +21,7 @@ class GrantIn(BaseModel):
     research: dict[str, int] | None = None
     email_verified: bool | None = None
     forge: dict[str, int] | None = None  # slot -> forge level (QA: exercise the v1.5 quest alternatives)
+    buildings: dict[str, int] | None = None  # building key -> level (QA: seed the maxed end-game account)
 
 
 class ShiftIn(BaseModel):
@@ -52,6 +53,11 @@ async def grant(body: GrantIn, p: Principal = Depends(current_user)):
     if body.castle_level is not None:
         sets["kingdom.castle_level"] = body.castle_level
         sets["kingdom.buildings.castle"] = body.castle_level
+    if body.buildings:
+        for k, v in body.buildings.items():
+            sets[f"kingdom.buildings.{k}"] = v
+            if k == "castle":
+                sets["kingdom.castle_level"] = v
     if body.hero_level is not None:
         sets["hero.level"] = body.hero_level
         sets["hero.xp"] = 0
