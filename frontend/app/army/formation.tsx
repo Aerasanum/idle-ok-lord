@@ -1,6 +1,6 @@
 // Formation area: battlefield preview of the deployed army vs the next stage's enemy mix, steppers per unit, one-tap suggestion.
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Image, Pressable, View, useWindowDimensions } from "react-native";
 
 import { api } from "@/src/api/client";

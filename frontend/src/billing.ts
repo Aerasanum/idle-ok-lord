@@ -7,6 +7,7 @@ const isExpoGo = Constants.executionEnvironment === "storeClient";
 let Purchases: any = null;
 if (!isExpoGo && Platform.OS !== "web") {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- absent in Expo Go and on web, so it must fail soft
     Purchases = require("react-native-purchases").default;
   } catch {
     Purchases = null;

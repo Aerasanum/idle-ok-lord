@@ -43,7 +43,7 @@ export function ChatDock() {
             <Txt v="caption" color={channel === c.key ? colors.goldBright : colors.muted}>{c.label}</Txt>
           </Pressable>
         ))}
-        {!a ? <Txt v="caption" color={colors.muted} numberOfLines={1} style={{ flex: 1 }}>Entra in un'alleanza per la chat di gruppo</Txt> : <View style={{ flex: 1 }} />}
+        {!a ? <Txt v="caption" color={colors.muted} numberOfLines={1} style={{ flex: 1 }}>Entra in un&apos;alleanza per la chat di gruppo</Txt> : <View style={{ flex: 1 }} />}
         <Pressable onPress={() => router.push("/alliance/chat")} style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center" }} testID="dock-open-full" hitSlop={6}>
           <Icon name="open-in-new" size={16} color={colors.muted} />
         </Pressable>
