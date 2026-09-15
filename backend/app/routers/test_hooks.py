@@ -22,6 +22,7 @@ class GrantIn(BaseModel):
     email_verified: bool | None = None
     forge: dict[str, int] | None = None  # slot -> forge level (QA: exercise the v1.5 quest alternatives)
     buildings: dict[str, int] | None = None  # building key -> level (QA: seed the maxed end-game account)
+    revoke_cosmetics: list[str] | None = None  # skin keys to un-own (QA: replay a purchase on the same account)
 
 
 class ShiftIn(BaseModel):
@@ -71,6 +72,15 @@ async def grant(body: GrantIn, p: Principal = Depends(current_user)):
         cur = (await db.players.find_one({"_id": p.player_id}, {"research": 1}))["research"]
         sets["research"] = {**cur, **body.research}  # node keys contain dots: never use them as Mongo paths
     upd = {"$inc": incs}
+    if body.revoke_cosmetics:
+        cur = (await db.players.find_one({"_id": p.player_id}, {"cosmetics": 1}) or {}).get("cosmetics") or {}
+        for kind in ("lord", "castle", "army"):
+            if cur.get(f"{kind}_skin") in body.revoke_cosmetics:
+                sets[f"cosmetics.{kind}_skin"] = None
+        upd["$pull"] = {"cosmetics.owned": {"$in": body.revoke_cosmetics}}
+        # the spend ledger is keyed per player+skin, so the row has to go too or the skin
+        # can never be bought again on this account
+        await db.purchases.delete_many({"transaction_key": {"$in": [f"skin:{p.player_id}:{k}" for k in body.revoke_cosmetics]}})
     if sets:
         upd["$set"] = sets
     await db.players.update_one({"_id": p.player_id}, upd)

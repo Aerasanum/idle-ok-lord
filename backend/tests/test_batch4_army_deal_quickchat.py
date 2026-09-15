@@ -79,15 +79,17 @@ def test_daily_deal_shape_and_pricing(h):
 
 # ---------------- buy daily deal ----------------
 def test_buy_deal_deducts_discounted_price(h):
+    deal_key = requests.get(f"{BASE}/store/cosmetics", headers=h, timeout=15).json()["deal"]["key"]
+    # The deal rotates daily and a previous run may already have bought today's skin, so
+    # un-own it first: the purchase path must be exercised on every run, not just the first.
+    requests.post(f"{BASE}/_test/grant", json={"revoke_cosmetics": [deal_key]}, headers=h, timeout=15)
+
     r = requests.get(f"{BASE}/store/cosmetics", headers=h, timeout=15)
     d = r.json()
     deal = d["deal"]
     rubies_before = d["rubies"]
-
-    # skip if QA already owns the deal skin
-    owned = set(d.get("owned") or [])
-    if deal["key"] in owned:
-        pytest.skip(f"QA already owns deal skin {deal['key']} — skipping buy test")
+    assert deal["key"] == deal_key
+    assert deal_key not in (d.get("owned") or [])
 
     # top up if needed
     if rubies_before < deal["rubies"] + 50:
@@ -106,14 +108,16 @@ def test_buy_deal_deducts_discounted_price(h):
     assert d2["rubies"] == rubies_before - deal["rubies"], (rubies_before, d2["rubies"], deal["rubies"])
     assert deal["key"] in d2["owned"]
 
+    # give the skin back unless it is one the seed owns, so the QA lord keeps its seeded set
+    if deal_key not in (CANON_LORD, CANON_CASTLE, CANON_ARMY):
+        requests.post(f"{BASE}/_test/grant", json={"revoke_cosmetics": [deal_key]}, headers=h, timeout=15)
+
 
 # ---------------- army skin equip semantics ----------------
 def test_equip_army_not_owned_returns_403(h):
+    # azure_order may have been bought by the deal test on a day when it was the deal
+    requests.post(f"{BASE}/_test/grant", json={"revoke_cosmetics": ["army_azure_order"]}, headers=h, timeout=15)
     r = requests.post(f"{BASE}/store/cosmetics/equip", json={"kind": "army", "key": "army_azure_order"}, headers=h, timeout=15)
-    # QA does not own azure_order (unless deal made it owned — skip if it happened)
-    d = requests.get(f"{BASE}/store/cosmetics", headers=h, timeout=15).json()
-    if "army_azure_order" in (d.get("owned") or []):
-        pytest.skip("QA now owns army_azure_order (due to daily deal); can't test 403 not_owned")
     assert r.status_code == 403, r.text
     body = r.json()
     assert "not_owned" in str(body).lower() or body.get("detail", {}).get("code") == "not_owned"

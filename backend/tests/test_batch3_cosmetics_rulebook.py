@@ -21,6 +21,7 @@ QA_PASS = QA_LORD["password"]
 CANON_LORD_NAME = SHOWCASE["lord_name"]
 CANON_LORD_SKIN = SHOWCASE["lord_skin"]
 CANON_CASTLE_SKIN = SHOWCASE["castle_skin"]
+BUYABLE_LORD_SKIN = "lord_golden_emperor"  # not part of the seeded set: bought and given back here
 
 
 @pytest.fixture(scope="module")
@@ -110,14 +111,14 @@ def test_buy_already_owned_and_unknown_and_new(session):
 
     session.post(f"{API}/_test/grant", json={"resources": {"rubies": 2000}}, timeout=15)
 
-    # Buy any lord skin not yet owned. Pinning one key meant this skipped on every run
-    # after the first, because the purchase is permanent.
+    # A purchase is permanent, so buying whatever happens to be unowned made the QA lord
+    # collect the whole catalog run after run. The target is un-owned first and restored
+    # afterwards, which keeps the seeded ownership set stable.
+    session.post(f"{API}/_test/grant", json={"revoke_cosmetics": [BUYABLE_LORD_SKIN]}, timeout=15)
     before = session.get(f"{API}/store/cosmetics", timeout=15).json()
     before_rubies = before["rubies"]
-    target = next((it for it in before["catalog"]
-                   if it["kind"] == "lord" and not it["owned"] and it["key"] != CANON_LORD_SKIN), None)
-    if not target:
-        pytest.skip("QA owns every lord skin; nothing left to buy")
+    target = next(it for it in before["catalog"] if it["key"] == BUYABLE_LORD_SKIN)
+    assert not target["owned"], target
     cost = target["rubies_now"]
     r_buy = session.post(f"{API}/store/cosmetics/buy", json={"key": target["key"]}, timeout=15)
     assert r_buy.status_code == 200, r_buy.text
@@ -126,6 +127,9 @@ def test_buy_already_owned_and_unknown_and_new(session):
     assert after["rubies"] == before_rubies - cost, f"rubies decreased incorrectly: {before_rubies} → {after['rubies']} (cost {cost})"
     prof = session.get(f"{API}/profile", timeout=15).json()
     assert prof["cosmetics"]["lord_skin"] == target["key"], "buying a skin equips it"
+
+    session.post(f"{API}/_test/grant", json={"revoke_cosmetics": [BUYABLE_LORD_SKIN]}, timeout=15)
+    session.post(f"{API}/store/cosmetics/equip", json={"kind": "lord", "key": CANON_LORD_SKIN}, timeout=15)
 
 
 # ---- POST /store/cosmetics/equip ----
@@ -136,8 +140,9 @@ def test_equip_owned_and_not_owned_and_null(session):
     prof = session.get(f"{API}/profile", timeout=15).json()
     assert prof["cosmetics"]["lord_skin"] == CANON_LORD_SKIN
 
-    # equip a not-owned key → 403
-    r_no = session.post(f"{API}/store/cosmetics/equip", json={"kind": "lord", "key": "lord_golden_emperor"}, timeout=15)
+    # equip a not-owned key → 403 (the skin is a daily-deal candidate, so make sure of it)
+    session.post(f"{API}/_test/grant", json={"revoke_cosmetics": [BUYABLE_LORD_SKIN]}, timeout=15)
+    r_no = session.post(f"{API}/store/cosmetics/equip", json={"kind": "lord", "key": BUYABLE_LORD_SKIN}, timeout=15)
     assert r_no.status_code == 403, f"expected 403 not_owned, got {r_no.status_code} {r_no.text}"
 
     # unequip castle (null)
