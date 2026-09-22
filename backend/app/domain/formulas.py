@@ -240,7 +240,13 @@ def boss_attack_damage(campaign_power: int) -> int:
     return rnd(campaign_power * 4.0)
 
 
-def dungeon_rewards(key: str, tier: int, highest_stage: int, production_per_hour: dict) -> dict:
+def dungeon_troop_quantity(unit_key: str, tier: int) -> int:
+    """Recruit minutes the run is worth, converted into whole units: one run never gives less than a single unit."""
+    minutes = canon()["dungeons"]["training_recruit_minutes_per_tier"] * tier
+    return max(1, int(minutes // units_by_key()[unit_key]["recruit_time_minutes_each"]))
+
+
+def dungeon_rewards(key: str, tier: int, highest_stage: int, production_per_hour: dict, unit: str | None = None) -> dict:
     if key == "treasury_vault":
         return {"gold": rnd(1000 * 1.15 ** (tier - 1)), "soft": {k: int(v * 2) for k, v in production_per_hour.items() if k != "gold"}}
     if key == "forge_depths":
@@ -249,6 +255,14 @@ def dungeon_rewards(key: str, tier: int, highest_stage: int, production_per_hour
         return {"gear_rolls": 1, "rarity_rolls": 2 if tier <= 5 else 3, "mythic_essence": max(0, tier - 6)}
     if key == "monster_hunt":
         return {"xp": 4 * first_clear_rewards(max(1, highest_stage))["xp"], "event_tokens": 25 + 5 * tier}
+    if key == "harvest_caverns":
+        h = canon()["dungeons"]["soft_haul_hours"]
+        hours = h["base"] + h["per_tier"] * tier
+        return {"soft": {k: int(v * hours) for k, v in production_per_hour.items() if k != "gold"}}
+    if key == "training_grounds":
+        if not unit:
+            raise ValueError("training_grounds needs a unit")
+        return {"units": {unit: dungeon_troop_quantity(unit, tier)}}
     raise ValueError(key)
 
 

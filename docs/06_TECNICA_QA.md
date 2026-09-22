@@ -132,7 +132,7 @@ SPEC_HASH: `a5ba20db1ccc157207f7e4e90197a5a82b1b8fda10dce01ffffb2b3ee8cf5995`
 | Research | PASS | 48 nodes x5 retained from v1.0 |
 | Units | PASS | 13-unit catalog retained with new campaign/command gates |
 | Domain | PASS | 100 tiles + resource bonus + visual growth |
-| Retention | PASS | events, 4 dungeons, daily/weekly/login, achievements, codex |
+| Retention | PASS | events, 6 dungeons, daily/weekly/login, achievements, codex |
 | Social | PASS | Alliance, chat moderation, 10v10 territory war, Alliance Boss |
 | Mobile/commercial | PASS | iOS+Android, account/privacy, Apple/Google payments, no gacha |
 | Security | PASS | server authority, secure auth, idempotency, Mongo atomicity |
@@ -164,7 +164,7 @@ v1.1 closes the major v1.0 design gaps around gear/loot, monster progression, XP
 - [ ] Army visual Tier 0 through Tier 8 visibly demonstrated
 - [ ] Late battle reads as enormous army vs monster horde/boss
 - [ ] 100-tile Personal Domain
-- [ ] Offline claim, events, four dungeons, quests, achievements, codex
+- [ ] Offline claim, events, six dungeons, quests, achievements, codex
 - [ ] Alliance/chat/moderation, Titan Hunt and async 10v10 territory war
 
 ## Commercial / mobile

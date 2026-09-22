@@ -28,6 +28,7 @@ class TrackIn(BaseModel):
 class DungeonIn(BaseModel):
     key: str
     tier: int = Field(ge=1, le=10)
+    unit: str | None = None  # Training Grounds only: which unlocked unit the free troops are drawn from
 
 
 class ChestIn(BaseModel):
@@ -90,7 +91,7 @@ async def dungeons(p: Principal = Depends(current_user)):
 
 @router.post("/dungeons/start")
 async def d_start(body: DungeonIn, p: Principal = Depends(current_user)):
-    return await L.start_dungeon(await load(p), body.key, body.tier)
+    return await L.start_dungeon(await load(p), body.key, body.tier, body.unit)
 
 
 @router.post("/dungeons/claim")

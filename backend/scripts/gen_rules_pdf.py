@@ -40,7 +40,7 @@ FONT_DIR = "/usr/share/fonts/truetype/liberation"
 pdfmetrics.registerFont(TTFont("Body", f"{FONT_DIR}/LiberationSans-Regular.ttf"))
 pdfmetrics.registerFont(TTFont("BodyB", f"{FONT_DIR}/LiberationSans-Bold.ttf"))
 pdfmetrics.registerFont(TTFont("BodyI", f"{FONT_DIR}/LiberationSans-Italic.ttf"))
-_title_font = "/app/frontend/assets/fonts/CormorantGaramond-Bold.ttf"
+_title_font = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "assets", "fonts", "CormorantGaramond-Bold.ttf")
 pdfmetrics.registerFont(TTFont("Title", _title_font if os.path.exists(_title_font) else f"{FONT_DIR}/LiberationSerif-Bold.ttf"))
 
 GOLD = colors.HexColor("#8A6A1F")
@@ -660,7 +660,7 @@ def sec_domain_offline():
 def sec_dungeons_events_quests():
     d, e, q = C["dungeons"], C["events"], C["quests"]
     ab = e["alliance_boss"]
-    dun_rows = [[x["name"], x["reward"], x["formula"]] for x in d["catalog"]]
+    dun_rows = [[x.get("name_it", x["name"]), x.get("reward_it", x["reward"]), x["formula"]] for x in d["catalog"]]
     dep_rows = [[f"{dp['duration_minutes']} min", dp["energy"], f"×{n(dp['reward_multiplier'])}"] + list(_dep_example(dp["reward_multiplier"])) for dp in e["deployments"]]
     return [
         H1("10. Dungeon, Eventi e Missioni"),
@@ -668,7 +668,10 @@ def sec_dungeons_events_quests():
         P(f"Dallo stage {d['unlock_stage']}. <b>{d['free_entries_per_dungeon_per_day']} ingressi gratuiti</b> al giorno per dungeon (reset 00:00 UTC), fino a {d['paid_extra_entry_cap_per_dungeon_per_day']} extra a "
           f"{d['paid_extra_entry_rubies']} Rubini. Ogni corsa dura <b>{d['run_duration_minutes']} minuti</b> (accelerabile). {d['tiers']} tier, sbloccati agli stage {', '.join(map(str, d['tier_unlock_stages']))}."),
         tbl(["Dungeon", "Ricompensa", "Formula (tier = livello del dungeon)"], dun_rows, widths=[30 * mm, 50 * mm, 98 * mm]),
-        WHY("i dungeon sono la fonte programmata di materiali per la Forgia e di XP extra: due al giorno gratis tengono il ritmo anche a chi non spende."),
+        P(f"<b>Nuovi dungeon (v1.8)</b>: le <b>Caverne della Raccolta</b> pagano ({n(d['soft_haul_hours']['base'])} + {n(d['soft_haul_hours']['per_tier'])} × tier) ore di produzione corrente, Oro escluso; "
+          f"il <b>Campo di Addestramento</b> converte {d['training_recruit_minutes_per_tier']} × tier minuti di reclutamento in truppe gratis dell'unità che scegli all'ingresso, fra quelle già sbloccate: "
+          "nessun costo in risorse e nessuno slot di caserma occupato. Servono a rimettere in piedi l'esercito dopo le guerre e a non restare fermi sui tempi di costruzione.", "small"),
+        WHY("i dungeon sono la fonte programmata di materiali per la Forgia, XP, risorse e truppe extra: due ingressi al giorno gratis per dungeon tengono il ritmo anche a chi non spende."),
         H2("10.2 Eventi settimanali"),
         P(f"C'è sempre un evento attivo (archetipi: {', '.join(e['archetypes'])}), cicli di {e['cycle_days']} giorni. Spendi <b>Energia</b> (max {e['energy']['max']}, 1 punto ogni {e['energy']['regen_minutes_per_point']} min) "
           f"per <b>spedizioni</b> più o meno lunghe. Ricompense base: Gettoni = round((20 + stage × 0,35) × molt.), Oro = round((150 + stage × 8) × molt.), risorse = 0,25 h di produzione × molt., "
