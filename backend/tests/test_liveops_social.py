@@ -63,6 +63,49 @@ async def test_events_dungeons_quests(client):
     assert cx["completion_pct"] >= 0
 
 
+async def test_harvest_caverns_and_training_grounds(client):
+    """v1.8 dungeons: Harvest Caverns pays soft resources only, Training Grounds pays troops of an unlocked unit."""
+    u = await register(client)
+    h = u["headers"]
+    await grant(client, h, highest_cleared=40, castle_level=5, research={"military.archery": 1, "military.cavalry_tactics": 1})
+    d = (await client.get("/dungeons", headers=h)).json()
+    assert [x["key"] for x in d["dungeons"]][-2:] == ["harvest_caverns", "training_grounds"]
+    assert all(x["name_it"] and x["reward_it"] for x in d["dungeons"])
+    assert d["training_recruit_minutes_per_tier"] == 20
+
+    prod = (await client.get("/kingdom", headers=h)).json()["production_per_hour"]
+    run = (await client.post("/dungeons/start", json={"key": "harvest_caverns", "tier": 2}, headers=h)).json()
+    await shift(client, h, 700)
+    haul = (await client.post("/dungeons/claim", json={"id": run["id"]}, headers=h)).json()["granted"]
+    assert "gold" not in haul  # gold is the Royal Treasury's job
+    for res in ("grain", "wood", "clay", "iron"):
+        assert abs(haul[res] - round(prod[res] * 2.0)) <= 2  # (1 + 0.5*tier) hours at tier 2
+
+    tg = next(x for x in d["dungeons"] if x["key"] == "training_grounds")
+    unlocked = {o["key"] for o in tg["unit_options"]}
+    assert unlocked == {"infantry", "archer", "cavalry"}  # castle 5 + stage 40 + the two military research nodes
+    assert (await client.post("/dungeons/start", json={"key": "training_grounds", "tier": 2, "unit": "dragon"}, headers=h)).status_code == 403
+    owned = {x["key"]: x["owned"] for x in (await client.get("/army", headers=h)).json()["units"]}
+    run = (await client.post("/dungeons/start", json={"key": "training_grounds", "tier": 2, "unit": "archer"}, headers=h)).json()
+    assert run["rewards"]["units"] == {"archer": 20}  # 40 recruit minutes / 2 minutes each
+    await shift(client, h, 700)
+    got = (await client.post("/dungeons/claim", json={"id": run["id"]}, headers=h)).json()
+    again = (await client.post("/dungeons/claim", json={"id": run["id"]}, headers=h)).json()
+    assert got["units"] == again["units"] == {"archer": 20}  # idempotent claim
+    after = {x["key"]: x["owned"] for x in (await client.get("/army", headers=h)).json()["units"]}
+    assert after["archer"] == owned["archer"] + 20 and after["infantry"] == owned["infantry"]
+    assert "archer" in (await client.get("/codex", headers=h)).json()["tracks"]["units"]["discovered"]
+
+    # no unit given: the strongest unlocked one, and the troops cost neither resources nor a recruit queue slot
+    res_before = (await client.get("/kingdom", headers=h)).json()["resources"]
+    run = (await client.post("/dungeons/start", json={"key": "training_grounds", "tier": 1}, headers=h)).json()
+    assert run["rewards"]["units"] == {"cavalry": 6}  # 20 minutes / 3 minutes each
+    await shift(client, h, 700)
+    await client.post("/dungeons/claim", json={"id": run["id"]}, headers=h)
+    k = (await client.get("/kingdom", headers=h)).json()
+    assert not k["queues"]["recruit_queue"] and k["resources"]["grain"] >= res_before["grain"]
+
+
 async def _alliance_with_members(client, n: int, name: str):
     leader = await register(client, name=f"{name}Lead")
     h = leader["headers"]

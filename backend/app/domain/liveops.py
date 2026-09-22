@@ -1,4 +1,4 @@
-"""LiveOps (I11): weekly event + energy + track, four idle dungeons, daily/weekly quests, login calendar,
+"""LiveOps (I11): weekly event + energy + track, six idle dungeons, daily/weekly quests, login calendar,
 achievements, codex, season pass. Derived distributions are marked DERIVED in the traceability matrix."""
 from datetime import datetime, timedelta, timezone
 
@@ -8,6 +8,7 @@ from ..core.util import aware, clean, day_key, fail, new_id, now, rnd, seeded_rn
 from . import formulas as F
 from .gear import materialize_items, roll_rarity
 from .hero import apply_xp
+from .kingdom import unit_gates
 from .player import production_per_hour, research_pct
 from .progress import Ops, achievement_metrics, codex_completion_pct, codex_totals, quest_points, quest_progress, resources_inc
 
@@ -211,22 +212,31 @@ def dungeon_max_tier(p: dict) -> int:
     return sum(1 for s in canon()["dungeons"]["tier_unlock_stages"] if hc >= s)
 
 
+def training_unit_options(p: dict) -> list[dict]:
+    """Units the player has already unlocked, strongest first: the Training Grounds accelerates the army they could already recruit."""
+    opts = [{"key": u["key"], "name": u["name"], "base_power": u["base_power"], "recruit_minutes_each": u["recruit_time_minutes_each"]}
+            for u in canon()["units"]["catalog"] if all(unit_gates(p, u).values())]
+    return sorted(opts, key=lambda u: -u["base_power"])
+
+
 async def dungeons_view(p: dict) -> dict:
     d = canon()["dungeons"]
     today = day_key()
     entries = p["dungeons"].get("entries", {}) if p["dungeons"].get("day") == today else {}
-    runs = await db.dungeon_runs.find({"player_id": p["_id"], "status": "running"}).to_list(4)
+    runs = await db.dungeon_runs.find({"player_id": p["_id"], "status": "running"}).to_list(None)
     out = []
     for c in d["catalog"]:
         e = entries.get(c["key"], {"free": 0, "paid": 0})
-        out.append({**c, "free_used": e.get("free", 0), "paid_used": e.get("paid", 0), "free_left": max(0, d["free_entries_per_dungeon_per_day"] - e.get("free", 0)),
+        extra = {"unit_options": training_unit_options(p)} if c["key"] == "training_grounds" else {}
+        out.append({**c, **extra, "free_used": e.get("free", 0), "paid_used": e.get("paid", 0), "free_left": max(0, d["free_entries_per_dungeon_per_day"] - e.get("free", 0)),
                     "paid_left": max(0, d["paid_extra_entry_cap_per_dungeon_per_day"] - e.get("paid", 0))})
     return {"unlocked": p["campaign"]["highest_cleared"] >= d["unlock_stage"], "unlock_stage": d["unlock_stage"], "max_tier": dungeon_max_tier(p), "tiers": d["tiers"],
             "tier_unlock_stages": d["tier_unlock_stages"], "run_minutes": d["run_duration_minutes"], "paid_entry_rubies": d["paid_extra_entry_rubies"], "dungeons": out,
-            "active_runs": [clean(r) for r in runs], "daily_reset": d["daily_reset"]}
+            "active_runs": [clean(r) for r in runs], "daily_reset": d["daily_reset"],
+            "training_recruit_minutes_per_tier": d["training_recruit_minutes_per_tier"]}
 
 
-async def start_dungeon(p: dict, key: str, tier: int) -> dict:
+async def start_dungeon(p: dict, key: str, tier: int, unit: str | None = None) -> dict:
     d = canon()["dungeons"]
     cat = next((c for c in d["catalog"] if c["key"] == key), None)
     if not cat:
@@ -235,6 +245,15 @@ async def start_dungeon(p: dict, key: str, tier: int) -> dict:
         raise fail(403, "dungeons_locked", f"Dungeons unlock at stage {d['unlock_stage']}")
     if tier < 1 or tier > dungeon_max_tier(p):
         raise fail(403, "tier_locked")
+    if key == "training_grounds":
+        opts = training_unit_options(p)
+        if not opts:
+            raise fail(403, "no_unit_unlocked", "No unit unlocked yet")
+        unit = unit or opts[0]["key"]
+        if unit not in {o["key"] for o in opts}:
+            raise fail(403, "unit_locked", f"{unit} is not unlocked yet")
+    else:
+        unit = None
     if await db.dungeon_runs.count_documents({"player_id": p["_id"], "status": "running"}):
         raise fail(409, "run_active", "A dungeon run is already in progress")
     today = day_key()
@@ -262,7 +281,7 @@ async def start_dungeon(p: dict, key: str, tier: int) -> dict:
     if res.matched_count == 0:
         raise fail(409, "insufficient_or_changed")
     prod = production_per_hour(p)
-    rewards = F.dungeon_rewards(key, tier, p["campaign"]["highest_cleared"], prod)
+    rewards = F.dungeon_rewards(key, tier, p["campaign"]["highest_cleared"], prod, unit)
     run = {"_id": new_id("run_"), "player_id": p["_id"], "dungeon": key, "tier": tier, "paid": paid, "rewards": rewards, "started_at": now(),
            "ends_at": now() + timedelta(minutes=d["run_duration_minutes"]), "status": "running", "highest_stage": p["campaign"]["highest_cleared"]}
     await db.dungeon_runs.insert_one(run)
@@ -291,9 +310,13 @@ async def claim_dungeon(p: dict, run_id: str) -> dict:
     if rew.get("gear_rolls"):
         hs = max(1, r["highest_stage"])
         gear = await materialize_items(p, key, [(roll_rarity(hs, rng, None, rew["rarity_rolls"]), hs, r["dungeon"]) for _ in range(rew["gear_rolls"])], rng, ops)
+    units = rew.get("units") or {}
+    for u, qty in units.items():
+        ops.inc(f"army.units.{u}", int(qty))
+        ops.add("codex.units", u)
     ops.inc("stats.dungeon_runs", 1)
     quest_progress(ops, p, "run_dungeon", "dungeon_runs")
-    result = {"run_id": run_id, "dungeon": r["dungeon"], "tier": r["tier"], "granted": grant, "xp": rew.get("xp", 0), "levels_gained": gained, "gear": gear}
+    result = {"run_id": run_id, "dungeon": r["dungeon"], "tier": r["tier"], "granted": grant, "units": units, "xp": rew.get("xp", 0), "levels_gained": gained, "gear": gear}
     res, applied = await ledger.apply_to_player(key, p["_id"], "dungeon_claim", ops.build(), result)
     if applied:
         await db.dungeon_runs.update_one({"_id": run_id}, {"$set": {"status": "claimed", "claimed_at": now()}})

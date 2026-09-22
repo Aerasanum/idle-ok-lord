@@ -4980,9 +4980,9 @@
     ],
     "project": "IDLE 1",
     "relationship_to_empire_lords_dragon": "same medieval-fantasy universe inspiration; independent gameplay runtime; do not import multiplayer rules unless explicitly present here",
-    "spec_hash": "9412582255ccf17758dbf5eec68ecd8218d7a6ce5055aa04f2222ec6ec7a78da",
+    "spec_hash": "8489f5b2d05141f8a018413fa19c53f2963fbfc75832f4a8edbb6e5ab5e7d6ea",
     "status": "LIVE_UPDATE_v1.2",
-    "version": "1.7",
+    "version": "1.8",
     "working_marketing_title": "TBD - do not invent without approval",
     "changelog_v1_3": [
       "Warehouse capacity raised so that every single upgrade (castle, buildings, research) reachable at castle level L fits in Warehouse level L (110% of the largest cost); capacities only grow, progress preserved."
@@ -5019,6 +5019,10 @@
     ],
     "changelog_v1_7": [
       "Alliances: 1 leader + max 2 officers hold war powers; rename (leader, 7-day cooldown); neutral garrison power documented and shown in-app."
+    ],
+    "changelog_v1_8": [
+      "Dungeons: six instead of four. Harvest Caverns pays (1 + 0.5*tier) hours of soft production; Training Grounds converts 20*tier recruit minutes into free troops of an unlocked unit chosen at entry.",
+      "Dungeons: Italian display name and reward text per dungeon (name_it / reward_it), so the app no longer shows English names and raw formulas."
     ]
   },
   "dungeons": {
@@ -5027,26 +5031,50 @@
         "formula": "gold = round(1000*1.15^(tier-1)); soft resources = 2 hours of current building production",
         "key": "treasury_vault",
         "name": "Royal Treasury",
-        "reward": "Gold plus soft resources"
+        "reward": "Gold plus soft resources",
+        "name_it": "Tesoreria Reale",
+        "reward_it": "Oro e risorse del regno"
       },
       {
         "formula": "forge_dust = 80 + 25*tier; reforge_stone = 1 + floor(tier/3)",
         "key": "forge_depths",
         "name": "Forge Depths",
-        "reward": "Forge Dust + Reforge Stones"
+        "reward": "Forge Dust + Reforge Stones",
+        "name_it": "Profondità della Forgia",
+        "reward_it": "Polvere da Forgia e Pietre di Riforgia"
       },
       {
         "formula": "1 boosted gear roll; mythic_essence = max(0, tier-6)",
         "gear_rarity_rule": "tiers 1-5: roll 2 independent canonical rarity rolls and keep the higher; tiers 6-10: roll 3 and keep the highest",
         "key": "ancient_ruins",
         "name": "Ancient Ruins",
-        "reward": "Gear roll + Mythic Essence at high tier"
+        "reward": "Gear roll + Mythic Essence at high tier",
+        "name_it": "Rovine Antiche",
+        "reward_it": "Un oggetto con tiro migliorato, Essenza Mitica ai tier alti"
       },
       {
         "formula": "hero_xp = 4 * first_clear_xp(highest_stage); event_tokens = 25 + 5*tier",
         "key": "monster_hunt",
         "name": "Monster Hunt",
-        "reward": "Hero XP + Event Tokens"
+        "reward": "Hero XP + Event Tokens",
+        "name_it": "Caccia ai Mostri",
+        "reward_it": "XP dell'Eroe e Gettoni Evento"
+      },
+      {
+        "key": "harvest_caverns",
+        "name": "Harvest Caverns",
+        "reward": "Large soft-resource haul (no gold)",
+        "formula": "soft resources = (1 + 0.5*tier) hours of current building production; no gold",
+        "name_it": "Caverne della Raccolta",
+        "reward_it": "Grosso carico di grano, legno, argilla e ferro"
+      },
+      {
+        "key": "training_grounds",
+        "name": "Training Grounds",
+        "reward": "Free troops of an unlocked unit chosen at entry",
+        "formula": "free recruit minutes = 20*tier; quantity = max(1, floor(free recruit minutes / recruit_time_minutes_each(chosen unit)))",
+        "name_it": "Campo di Addestramento",
+        "reward_it": "Truppe gratis dell'unità che scegli"
       }
     ],
     "daily_reset": "00:00 UTC",
@@ -5067,7 +5095,13 @@
       200
     ],
     "tiers": 10,
-    "unlock_stage": 20
+    "unlock_stage": 20,
+    "soft_haul_hours": {
+      "base": 1.0,
+      "per_tier": 0.5
+    },
+    "training_recruit_minutes_per_tier": 20,
+    "training_rule": "Training Grounds only grants units whose castle/research/campaign gates are already met, so it accelerates the army the player could already build; the unit is chosen at entry, the quantity is fixed when the run starts and the troops cost no resources and take no recruit queue slot. Gold is never paid by Harvest Caverns: that stays the Royal Treasury's reward."
   },
   "economy_controls": {
     "daily_paid_alliance_boss_extra_attack_cap": 3,
