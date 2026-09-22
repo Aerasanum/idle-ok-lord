@@ -3,7 +3,7 @@ import { Pressable, ScrollView, View } from "react-native";
 
 import { QK, useAction, useDungeons } from "@/src/api/hooks";
 import { useTheme } from "@/src/theme";
-import { Btn, Chip, Icon, IconName, Loading, Panel, Row, Screen, Txt, fmt, fmtDuration } from "@/src/ui";
+import { Btn, Chip, Icon, IconName, Loading, Panel, RES_LABEL, Row, Screen, Txt, fmt, fmtDuration } from "@/src/ui";
 import { useCountdown } from "@/src/ui/useCountdown";
 
 const ICON: Record<string, IconName> = { treasury_vault: "treasure-chest", forge_depths: "anvil", ancient_ruins: "pillar", monster_hunt: "paw", harvest_caverns: "barn", training_grounds: "sword-cross" };
@@ -19,7 +19,13 @@ export default function DungeonsScreen() {
   const unitName = (key: string) => d?.dungeons.flatMap((x: any) => x.unit_options ?? []).find((o: any) => o.key === key)?.name ?? key;
   const start = useAction("post", "/dungeons/start", [QK.dungeons], { success: () => "Spedizione nel dungeon avviata" });
   const claim = useAction("post", "/dungeons/claim", [QK.dungeons, QK.inventory, QK.army], {
-    success: (r) => `Bottino: ${[...Object.entries(r.granted), ...Object.entries(r.units ?? {}).map(([k, v]) => [unitName(k), v])].map(([k, v]) => `${fmt(Number(v))} ${k}`).join(", ")}${r.xp ? ` · ${fmt(r.xp)} XP` : ""}`,
+    success: (r) => {
+      const loot = [
+        ...Object.entries(r.granted ?? {}).map(([k, v]) => [RES_LABEL[k] ?? k, v] as const),
+        ...Object.entries(r.units ?? {}).map(([k, v]) => [unitName(k), v] as const),
+      ].filter(([, v]) => Number(v) > 0);
+      return `Bottino: ${loot.map(([k, v]) => `${fmt(Number(v))} ${k}`).join(", ")}${r.xp ? ` · ${fmt(r.xp)} XP` : ""}`;
+    },
   });
   const speed = useAction("post", "/dungeons/speedup", [QK.dungeons], { success: (r) => `Completato (-${r.rubies_spent} Rubini)` });
   if (isLoading || !d) return <Loading />;
