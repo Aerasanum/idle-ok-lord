@@ -195,11 +195,11 @@ async def declare(p: dict, node_id: int) -> dict:
     label = NODE_LABEL_IT.get(node["type"], node["type"])
     await alliance_alert(a["_id"], f"⚔️ {p['display_name']} ha dichiarato guerra al nodo {node_id} ({label}). Prenotatevi: i primi 10 schierano le truppe (1/10 già prenotato).")
     members = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": a["_id"]}).to_list(40)]
-    await safe_push(members, {"title": "Alliance War", "message": f"War declared on node {node_id}. Set the roster before lock.", "action_url": "/alliance/war"}, f"war_roster:{war['_id']}")
+    await safe_push(members, {"title": "Guerra d'Alleanza", "message": f"Guerra dichiarata sul nodo {node_id} ({label}): prenotati, i primi 10 schierano le truppe.", "action_url": "/alliance/war"}, f"war_roster:{war['_id']}")
     if defender_id:
         await alliance_alert(defender_id, f"🛡️ Il nodo {node_id} ({label}) è sotto attacco da [{a['tag']}] {a['name']}! Prenotatevi in difesa: i primi 10 schierano le truppe.")
         dmembers = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": defender_id}).to_list(40)]
-        await safe_push(dmembers, {"title": "Alliance War", "message": f"Node {node_id} is under attack. Set the defense roster.", "action_url": "/alliance/war"}, f"war_defend:{war['_id']}")
+        await safe_push(dmembers, {"title": "Sei sotto attacco", "message": f"Il nodo {node_id} ({label}) è sotto attacco di [{a['tag']}] {a['name']}: prenotati in difesa.", "action_url": "/alliance/war"}, f"war_defend:{war['_id']}")
     return clean(war)
 
 
@@ -509,7 +509,9 @@ async def resolve_war(w: dict) -> dict | None:
                              f"{' · nodo conquistato' if captured else ''}{' · spareggio sui margini' if result['tie_break_used'] else ''}."
                              f"{f' ⚰ Perdite: {lost:,} unità cadute su {dep:,} schierate ({dep - lost:,} superstiti).'.replace(',', '.') if dep else ''}")
         members = [m["player_id"] for m in await db.alliance_members.find({"alliance_id": aid}).to_list(40)]
-        await safe_push(members, {"title": "Alliance War result", "message": f"Node {w['node_id']}: {result['attacker_points']}-{result['defender_points']}", "action_url": "/alliance/war"}, f"war_result:{w['_id']}:{aid}")
+        await safe_push(members, {"title": "🏆 Guerra vinta" if mine_won else "💀 Guerra persa",
+                                  "message": f"Nodo {w['node_id']}: {result['attacker_points']}-{result['defender_points']}. Guarda il replay e le perdite.",
+                                  "action_url": "/alliance/war"}, f"war_result:{w['_id']}:{aid}")
     return result
 
 
