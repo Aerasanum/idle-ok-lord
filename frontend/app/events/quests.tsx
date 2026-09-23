@@ -46,7 +46,7 @@ export default function QuestsScreen() {
             {!q.login.claimed_today && q.login.recovers_streak_today ? " · recuperi la serie persa" : ""}
           </Txt>
           {q.login.milestone_today ? <Txt v="small" color={colors.burgundy}>Oggi scatta il traguardo dei {q.login.milestone_today.days} giorni: {rewardText(q.login.milestone_today.rewards)}</Txt> : null}
-          {q.login.next_milestone ? <Txt v="small" color={colors.onSurfaceInverse}>Prossimo traguardo tra {q.login.next_milestone.days_left} {q.login.next_milestone.days_left === 1 ? "giorno" : "giorni"} ({q.login.next_milestone.days} totali): {rewardText(q.login.next_milestone.rewards)}</Txt> : null}
+          {q.login.next_milestone && q.login.next_milestone.days !== q.login.milestone_today?.days ? <Txt v="small" color={colors.onSurfaceInverse}>Prossimo traguardo tra {q.login.next_milestone.days_left} {q.login.next_milestone.days_left === 1 ? "giorno" : "giorni"} ({q.login.next_milestone.days} totali): {rewardText(q.login.next_milestone.rewards)}</Txt> : null}
           {q.login.recovery_left > 0 ? <Txt v="small" color={colors.onSurfaceInverse}>Hai {q.login.recovery_left} recupero disponibile questo mese: se salti un solo giorno la serie non si azzera.</Txt> : null}
         </View>
       </Panel>
