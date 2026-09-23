@@ -4,14 +4,15 @@
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Image, PixelRatio, Platform, Text, View, useWindowDimensions } from "react-native";
+import { PixelRatio, Platform, Text, View, useWindowDimensions } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown, ZoomOut, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 
-import { lordArt, regionBackground, skinArt } from "@/src/art";
+import { lordArt, skinArt } from "@/src/art";
 import { playRegionMusic } from "@/src/audio";
 import { fonts, useTheme } from "@/src/theme";
 import { fmt } from "@/src/ui";
-import { Ambient, BannerRise, BossFxKind, BossMoveFx, Burst, Clouds, CoinShower, ComboText, DamageNumber, DeathDissolve, DustPuff, Flare, FloatText, Fx, Ghost, HP_COLORS, HpBar, hpColors, LightningBolt, OutcomeBanner, Projectile, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SpeedLines, SpriteFx, SteelRain, SuperAura, UltimateWave, WarBanner, WarningBanner } from "./effects";
+import { ForegroundLayer, ParallaxBackdrop } from "./Backdrop";
+import { BannerRise, BossFxKind, BossMoveFx, Burst, CoinShower, ComboText, DamageNumber, DeathDissolve, DustPuff, Flare, FloatText, Fx, Ghost, HP_COLORS, HpBar, hpColors, LightningBolt, OutcomeBanner, Projectile, ShieldDome, Shockwave, SKILL_FX, SkillBanner, Slash, SpeedLines, SpriteFx, SteelRain, SuperAura, UltimateWave, WarBanner, WarningBanner } from "./effects";
 import { LORD_MOVE_MS, LordMove, LordSprite } from "./lord";
 import { EnemyMove, MOVE_HIT_MS, MonsterSprite } from "./monsters";
 import { hashStr, paletteFor } from "./regions";
@@ -192,7 +193,7 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
   const proxyCount = proxies.reduce((a, p) => a + p.count, 0);
   // bigger armies -> Lord and enemies shrink a little (1.0 → 0.82) so the battlefield stays readable
   const k = Math.max(0.82, 1 - proxyCount * 0.016);
-  const lordSize = 104 * k;
+  const lordSize = 126 * k;
 
   // scene geometry (approximate anchors for FX): Lord on the left, horde on the right (row-reverse, wrap-reverse)
   const lordPos = useCallback(() => ({ x: width * 0.22 + 60 * k, y: sceneH - 34 - 66 * k, frontX: width * 0.22 + 118 * k, groundY: sceneH - 36 }), [width, sceneH, k]);
@@ -509,32 +510,15 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
 
   const skillCycle = skills.map((s) => ({ ...s, frac: ((elapsed % s.cooldown_seconds) / s.cooldown_seconds) }));
   const regionBoss = attempt.timeline.region.boss;
-  const bg = regionBackground(attempt.timeline.region.region);
   const lp = lordPos();
 
   return (
     <View style={{ height: sceneH, overflow: "hidden", borderBottomWidth: 3, borderColor: colors.gold, backgroundColor: pal.ground }} testID="battle-scene">
       <ZoomPan width={width} height={sceneH} testID="battle-zoom" style={{ position: "absolute", left: 0, top: 0 }} controlsStyle={{ top: 112, right: 6 }}>
       <Animated.View style={[{ position: "absolute", left: -12, right: -12, top: -8, bottom: -8 }, cameraStyle]}>
-        {bg ? (
-          <Image source={bg} style={{ position: "absolute", left: 0, top: -8, width: width + 24, height: sceneH + 16 }} resizeMode="cover" />
-        ) : (
-          <>
-            <LinearGradient colors={pal.sky} style={{ position: "absolute", left: 0, right: 0, top: 0, height: sceneH * 0.64 }} />
-            <View style={{ position: "absolute", left: width * (0.62 + (attempt.timeline.region.region % 3) * 0.08), top: sceneH * 0.1, width: 64, height: 64, borderRadius: 32, backgroundColor: pal.accent, opacity: 0.18 }} />
-            <View style={{ position: "absolute", left: width * (0.62 + (attempt.timeline.region.region % 3) * 0.08) + 12, top: sceneH * 0.1 + 12, width: 40, height: 40, borderRadius: 20, backgroundColor: pal.accent, opacity: 0.6 }} />
-            <Clouds width={width} top={sceneH * 0.16} color={pal.fog.replace(/[\d.]+\)$/, "1)")} />
-            <View style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.38, height: sceneH * 0.26, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", opacity: 0.55 }}>
-              {Array.from({ length: 9 }).map((_, i) => <Prop key={i} kind={pal.props} i={i} color={pal.groundAlt} accent={pal.accent} />)}
-            </View>
-            <View style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.54, height: sceneH * 0.14, backgroundColor: pal.fog }} />
-            <LinearGradient colors={[pal.ground, pal.groundAlt]} style={{ position: "absolute", left: 0, right: 0, top: sceneH * 0.62, bottom: 0 }} />
-          </>
-        )}
-        {/* ground contact shadow + ambience */}
+        <ParallaxBackdrop region={attempt.timeline.region.region} width={width + 24} height={sceneH + 16} shake={shake} boss={isBossWave} />
+        {/* ground contact shadow */}
         <LinearGradient colors={["transparent", "rgba(0,0,0,0.45)"]} style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: sceneH * 0.3 }} />
-        <Ambient width={width + 24} height={sceneH} color={pal.accent} rise={attempt.timeline.region.region >= 7} />
-        {isBossWave ? <LinearGradient colors={["rgba(120,0,0,0.45)", "transparent", "rgba(120,0,0,0.45)"]} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }} /> : null}
         {/* vignette during the SUPER charge */}
         <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: "#05070C" }, vignetteStyle]} />
         {/* background cohorts with banners */}
@@ -565,6 +549,8 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
             </Animated.View>
           ))}
         </Animated.View>
+        {/* nearest layer: framed in front of the fighters so the battlefield has real depth */}
+        <ForegroundLayer region={attempt.timeline.region.region} width={width + 24} height={sceneH + 16} shake={shake} />
         {/* boss special move */}
         {bossFx ? (() => { const bi = Math.max(0, wave.monsters.findIndex((m) => m.type === "boss")); const bp = enemyPos(bi, "boss"); return <BossMoveFx key={bossFx.id} kind={bossFx.fx} x={lp.x} y={lp.groundY} bx={bp.x} by={bp.y} width={width} height={sceneH} />; })() : null}
         {/* ultimate wave sweeping the horde */}
@@ -650,20 +636,4 @@ export function BattleScene({ attempt, serverTime, formation, equipped, armyTier
       {outcome ? <OutcomeBanner win={attempt.win} firstClear={!!firstClear} subtitle={attempt.win ? `Stage ${attempt.stage} · ${attempt.timeline.total_monsters} nemici abbattuti · combo x${combo}` : `Potenza ${fmt(attempt.total_power)} / ${fmt(attempt.required_power)} richiesta`} sceneH={sceneH} /> : null}
     </View>
   );
-}
-
-function Prop({ kind, i, color, accent }: { kind: string; i: number; color: string; accent: string }) {
-  const h = 20 + ((i * 37) % 40);
-  switch (kind) {
-    case "trees": return <View style={{ width: 14, height: h, backgroundColor: color, borderTopLeftRadius: 8, borderTopRightRadius: 8 }} />;
-    case "swamp": return <View style={{ width: 22, height: h * 0.5, backgroundColor: color, borderRadius: 10 }} />;
-    case "ruins": return <View style={{ width: 10, height: h, backgroundColor: color, borderTopWidth: 3, borderColor: accent }} />;
-    case "dunes": return <View style={{ width: 40, height: h * 0.5, backgroundColor: color, borderTopLeftRadius: 30, borderTopRightRadius: 30 }} />;
-    case "peaks": return <View style={{ width: 0, height: 0, borderLeftWidth: 16, borderRightWidth: 16, borderBottomWidth: h + 14, borderLeftColor: "transparent", borderRightColor: "transparent", borderBottomColor: color }} />;
-    case "ice": return <View style={{ width: 8, height: h + 10, backgroundColor: accent, opacity: 0.8, transform: [{ rotate: `${(i % 2 ? 1 : -1) * 8}deg` }] }} />;
-    case "graves": return <View style={{ width: 8, height: h * 0.6, backgroundColor: color, borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />;
-    case "obsidian": return <View style={{ width: 12, height: h, backgroundColor: color, transform: [{ skewX: "-12deg" }], borderTopWidth: 2, borderColor: accent }} />;
-    case "shards": return <View style={{ width: 6, height: h + 16, backgroundColor: accent, opacity: 0.7, transform: [{ rotate: `${(i % 3) * 10 - 10}deg` }] }} />;
-    default: return <View style={{ width: 10, height: 10 + (i % 4) * 6, backgroundColor: accent, borderRadius: 10, opacity: 0.5 }} />;
-  }
 }

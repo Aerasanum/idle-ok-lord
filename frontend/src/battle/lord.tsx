@@ -11,6 +11,8 @@ type Item = { slot: string; rarity: string; item_level: number } | null | undefi
 
 const SKIN = "#D9B48F", CLOTH = "#6B5A44", LEATHER = "#5A4632", STEEL = "#9AA1A9", STEEL_D = "#6E7580", HAIR = "#3A2A1E", INK = "#111111";
 const RARITY_RANK: Record<string, number> = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, mythic: 5, ancient: 6 };
+const SHADOW = [{ w: 0.82, h: 0.085, o: 0.18 }, { w: 0.66, h: 0.07, o: 0.22 }, { w: 0.48, h: 0.055, o: 0.28 }];
+const RIM_OFFSET = 2.5;
 
 // ---- Lord move set (v1.2): 1 slash · 2 heavy · 3 rising slash · 4 dash · 5 leap · 6 super charge · 7 super release · 8 dodge (back-dash) ----
 export type LordMove = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -64,23 +66,35 @@ export const LordSprite = memo(function LordSprite({ equipped, size = 64, tier =
     else if (k === 8) { const p = t < 0.35 ? 1 - Math.pow(1 - t / 0.35, 2) : 1 - (t - 0.35) / 0.65; tx += -d * p; ty = -18 * Math.sin(Math.PI * Math.min(1, t / 0.5)); rot += 10 * p; sx = 1 - 0.08 * p; }
     return { transform: [{ translateX: tx }, { translateY: ty }, { rotate: `${rot}deg` }, { scaleX: sx }, { scaleY: sy }] };
   });
+  // idle breathing: the render is a still image, so the chest lift has to come from a tiny squash/stretch
+  const breath = useSharedValue(0);
+  useEffect(() => {
+    breath.value = withRepeat(withTiming(1, { duration: 1700, easing: Easing.inOut(Easing.quad) }), -1, true);
+  }, [breath]);
+  const breathStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -breath.value * 1.6 }, { scaleY: 1 + breath.value * 0.014 }, { scaleX: 1 - breath.value * 0.008 }] }));
   const hurtStyle = useAnimatedStyle(() => ({ opacity: 0.55 * hurt.value }));
   const glowStyle = useAnimatedStyle(() => ({ opacity: 0.85 * glow.value, transform: [{ scale: 1.06 + 0.05 * glow.value }] }));
   const img = lordArt(equipped, tier);
 
   if (img) {
-    const w = size * 1.15, h = size * 1.25;
+    const w = size * 1.18, h = size * 1.3;
+    const rim = weaponGlow ?? colors.goldBright;
     return (
       <View style={{ width: w, height: h, alignItems: "center", justifyContent: "flex-end" }} testID="lord-art">
-        {aura ? <View style={{ position: "absolute", bottom: -4, width: w * 0.9, height: h * 0.2, borderRadius: w, backgroundColor: weaponGlow ?? colors.goldBright, opacity: 0.35 }} /> : null}
-        <View style={{ position: "absolute", bottom: 2, width: w * 0.7, height: h * 0.1, borderRadius: w, backgroundColor: "#000", opacity: 0.35 }} />
+        {aura ? <View style={{ position: "absolute", bottom: -4, width: w * 0.9, height: h * 0.2, borderRadius: w, backgroundColor: rim, opacity: 0.35 }} /> : null}
+        {/* contact shadow: three stacked ellipses stand in for a blur, so the Lord sits on the ground instead of floating */}
+        {SHADOW.map((s, i) => <View key={i} style={{ position: "absolute", bottom: 1 + i, width: w * s.w, height: h * s.h, borderRadius: w, backgroundColor: "#000", opacity: s.o }} />)}
         <Animated.View style={[{ width: w, height: h, transformOrigin: "50% 100%" }, artStyle]}>
-          <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, glowStyle]}>
-            <Image source={img} style={{ width: w, height: h, tintColor: "#FFD84A" }} resizeMode="contain" />
-          </Animated.View>
-          <Image source={img} style={{ width: w, height: h }} resizeMode="contain" />
-          <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, hurtStyle]}>
-            <Image source={img} style={{ width: w, height: h, tintColor: colors.error }} resizeMode="contain" />
+          <Animated.View style={[{ width: w, height: h }, breathStyle]}>
+            {/* rim light: a tinted copy nudged toward the key light draws a lit edge along the silhouette */}
+            <Image source={img} style={{ position: "absolute", left: RIM_OFFSET, top: -RIM_OFFSET, width: w, height: h, tintColor: rim, opacity: 0.5 }} resizeMode="contain" />
+            <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, glowStyle]}>
+              <Image source={img} style={{ width: w, height: h, tintColor: "#FFD84A" }} resizeMode="contain" />
+            </Animated.View>
+            <Image source={img} style={{ width: w, height: h }} resizeMode="contain" />
+            <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, top: 0, width: w, height: h }, hurtStyle]}>
+              <Image source={img} style={{ width: w, height: h, tintColor: colors.error }} resizeMode="contain" />
+            </Animated.View>
           </Animated.View>
         </Animated.View>
       </View>
