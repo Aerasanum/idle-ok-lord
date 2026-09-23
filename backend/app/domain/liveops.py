@@ -336,6 +336,17 @@ async def speedup_dungeon(p: dict, run_id: str) -> dict:
 
 
 # ---- quests / login ---------------------------------------------------------------------------------------
+def _login_streak_view(login: dict) -> dict:
+    """The streak as the player should read it: where they are now and what claiming today is worth."""
+    today = day_key()
+    claimed = login.get("last_claim_day") == today
+    s = streak_state(login, today)
+    current = s["streak"] if claimed else s["streak"] - 1
+    return {"streak": current, "best_streak": login.get("best_streak", 0), "streak_if_claimed_today": s["streak"],
+            "bonus_pct": streak_bonus_pct(s["streak"]), "recovery_left": s["recovery_left"], "recovers_streak_today": s["recovered"],
+            "milestone_today": None if claimed else streak_milestone(s["streak"]), "next_milestone": next_milestone(current)}
+
+
 def quests_view(p: dict) -> dict:
     q = canon()["quests"]
     dp, dd = quest_points("daily", p)
@@ -350,7 +361,8 @@ def quests_view(p: dict) -> dict:
         "daily": {"points": dp, "chests": q["daily"]["point_chests"], "templates": templates("daily"), **dd, "resets": "00:00 UTC"},
         "weekly": {"points": wp, "chests": q["weekly"]["point_chests"], "templates": templates("weekly"), **wd},
         "login": {"cycle_days": q["login_calendar"]["cycle_days"], "cycle_day": login.get("cycle_day", 0), "claimed_today": login.get("last_claim_day") == day_key(),
-                  "rewards": LOGIN_RUBIES, "day_7": q["login_calendar"]["day_7_reward"], "rubies_total": q["login_calendar"]["rubies_total_per_cycle"]},
+                  "rewards": LOGIN_RUBIES, "day_7": q["login_calendar"]["day_7_reward"], "rubies_total": q["login_calendar"]["rubies_total_per_cycle"],
+                  **_login_streak_view(login)},
         "season": season_view(p),
     }
 
@@ -384,6 +396,57 @@ async def claim_quest_chest(p: dict, kind: str, index: int) -> dict:
     return res
 
 
+def _days_between(a: str, b: str) -> int:
+    """Whole days between two day keys (b - a)."""
+    fmt = "%Y-%m-%d"
+    return (datetime.strptime(b, fmt) - datetime.strptime(a, fmt)).days
+
+
+def streak_state(login: dict, today: str) -> dict:
+    """What claiming today would do to the streak: length, whether it spends the monthly recovery, and the recovery counter."""
+    st = canon()["quests"]["login_streak"]
+    rec = login.get("recovery") or {"month": None, "used": 0}
+    month = today[:7]
+    used = rec.get("used", 0) if rec.get("month") == month else 0
+    left = max(0, st["recovery"]["per_calendar_month"] - used)
+    last, prev = login.get("last_claim_day"), login.get("streak", 0)
+    if last == today:  # already claimed: report the streak as it stands
+        return {"streak": prev, "recovered": False, "recovery": {"month": month, "used": used}, "recovery_left": left}
+    gap = _days_between(last, today) if last else None
+    if gap == 1:
+        return {"streak": prev + 1, "recovered": False, "recovery": {"month": month, "used": used}, "recovery_left": left}
+    if gap is not None and 1 < gap <= st["recovery"]["max_missed_days"] + 1 and left > 0:
+        return {"streak": prev + 1, "recovered": True, "recovery": {"month": month, "used": used + 1}, "recovery_left": left - 1}
+    return {"streak": 1, "recovered": False, "recovery": {"month": month, "used": used}, "recovery_left": left}
+
+
+def streak_bonus_pct(streak: int) -> int:
+    st = canon()["quests"]["login_streak"]
+    return min(st["bonus_pct_cap"], st["bonus_pct_per_day"] * max(0, streak - 1))
+
+
+def streak_milestone(streak: int) -> dict | None:
+    """The milestone paid on this exact day; the last one repeats so a long streak keeps paying."""
+    st = canon()["quests"]["login_streak"]
+    every = st["top_milestone_repeats_every_days"]
+    for m in st["milestones"]:
+        if m["days"] == streak:
+            return m
+    if streak > every and streak % every == 0:
+        return next(m for m in st["milestones"] if m["days"] == every)
+    return None
+
+
+def next_milestone(streak: int) -> dict | None:
+    st = canon()["quests"]["login_streak"]
+    every = st["top_milestone_repeats_every_days"]
+    nxt = next((m for m in st["milestones"] if m["days"] > streak), None)
+    if nxt:
+        return {**nxt, "days_left": nxt["days"] - streak}
+    top = next(m for m in st["milestones"] if m["days"] == every)
+    return {**top, "days_left": every - streak % every}
+
+
 async def claim_login(p: dict) -> dict:
     login = p["quests"].get("login", {"cycle_day": 0, "last_claim_day": None})
     today = day_key()
@@ -393,13 +456,24 @@ async def claim_login(p: dict) -> dict:
     key = f"login:{p['_id']}:{today}"
     rng = seeded_rng(key)
     ops = Ops()
-    resources_inc(ops, {"rubies": LOGIN_RUBIES[day - 1]})
+    s = streak_state(login, today)
+    streak = s["streak"]
+    bonus_pct = streak_bonus_pct(streak)
+    base = LOGIN_RUBIES[day - 1]
+    rubies = round(base * (1 + bonus_pct / 100))
+    milestone = streak_milestone(streak)
+    grant = {"rubies": rubies}
+    for k, v in (milestone or {}).get("rewards", {}).items():
+        grant[k] = grant.get(k, 0) + v
+    resources_inc(ops, grant)
     gear = None
     if day == 7 and p["campaign"]["highest_cleared"] >= 1:
         hs = p["campaign"]["highest_cleared"]
         gear = await materialize_items(p, key, [(roll_rarity(hs, rng, None, 2), hs, "login_day7")], rng, ops)
-    ops.set("quests.login", {"cycle_day": day, "last_claim_day": today})
-    result = {"day": day, "rubies": LOGIN_RUBIES[day - 1], "gear": gear}
+    best = max(login.get("best_streak", 0), streak)
+    ops.set("quests.login", {"cycle_day": day, "last_claim_day": today, "streak": streak, "best_streak": best, "recovery": s["recovery"]})
+    result = {"day": day, "rubies": rubies, "base_rubies": base, "bonus_pct": bonus_pct, "streak": streak, "best_streak": best,
+              "recovered": s["recovered"], "milestone": milestone, "granted": grant, "gear": gear}
     res, _ = await ledger.apply_to_player(key, p["_id"], "login_claim", ops.build(), result, extra_filter={"quests.login.last_claim_day": {"$ne": today}})
     return res
 

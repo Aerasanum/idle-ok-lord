@@ -4980,9 +4980,9 @@
     ],
     "project": "IDLE 1",
     "relationship_to_empire_lords_dragon": "same medieval-fantasy universe inspiration; independent gameplay runtime; do not import multiplayer rules unless explicitly present here",
-    "spec_hash": "8489f5b2d05141f8a018413fa19c53f2963fbfc75832f4a8edbb6e5ab5e7d6ea",
+    "spec_hash": "4943e39ef55793705ef711cf4623199c0afcd8a35b5d93d7bdfea6d6d9dc9217",
     "status": "LIVE_UPDATE_v1.2",
-    "version": "1.8",
+    "version": "1.9",
     "working_marketing_title": "TBD - do not invent without approval",
     "changelog_v1_3": [
       "Warehouse capacity raised so that every single upgrade (castle, buildings, research) reachable at castle level L fits in Warehouse level L (110% of the largest cost); capacities only grow, progress preserved."
@@ -5023,6 +5023,10 @@
     "changelog_v1_8": [
       "Dungeons: six instead of four. Harvest Caverns pays (1 + 0.5*tier) hours of soft production; Training Grounds converts 20*tier recruit minutes into free troops of an unlocked unit chosen at entry.",
       "Dungeons: Italian display name and reward text per dungeon (name_it / reward_it), so the app no longer shows English names and raw formulas."
+    ],
+    "changelog_v1_9": [
+      "Login streak: +4% Rubies per consecutive day (cap +40%), milestones at 3/7/14/30 days with the last one repeating, one recovered day per month.",
+      "Reminders: energy at max, full warehouse, unused free dungeon entries, unused Titan attacks and war roster about to lock, all non-essential and capped per day."
     ]
   },
   "dungeons": {
@@ -5107,9 +5111,11 @@
     "daily_paid_alliance_boss_extra_attack_cap": 3,
     "daily_paid_dungeon_entry_cap_per_dungeon": 3,
     "daily_paid_event_energy_refill_cap": 6,
-    "free_rubies_expected_28d_from_daily_weekly_login": 620,
+    "free_rubies_expected_28d_from_daily_weekly_login": 700,
     "free_rubies_note": "does not include one-time achievements, Codex or event track rewards",
-    "gear_power_purchase_rule": "no direct random gear purchase; power progression comes from gameplay drops, Forge/materials and time/acceleration"
+    "gear_power_purchase_rule": "no direct random gear purchase; power progression comes from gameplay drops, Forge/materials and time/acceleration",
+    "free_rubies_streak_note": "about 80 of them come from the login streak (bonus + milestones) and need 28 consecutive days",
+    "free_rubies_from_login_streak_28d": 80
   },
   "events": {
     "alliance_boss": {
@@ -6249,9 +6255,22 @@
       "offline_chest_full",
       "event_ending",
       "alliance_war_roster_needed",
-      "alliance_war_result"
+      "alliance_war_result",
+      "energy_full",
+      "warehouse_full",
+      "dungeon_entries_expiring",
+      "alliance_boss_attacks_left",
+      "war_roster_lock_soon"
     ],
-    "user_opt_out_nonessential": true
+    "user_opt_out_nonessential": true,
+    "reminders": {
+      "away_minutes": 30,
+      "stop_after_inactive_days": 7,
+      "max_per_player_per_day": 2,
+      "evening_hour_utc": 20,
+      "war_roster_lock_minutes_before": 60,
+      "rule": "reminders are non-essential pushes: they respect the player's opt-out and always land in the in-game inbox too"
+    }
   },
   "offline": {
     "battle_loot_efficiency": 0.7,
@@ -6587,7 +6606,46 @@
       ],
       "total_rubies_per_week": 50
     },
-    "fallback_rule": "when the base objective of a task is permanently impossible (Forge +20 on all 9 slots; all 48 research nodes at level 5; then also all buildings at max), the first applicable alternative increments the SAME counter and its text replaces the base text in the app. Conditions are evaluated live on the player"
+    "fallback_rule": "when the base objective of a task is permanently impossible (Forge +20 on all 9 slots; all 48 research nodes at level 5; then also all buildings at max), the first applicable alternative increments the SAME counter and its text replaces the base text in the app. Conditions are evaluated live on the player",
+    "login_streak": {
+      "bonus_pct_per_day": 4,
+      "bonus_pct_cap": 40,
+      "milestones": [
+        {
+          "days": 3,
+          "rewards": {
+            "rubies": 5
+          }
+        },
+        {
+          "days": 7,
+          "rewards": {
+            "rubies": 10,
+            "forge_dust": 200
+          }
+        },
+        {
+          "days": 14,
+          "rewards": {
+            "rubies": 20,
+            "reforge_stone": 3
+          }
+        },
+        {
+          "days": 30,
+          "rewards": {
+            "rubies": 50,
+            "mythic_essence": 2
+          }
+        }
+      ],
+      "top_milestone_repeats_every_days": 30,
+      "recovery": {
+        "per_calendar_month": 1,
+        "max_missed_days": 1
+      },
+      "rule": "the streak counts consecutive claimed days: it raises the login calendar Rubies by bonus_pct_per_day per day (capped), pays the milestone on the exact day it is reached (the last one repeats every 30 days) and survives one missed day per calendar month"
+    }
   },
   "research": {
     "branches": [
