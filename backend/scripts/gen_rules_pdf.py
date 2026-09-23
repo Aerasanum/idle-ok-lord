@@ -657,8 +657,15 @@ def sec_domain_offline():
     ]
 
 
+def _streak_milestones() -> str:
+    rows = []
+    for m in C["quests"]["login_streak"]["milestones"]:
+        rows.append(f"{m['days']} giorni (" + ", ".join(f"{n(v)} {RES.get(k, k)}" for k, v in m["rewards"].items()) + ")")
+    return ", ".join(rows)
+
+
 def sec_dungeons_events_quests():
-    d, e, q = C["dungeons"], C["events"], C["quests"]
+    d, e, q, ec, ls = C["dungeons"], C["events"], C["quests"], C["economy_controls"], C["quests"]["login_streak"]
     ab = e["alliance_boss"]
     dun_rows = [[x.get("name_it", x["name"]), x.get("reward_it", x["reward"]), x["formula"]] for x in d["catalog"]]
     dep_rows = [[f"{dp['duration_minutes']} min", dp["energy"], f"×{n(dp['reward_multiplier'])}"] + list(_dep_example(dp["reward_multiplier"])) for dp in e["deployments"]]
@@ -698,7 +705,11 @@ def sec_dungeons_events_quests():
         P("<b>Alternative (v1.5)</b>: quando la Forgia è a +20 su tutti i 9 slot, ogni oggetto riforgiato o smantellato conta come 'potenziamento Forgia'; quando tutte le 48 ricerche sono al livello 5, "
           "ogni potenziamento edificio avviato conta come 'ricerca'; se anche tutti gli edifici sono al massimo, conta ogni ordine di reclutamento. L'app mostra il testo dell'alternativa al posto di quello base; "
           "il contatore e i punti sono gli stessi, quindi le casse restano sempre completabili.", "small"),
-        P(f"Rubini gratuiti attesi in 28 giorni da giornaliere, settimanali e calendario: <b>{n(C['economy_controls']['free_rubies_expected_28d_from_daily_weekly_login'])}</b> (esclusi traguardi, Codex ed eventi).", "small"),
+        P(f"<b>Serie di accessi (v1.9)</b>: ogni giorno consecutivo aggiunge <b>+{ls['bonus_pct_per_day']}%</b> ai Rubini del calendario, fino a +{ls['bonus_pct_cap']}%. "
+          f"Traguardi della serie: {_streak_milestones()}; l'ultimo si ripete ogni {ls['top_milestone_repeats_every_days']} giorni. "
+          f"Saltare un giorno non azzera la serie {ls['recovery']['per_calendar_month']} volta al mese.", "small"),
+        P(f"Rubini gratuiti attesi in 28 giorni da giornaliere, settimanali e calendario: <b>{n(ec['free_rubies_expected_28d_from_daily_weekly_login'])}</b> (esclusi traguardi, Codex ed eventi), "
+          f"di cui circa {n(ec['free_rubies_from_login_streak_28d'])} dalla serie di accessi, che richiede 28 giorni consecutivi.", "small"),
     ]
 
 

@@ -6,8 +6,8 @@ from functools import lru_cache
 
 from .config import settings
 
-REQUIRED_VERSION = "1.8"
-REQUIRED_SPEC_HASH = "8489f5b2d05141f8a018413fa19c53f2963fbfc75832f4a8edbb6e5ab5e7d6ea"
+REQUIRED_VERSION = "1.9"
+REQUIRED_SPEC_HASH = "4943e39ef55793705ef711cf4623199c0afcd8a35b5d93d7bdfea6d6d9dc9217"
 
 
 class CanonError(RuntimeError):
