@@ -21,7 +21,6 @@ from PIL import Image, ImageFilter
 BACKEND = Path(__file__).resolve().parents[1]
 load_dotenv(BACKEND / ".env")
 sys.path.insert(0, str(BACKEND))
-from emergentintegrations.llm.chat import LlmChat, UserMessage  # noqa: E402
 
 MODEL = "gemini-3.1-flash-image-preview"
 CANON = json.load(open(BACKEND / "canon" / "IDLE_1_v1.1_CANONICAL_SPEC.json"))
@@ -55,12 +54,40 @@ def background_prompts():
 
 
 def lord_prompts():
-    base = "Exactly ONE character (single figure, no turnaround, no multiple views): The Lord, heroic human knight commander, mid-30s, determined face, short dark hair and beard, full body 3/4 view facing RIGHT, holding a longsword in the right hand"
+    # v1.10: heroic combat stance instead of the old idle pose, plus rim light, so the Lord reads against the battle backdrop.
+    base = ("Exactly ONE character (single figure, no turnaround, no multiple views): The Lord, heroic human knight commander, mid-30s, determined face, short dark hair and beard, "
+            "full body 3/4 view FACING RIGHT, heroic dynamic combat stance with the weight forward on the front leg, powerful heroic proportions, crisp readable silhouette")
+    light = ("strong warm key light from the upper right, cool rim light along the right edge outlining the body and the blade, soft ambient occlusion, high detail, "
+             "complete body from head to feet with the feet fully visible, centered")
     return [
-        ("lord/base", f"{base}, wearing a simple burgundy tunic with leather straps and a small heraldic emblem, no armor, no helmet, standing battle stance, complete body with feet, centered, {STYLE}, {GREEN}"),
-        ("lord/armored", f"{base}, wearing polished steel plate armor with gold trim, helmet with a burgundy plume, round heraldic shield in the left hand, standing battle stance, complete body with feet, centered, {STYLE}, {GREEN}"),
-        ("lord/royal", f"{base}, wearing ornate gold-and-steel royal armor, a golden crown, long crimson cape, glowing legendary sword, kite shield with a dragon crest, standing battle stance, complete body with feet, centered, {STYLE}, {GREEN}"),
+        ("lord/base", f"{base}, wearing a burgundy tunic with leather straps and a small golden lion emblem, no armor, no helmet, longsword held low and forward in the right hand ready to strike, left hand clenched, {light}, {STYLE}, {GREEN}"),
+        ("lord/armored", f"{base}, wearing polished steel plate armor with gold trim, helmet with a burgundy plume, burgundy cape billowing behind, heraldic lion shield braced forward on the left arm, longsword raised diagonally mid-swing, {light}, {STYLE}, {GREEN}"),
+        ("lord/royal", f"{base}, wearing ornate gold-and-steel royal armor with lion pauldrons, a golden crown, long crimson cape sweeping behind, kite shield with a dragon crest, glowing runed longsword extended forward spilling pale blue light on the armor, {light}, {STYLE}, {GREEN}"),
     ]
+
+
+# Parallax silhouettes (v1.10): flat black shapes, chroma-keyed to alpha and tinted per region in the app, so three
+# reusable mid-distance skylines and three foreground strips cover all ten regions.
+PARALLAX_MID = {
+    "peaks": "a range of jagged rocky mountain peaks and sharp crags of varying heights",
+    "ruins": "the ruins of an ancient fortress city: broken towers, crumbling walls, collapsed arches and a leaning obelisk of varying heights",
+    "forest": "a dense forest treeline of pines, oaks and a few bare twisted trees of varying heights",
+}
+PARALLAX_FG = {
+    "rocks": "a rugged rocky ridge with scattered boulders, jagged stones and cracked rock slabs, with a few taller rock spires",
+    "flora": "overgrown vegetation: tall grass tufts, ferns, reeds, a few broken branches and leafy bushes, with a few taller stalks",
+    "bones": "grim battlefield debris: scattered bones, a few skulls, broken spears and tattered banner poles leaning at angles, cracked stone shards",
+}
+SILHOUETTE = ("Pure solid BLACK silhouette shapes only (no interior detail, no shading, no gradient). No characters, no text, no watermark, no border, "
+              "flat 2D vector shapes, clean crisp edges. Everything else in the frame is pure flat chroma green (#00FF00)")
+
+
+def parallax_prompts():
+    out = [(f"parallax/mid_{k}", f"Game art asset: a wide horizontal mid-distance silhouette skyline for a 2D side-scrolling fantasy game parallax background, showing {v}, "
+            f"the tallest shapes reaching about 70% of the frame height, continuous across the full width and touching the bottom edge. {SILHOUETTE}.") for k, v in PARALLAX_MID.items()]
+    out += [(f"parallax/fg_{k}", f"Game art asset: a wide horizontal foreground silhouette strip for a 2D side-scrolling fantasy game, used as the closest parallax layer, showing {v}, "
+             f"occupying only the BOTTOM 45% of the frame with an irregular top edge and touching the bottom edge continuously across the full width. {SILHOUETTE}.") for k, v in PARALLAX_FG.items()]
+    return out
 
 
 BUILDING_DESC = {
@@ -266,10 +293,10 @@ def vfx_prompts():
     ]
 
 
-GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts, "vfx": vfx_prompts, "skins": skin_prompts, "hub": hub_prompts}
-TRANSPARENT = {"monsters", "lord", "buildings", "units", "items", "resources", "skins"}
+GROUPS = {"monsters": monster_prompts, "backgrounds": background_prompts, "lord": lord_prompts, "buildings": building_prompts, "ground": ground_prompts, "units": unit_prompts, "splash": splash_prompts, "tiles": tile_prompts, "items": item_prompts, "resources": resource_prompts, "vfx": vfx_prompts, "skins": skin_prompts, "hub": hub_prompts, "parallax": parallax_prompts}
+TRANSPARENT = {"monsters", "lord", "buildings", "units", "items", "resources", "skins", "parallax"}
 LUMA_ALPHA = {"vfx"}
-MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192, "vfx": 512, "skins": 640, "hub": 768}
+MAX_SIDE = {"monsters": 512, "lord": 640, "buildings": 640, "backgrounds": 1280, "ground": 1280, "units": 384, "splash": 1280, "tiles": 256, "items": 256, "resources": 192, "vfx": 512, "skins": 640, "hub": 768, "parallax": 1024}
 
 
 def luma_to_alpha(img: Image.Image) -> Image.Image:
@@ -354,6 +381,8 @@ def postprocess(group: str, raw_path: Path, out_path: Path):
 
 
 async def generate(prompt: str, raw_path: Path, retries: int = 3) -> bool:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage  # imported here so postprocessing works without the LLM SDK
+
     for attempt in range(retries):
         try:
             chat = LlmChat(api_key=os.environ["EMERGENT_LLM_KEY"], session_id=f"art-{raw_path.stem}-{attempt}", system_message="You are a senior game concept artist producing production-ready 3D-styled game assets.")
