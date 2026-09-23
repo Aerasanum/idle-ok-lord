@@ -3,13 +3,18 @@ import { View } from "react-native";
 
 import { QK, useAction, useQuests } from "@/src/api/hooks";
 import { useTheme } from "@/src/theme";
-import { Btn, Icon, Loading, Panel, Progress, Res, Row, Screen, Txt } from "@/src/ui";
+import { Btn, Icon, Loading, Panel, Progress, Res, RES_LABEL, Row, Screen, Txt } from "@/src/ui";
+
+const rewardText = (r: Record<string, number>) => Object.entries(r).map(([k, v]) => `${v} ${RES_LABEL[k] ?? k}`).join(" + ");
 
 export default function QuestsScreen() {
   const { colors } = useTheme();
   const { data: q, isLoading } = useQuests();
   const chest = useAction("post", "/quests/claim", [QK.quests, QK.season], { success: (d) => `Forziere: ${Object.entries(d.granted).map(([k, v]) => `${v} ${k}`).join(", ")} · +${d.season_points} punti stagione` });
-  const login = useAction("post", "/quests/login/claim", [QK.quests, QK.inventory], { success: (d) => `Giorno ${d.day}: +${d.rubies} Rubini${d.gear ? " + equipaggiamento" : ""}` });
+  const login = useAction("post", "/quests/login/claim", [QK.quests, QK.inventory], {
+    success: (d) => `Giorno ${d.day}: +${d.rubies} Rubini${d.bonus_pct ? ` (+${d.bonus_pct}% serie)` : ""}${d.gear ? " + equipaggiamento" : ""}` +
+      `${d.recovered ? " · serie recuperata" : ""}${d.milestone ? ` · traguardo ${d.milestone.days} giorni!` : ""}`,
+  });
   const season = useAction("post", "/season/claim", [QK.quests, QK.season, QK.inventory], { success: () => "Ricompensa stagione riscattata" });
   if (isLoading || !q) return <Loading />;
   const s = q.season;
@@ -26,6 +31,24 @@ export default function QuestsScreen() {
         <Row style={{ marginTop: 8, justifyContent: "space-between" }}>
           {q.login.rewards.map((r: number, i: number) => <View key={i} style={{ alignItems: "center", width: 40, paddingVertical: 4, borderRadius: 4, backgroundColor: i < q.login.cycle_day ? colors.forest : colors.parchment, borderWidth: 1, borderColor: colors.gold }}><Txt v="small" color={i < q.login.cycle_day ? colors.onBrandTertiary : colors.onSurfaceInverse}>G{i + 1}</Txt><Txt v="small" color={i < q.login.cycle_day ? colors.onBrandTertiary : colors.onSurfaceInverse}>{r}</Txt></View>)}
         </Row>
+        <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderColor: colors.parchmentDark, gap: 3 }} testID="login-streak">
+          <Row style={{ justifyContent: "space-between" }}>
+            <Row style={{ gap: 5 }}>
+              <Icon name="fire" size={16} color={colors.burgundy} />
+              <Txt v="bodyBold" color={colors.onSurfaceInverse}>Serie di {q.login.streak} {q.login.streak === 1 ? "giorno" : "giorni"}</Txt>
+            </Row>
+            <Txt v="small" color={colors.onSurfaceInverse}>Record {q.login.best_streak}</Txt>
+          </Row>
+          <Txt v="small" color={colors.onSurfaceInverse}>
+            {q.login.claimed_today
+              ? q.login.bonus_pct > 0 ? `Bonus serie di oggi: +${q.login.bonus_pct}% Rubini` : "Torna domani per far salire la serie"
+              : `Ritirando oggi: serie a ${q.login.streak_if_claimed_today}${q.login.bonus_pct > 0 ? `, +${q.login.bonus_pct}% Rubini` : ""}`}
+            {!q.login.claimed_today && q.login.recovers_streak_today ? " · recuperi la serie persa" : ""}
+          </Txt>
+          {q.login.milestone_today ? <Txt v="small" color={colors.burgundy}>Oggi scatta il traguardo dei {q.login.milestone_today.days} giorni: {rewardText(q.login.milestone_today.rewards)}</Txt> : null}
+          {q.login.next_milestone ? <Txt v="small" color={colors.onSurfaceInverse}>Prossimo traguardo tra {q.login.next_milestone.days_left} {q.login.next_milestone.days_left === 1 ? "giorno" : "giorni"} ({q.login.next_milestone.days} totali): {rewardText(q.login.next_milestone.rewards)}</Txt> : null}
+          {q.login.recovery_left > 0 ? <Txt v="small" color={colors.onSurfaceInverse}>Hai {q.login.recovery_left} recupero disponibile questo mese: se salti un solo giorno la serie non si azzera.</Txt> : null}
+        </View>
       </Panel>
       {(["daily", "weekly"] as const).map((kind) => {
         const d = q[kind];

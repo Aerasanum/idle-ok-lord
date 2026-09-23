@@ -13,7 +13,7 @@ from tests.conftest import register
 pytestmark = pytest.mark.asyncio
 
 
-def test_streak_rules_are_canonical():
+async def test_streak_rules_are_canonical():
     st = canon()["quests"]["login_streak"]
     assert streak_bonus_pct(1) == 0 and streak_bonus_pct(3) == 2 * st["bonus_pct_per_day"]
     assert streak_bonus_pct(100) == st["bonus_pct_cap"]

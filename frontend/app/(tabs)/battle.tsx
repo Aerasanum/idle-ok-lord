@@ -13,6 +13,7 @@ import { paletteFor } from "@/src/battle/regions";
 import { LinearGradient } from "expo-linear-gradient";
 import { rarityColor, useTheme } from "@/src/theme";
 import { Btn, Icon, IconName, Input, Loading, Panel, RARITY_LABEL, Res, ResourceBar, Row, SLOT_LABEL, Txt, fmt } from "@/src/ui";
+import { NextActions } from "@/src/ui/NextActions";
 import { Sheet, SheetRef } from "@/src/ui/Sheet";
 import { useToast } from "@/src/ui/Toast";
 import { ItemIcon } from "@/src/ui/ItemIcon";
@@ -186,6 +187,8 @@ export default function BattleTab() {
         </TutorialTarget>
 
         {result ? <ResultCard result={result} onClose={() => setResult(null)} /> : null}
+
+        <NextActions />
 
         {/* hero card */}
         <TutorialTarget id="hero-card" onLayout={(y) => (targetY.current["hero-card"] = y)}>

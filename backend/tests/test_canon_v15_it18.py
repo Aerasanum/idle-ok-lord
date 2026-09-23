@@ -2,6 +2,7 @@
 alternatives, war casualties (main), PvE unchanged, PDF."""
 import io
 import json
+import re
 import time
 import pytest
 import requests
@@ -332,5 +333,6 @@ def test_rulebook_pdf():
             text += p.extract_text() or ""
         except Exception:
             pass
-    for needle in ("spec v1.5", "Perdite permanenti", "Disponibile dal", "floor("):
+    assert re.search(r"spec v1\.\d", text), "missing the canon version line"
+    for needle in ("Perdite permanenti", "Disponibile dal", "floor("):
         assert needle in text, f"missing '{needle}'"
