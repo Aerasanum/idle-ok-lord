@@ -43,11 +43,11 @@ async def tick_timers() -> int:
         await settle(p)
         for qname, item in done:
             if qname == "construction_queue":
-                await notify(p["_id"], "construction_complete", "Construction complete", f"{names.get(item['building'], item['building'])} reached level {item['target_level']}.", "/(tabs)/kingdom", idem=f"timer:{item['id']}")
+                await notify(p["_id"], "construction_complete", "Costruzione completata", f"{names.get(item['building'], item['building'])} è salito al livello {item['target_level']}.", "/(tabs)/kingdom", idem=f"timer:{item['id']}")
             elif qname == "research_queue":
-                await notify(p["_id"], "research_complete", "Research complete", f"{rnames.get(item['node'], item['node'])} level {item['target_level']} is ready.", "/kingdom/research", idem=f"timer:{item['id']}")
+                await notify(p["_id"], "research_complete", "Ricerca completata", f"{rnames.get(item['node'], item['node'])} livello {item['target_level']} è pronta.", "/kingdom/research", idem=f"timer:{item['id']}")
             else:
-                await notify(p["_id"], "recruitment_complete", "Recruitment complete", f"{item['quantity']} {unames.get(item['unit'], item['unit'])} joined your army.", "/(tabs)/army", idem=f"timer:{item['id']}")
+                await notify(p["_id"], "recruitment_complete", "Reclutamento completato", f"{item['quantity']} {unames.get(item['unit'], item['unit'])} sono entrate nel tuo esercito.", "/(tabs)/army", idem=f"timer:{item['id']}")
             n += 1
     return n
 
@@ -56,7 +56,7 @@ async def tick_offline_full() -> int:
     mx = canon()["offline"]["max_hours"]
     n = 0
     async for p in db.players.find({"offline.pending_hours": {"$gte": mx}, "offline.full_notified": {"$ne": True}}):
-        await notify(p["_id"], "offline_chest_full", "Offline chest full", "Your 12h offline chest is full. Claim it to keep earning!", "/offline", idem=f"chestfull:{p['_id']}:{p['offline'].get('chest_from')}")
+        await notify(p["_id"], "offline_chest_full", "Cassa offline piena", f"La cassa offline da {mx} ore è piena: riscuotila per ricominciare ad accumulare.", "/offline", idem=f"chestfull:{p['_id']}:{p['offline'].get('chest_from')}")
         await db.players.update_one({"_id": p["_id"]}, {"$set": {"offline.full_notified": True}})
         n += 1
     return n
@@ -69,7 +69,7 @@ async def tick_event_ending() -> int:
         return 0
     n = 0
     async for p in db.players.find({"events.event_key": ev["key"], "events.ending_notified": {"$ne": ev["key"]}, "deleted_at": {"$exists": False}}):
-        await notify(p["_id"], "event_ending", "Event ending soon", f"{ev['archetype']} ends in less than 6 hours. Claim your track rewards!", "/events", idem=f"evend:{p['_id']}:{ev['key']}")
+        await notify(p["_id"], "event_ending", "L'evento sta per finire", f"{ev['archetype']} finisce tra meno di 6 ore: riscuoti i premi del tracciato.", "/events", idem=f"evend:{p['_id']}:{ev['key']}")
         await db.players.update_one({"_id": p["_id"]}, {"$set": {"events.ending_notified": ev["key"]}})
         n += 1
     return n

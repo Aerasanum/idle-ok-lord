@@ -26,10 +26,10 @@ def catalog() -> dict:
         "premium_currency": m["premium_currency"],
         "display_price_rule": m["display_price_rule"],
         "store_products": [
-            *[{"sku": r["sku"], "kind": "consumable", "title": f"{r['rubies']} Rubies", "grant": {"rubies": r["rubies"]}, "reference_eur": r["reference_eur"]} for r in m["ruby_packs"]],
+            *[{"sku": r["sku"], "kind": "consumable", "title": f"{r['rubies']} Rubini", "grant": {"rubies": r["rubies"]}, "reference_eur": r["reference_eur"]} for r in m["ruby_packs"]],
             {"sku": m["starter_bundle"]["sku"], "kind": "non_consumable", "title": "Starter Bundle", "grant": m["starter_bundle"]["contents"], "reference_eur": m["starter_bundle"]["reference_eur"], "exclusive_power": m["starter_bundle"]["exclusive_power"]},
-            {"sku": ev["event_pass"]["sku"], "kind": "pass", "title": "Event Pass (7 days)", "entitlement": "event_pass", "reference_eur": ev["event_pass"]["reference_eur"], "duration_days": ev["event_pass"]["duration_days"]},
-            {"sku": m["season_pass"]["sku"], "kind": "pass", "title": "Season Pass (28 days)", "entitlement": "season_pass", "reference_eur": m["season_pass"]["reference_eur"], "duration_days": m["season_pass"]["duration_days"]},
+            {"sku": ev["event_pass"]["sku"], "kind": "pass", "title": "Event Pass (7 giorni)", "entitlement": "event_pass", "reference_eur": ev["event_pass"]["reference_eur"], "duration_days": ev["event_pass"]["duration_days"]},
+            {"sku": m["season_pass"]["sku"], "kind": "pass", "title": "Season Pass (28 giorni)", "entitlement": "season_pass", "reference_eur": m["season_pass"]["reference_eur"], "duration_days": m["season_pass"]["duration_days"]},
         ],
         "ruby_items": {
             "resource_crates": m["resource_crates"],
@@ -113,7 +113,7 @@ async def record_and_credit(player_id: str, sku: str, transaction_id: str, store
         await db.purchases.insert_one({"_id": new_id("pur_"), "transaction_key": key, "player_id": player_id, "sku": sku, "store": store, "transaction_id": transaction_id, "source": source, "status": "verified", "created_at": now(), "raw": raw})
     result = await _grant_product(player_id, sku, key, store, expires_ms)
     await db.purchases.update_one({"transaction_key": key}, {"$set": {"status": "credited", "credited_at": now(), "result": result}})
-    await db.notifications.insert_one({"_id": new_id("n_"), "player_id": player_id, "kind": "purchase_credited", "title": "Purchase credited", "message": f"{sku} delivered to your treasury.", "created_at": now(), "read": False})
+    await db.notifications.insert_one({"_id": new_id("n_"), "player_id": player_id, "kind": "purchase_credited", "title": "Acquisto accreditato", "message": f"{sku} è stato consegnato al tuo tesoro.", "created_at": now(), "read": False})
     return {"duplicate": False, "result": result}
 
 
