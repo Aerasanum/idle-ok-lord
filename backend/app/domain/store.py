@@ -7,6 +7,7 @@ import time
 from datetime import timedelta
 
 import httpx
+from pymongo.errors import DuplicateKeyError
 
 from ..core import db, ledger
 from ..core.canon import canon
@@ -110,7 +111,10 @@ async def record_and_credit(player_id: str, sku: str, transaction_id: str, store
     if existing and existing.get("status") == "credited":
         return {"duplicate": True, "result": existing.get("result")}
     if not existing:
-        await db.purchases.insert_one({"_id": new_id("pur_"), "transaction_key": key, "player_id": player_id, "sku": sku, "store": store, "transaction_id": transaction_id, "source": source, "status": "verified", "created_at": now(), "raw": raw})
+        try:
+            await db.purchases.insert_one({"_id": new_id("pur_"), "transaction_key": key, "player_id": player_id, "sku": sku, "store": store, "transaction_id": transaction_id, "source": source, "status": "verified", "created_at": now(), "raw": raw})
+        except DuplicateKeyError:
+            pass  # webhook and client verify raced on the same purchase; the ledger key below still credits exactly once
     result = await _grant_product(player_id, sku, key, store, expires_ms)
     await db.purchases.update_one({"transaction_key": key}, {"$set": {"status": "credited", "credited_at": now(), "result": result}})
     await db.notifications.insert_one({"_id": new_id("n_"), "player_id": player_id, "kind": "purchase_credited", "title": "Purchase credited", "message": f"{sku} delivered to your treasury.", "created_at": now(), "read": False})
@@ -195,9 +199,18 @@ async def sync_subscriber(player_id: str) -> dict:
     credited = []
     for sku, txs in (sub.get("non_subscriptions") or {}).items():
         for t in txs:
-            if _product_by_sku(sku):
-                res = await record_and_credit(player_id, sku, t.get("id"), (t.get("store") or "unknown").lower(), "restore", None, t)
-                credited.append({"sku": sku, "transaction_id": t.get("id"), "duplicate": res["duplicate"]})
+            if not _product_by_sku(sku):
+                continue
+            store = (t.get("store") or "unknown").lower()
+            # Key on the store's own transaction id (Google order id / Apple transaction id), the same id the webhook
+            # carries as `transaction_id`; RevenueCat's internal `id` would make webhook + verify credit one purchase twice.
+            tx = t.get("store_transaction_id") or t.get("id")
+            rc_id = t.get("id")
+            if rc_id and rc_id != tx and await db.purchases.find_one({"transaction_key": f"{store}:{rc_id}:{sku}", "status": "credited"}):
+                credited.append({"sku": sku, "transaction_id": tx, "duplicate": True})  # credited earlier under the RC-id key
+                continue
+            res = await record_and_credit(player_id, sku, tx, store, "restore", None, t)
+            credited.append({"sku": sku, "transaction_id": tx, "duplicate": res["duplicate"]})
     for sku, s in (sub.get("subscriptions") or {}).items():
         if _product_by_sku(sku) and s.get("expires_date"):
             exp = aware(__import__("datetime").datetime.fromisoformat(s["expires_date"].replace("Z", "+00:00")))

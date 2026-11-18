@@ -15,17 +15,30 @@ if (!isExpoGo && Platform.OS !== "web") {
 
 export const billingAvailable = !!Purchases;
 
+// Every store SKU in the canonical catalog (ruby packs, starter bundle, event/season pass) is a one-time product
+// (Google Play "prodotto in-app" / App Store consumable or non-consumable). RevenueCat's getProducts() defaults to
+// SUBSCRIPTION, which on Google Play returns nothing for one-time products, so the category must be explicit.
+const productCategory = () => Purchases.PRODUCT_CATEGORY?.NON_SUBSCRIPTION ?? "NON_SUBSCRIPTION";
+
+// configure() must run once per process; switching account afterwards goes through logIn().
+let configuredFor: string | null = null;
+
 export async function configureBilling(playerId: string): Promise<boolean> {
   if (!Purchases) return false;
   const key = Platform.OS === "ios" ? process.env.EXPO_PUBLIC_RC_IOS_KEY : process.env.EXPO_PUBLIC_RC_ANDROID_KEY;
   if (!key) return false;
-  Purchases.configure({ apiKey: key, appUserID: playerId });
+  if (configuredFor === null) {
+    Purchases.configure({ apiKey: key, appUserID: playerId });
+  } else if (configuredFor !== playerId) {
+    await Purchases.logIn(playerId);
+  }
+  configuredFor = playerId;
   return true;
 }
 
 export async function fetchStorePrices(skus: string[]): Promise<Record<string, string>> {
   if (!Purchases) return {};
-  const products = await Purchases.getProducts(skus);
+  const products = await Purchases.getProducts(skus, productCategory());
   const out: Record<string, string> = {};
   for (const p of products) out[p.identifier] = p.priceString;
   return out;
@@ -34,7 +47,7 @@ export async function fetchStorePrices(skus: string[]): Promise<Record<string, s
 export async function purchaseSku(sku: string): Promise<{ ok: boolean; cancelled?: boolean; transactionId?: string }> {
   if (!Purchases) return { ok: false };
   try {
-    const products = await Purchases.getProducts([sku]);
+    const products = await Purchases.getProducts([sku], productCategory());
     if (!products.length) return { ok: false };
     const res = await Purchases.purchaseStoreProduct(products[0]);
     return { ok: true, transactionId: res?.transaction?.transactionIdentifier };
